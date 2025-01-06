@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ${DOCKERFILE:-Dockerfile.dev}
+    ports:
+      - "3000:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true # Fix for file watching on some systems
+    stdin_open: true
+    tty: true
+
+networks:
+  default:
+    driver: bridge
