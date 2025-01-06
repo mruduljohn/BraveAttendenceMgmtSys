@@ -115,7 +115,7 @@ Here’s a simple flowchart representing the **Clock In/Out Process**:
             |
             v
    +---------------------+
-   | Use Face ID to Verify|
+   | Use 2FA to Verify|
    +---------------------+
             |
             v
