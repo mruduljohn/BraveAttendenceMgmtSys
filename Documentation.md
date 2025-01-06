@@ -107,6 +107,13 @@ Employees have the following permissions:
 ## Flowchart
 
 Here’s a simple flowchart representing the **Clock In/Out Process**:
+1. Login Functionality  
+![Attendance Flowchart](images/Flowchart_Brave%20-%20Login.jpg)
+2. Administrator  Functionality Flow
+![Attendance Flowchart](images/Flowchart_Brave%20-%20ADMINISTRATOR.jpg)
+3. Manager Functionality Flow
+![Attendance Flowchart](images/Flowchart_Brave%20-%20Manager.jpg)
+4. Employee  Functionality Flow:
+![Attendance Flowchart](images/Flowchart_Brave%20-%20Employee.jpg)
 
-![Attendance Flowchart](images/flowchart.png)
 
