@@ -64,46 +64,7 @@ Employees have the following permissions:
 ---
 
 ## Data Structures & Database Design
-
-### Users Table
-
-| Field Name       | Data Type     | Description                          |
-|------------------|---------------|--------------------------------------|
-| user_id          | INT (PK)      | Unique identifier for each user.    |
-| username         | VARCHAR(255)  | User's username.                    |
-| email            | VARCHAR(255)  | User's email address.               |
-| password_hash    | VARCHAR(255)  | Hashed password.                    |
-| role             | ENUM          | Role of the user (Admin, Manager, Employee). |
-| created_at       | DATETIME      | Timestamp when the account was created. |
-| updated_at       | DATETIME      | Timestamp of the last update.       |
-
-### Attendance Table
-
-| Field Name       | Data Type     | Description                          |
-|------------------|---------------|--------------------------------------|
-| attendance_id    | INT (PK)      | Unique identifier for each attendance entry. |
-| user_id          | INT (FK)      | ID of the user clocking in/out.     |
-| clock_in_time    | DATETIME      | Timestamp when the user clocks in.  |
-| clock_out_time   | DATETIME      | Timestamp when the user clocks out. |
-| total_hours      | DECIMAL(5,2)  | Total hours worked (calculated automatically). |
-| date             | DATE          | Date of the attendance record.      |
-| created_at       | DATETIME      | Timestamp when the record was created. |
-
-### Leave Requests Table
-
-| Field Name       | Data Type     | Description                          |
-|------------------|---------------|--------------------------------------|
-| leave_id         | INT (PK)      | Unique identifier for each leave request. |
-| user_id          | INT (FK)      | ID of the user requesting time off.  |
-| leave_type       | ENUM          | Type of leave (Vacation, Sick Leave, etc.). |
-| start_date       | DATETIME      | Start date of the leave.             |
-| end_date         | DATETIME      | End date of the leave.               |
-| status           | ENUM          | Status of the leave request (Pending, Approved, Rejected). |
-| created_at       | DATETIME      | Timestamp when the leave was requested. |
-| updated_at       | DATETIME      | Timestamp when the leave request was last updated. |
-
----
-
+![ER Diagram](images/Database%20Tables%20-%20ER%20Diagram.jpg)
 ## Flowchart
 
 Here’s a simple flowchart representing the **Clock In/Out Process**:
