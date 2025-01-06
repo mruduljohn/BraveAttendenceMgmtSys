@@ -1,6 +1,6 @@
 # Design & Specification
 
-## Project Name :  Employee Attendence Management System
+## Project Name :  Employee Attendance Management System
 
 
 ## System Overview
