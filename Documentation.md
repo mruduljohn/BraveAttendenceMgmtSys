@@ -108,29 +108,5 @@ Employees have the following permissions:
 
 Here’s a simple flowchart representing the **Clock In/Out Process**:
 
-```plaintext
-   +---------------------+
-   | Start Clock In/Out  |
-   +---------------------+
-            |
-            v
-   +---------------------+
-   | Use Face ID to Verify|
-   +---------------------+
-            |
-            v
-   +---------------------+
-   | Is Verification Success? |
-   +---------------------+
-        /      \
-      Yes      No
-       |        |
-       v        v
-+---------------------+  +------------------------+
-| Clock In Recorded   |  | Display Error Message   |
-+---------------------+  +------------------------+
-       |                       |
-       v                       v
-   +---------------------+  +------------------------+
-   | End Clock In/Out    |  | Retry or Exit          |
-   +---------------------+  +------------------------+
+![Attendance Flowchart](images/flowchart.png)
+
