@@ -1,3 +1,3 @@
 # BraveAttendenceMgmtSys
 
-Creating an Attendence Management System
+Creating an Attendance Management System
