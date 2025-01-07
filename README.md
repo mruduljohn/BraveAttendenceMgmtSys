@@ -17,6 +17,6 @@ Production:
 Development  :   DOCKERFILE=Dockerfile.dev docker-compose up --build
 Production   :   DOCKERFILE=Dockerfile.prod docker-compose up --build
 
-The Frontend is available at http://localhost:3000
+The Frontend is available at http://localhost:5173
 
 
