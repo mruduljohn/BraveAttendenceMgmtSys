@@ -6,23 +6,43 @@ import ManagerDashboard from "./pages/ManagerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import EmployeeClockInPage from "./pages/EmployeeClockInPage";
-import AttendanceRecordsPage from "./pages/EmployeeAttendanceRecordsPage";
-import LeaveRequestsPage from "./pages/EmployeeLeaveRequestsPage";
+import AdminClockInPage from "./pages/AdminClockInPage";
+import ManagerClockInPage from "./pages/ManagerClockInPage";
+import EmployeeAttendanceRecordsPage from "./pages/EmployeeAttendanceRecordsPage";
+import AdminAttendanceRecordsPage from "./pages/AdminAttendanceRecordsPage";
+import ManagerAttendanceRecordsPage from "./pages/ManagerAttendanceRecordsPage";
+import EmployeeLeaveRequestsPage from "./pages/EmployeeLeaveRequestsPage";
+import AdminLeaveRequestsPage from "./pages/AdminLeaveRequestsPage";
+import ManagerLeaveApprovalPage from "./pages/ManagerLeaveApprovalPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import EditProfilePage from "./pages/EditProfilePage";
+import EmployeeEditProfilePage from "./pages/EmployeeEditProfilePage";
+import AdminEditProfilePage from "./pages/AdminEditProfilePage";
+import ManagerEditProfilePage from "./pages/ManagerEditProfilePage";
+import AdminEmployeeManagement from "./pages/AdminEmployeeManagement";
+import ManagerEmployeeManagement from "./pages/ManagerEmployeeManagement";
+import AdminReportGeneration from "./pages/AdminReportGeneration";
+import ManageReportGeneration from "./pages/ManagerReportGeneration";
+import AdminEmployeeForm from "./pages/AdminEmployeeForm";
+import ManagerEmployeeForm from "./pages/ManagerEmployeeForm";
+import ManagerAnalysisPage from "./pages/ManagerAnalysisPage";
+
+import { useAuth } from "./context/AuthContext";
 
 const AppRouter: React.FC = () => {
+  const { user } = useAuth();
+
   return (
     <AuthProvider>
       <Router>
         <Routes>
+          {/* Public Route */}
           <Route path="/" element={<LoginPage />} />
 
           {/* Protected routes */}
           <Route
             path="/admin/dashboard"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin']}>
                 <AdminDashboard />
               </ProtectedRoute>
             }
@@ -30,7 +50,7 @@ const AppRouter: React.FC = () => {
           <Route
             path="/manager/dashboard"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['manager', 'admin']}>
                 <ManagerDashboard />
               </ProtectedRoute>
             }
@@ -38,7 +58,7 @@ const AppRouter: React.FC = () => {
           <Route
             path="/employee/dashboard"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['employee', 'admin']}>
                 <EmployeeDashboard />
               </ProtectedRoute>
             }
@@ -46,37 +66,57 @@ const AppRouter: React.FC = () => {
 
           {/* Employee-specific routes */}
           <Route
-            path="/employee/clockin"
+            path="/employee/*"
             element={
-              <ProtectedRoute>
-                <EmployeeClockInPage />
+              <ProtectedRoute allowedRoles={['employee']}>
+                <Routes>
+                  <Route path="clockin" element={<EmployeeClockInPage />} />
+                  <Route path="attendance" element={<EmployeeAttendanceRecordsPage />} />
+                  <Route path="leave-requests" element={<EmployeeLeaveRequestsPage />} />
+                  <Route path="edit-profile" element={<EmployeeEditProfilePage />} />
+                </Routes>
               </ProtectedRoute>
             }
           />
+
+          {/* Admin-specific routes */}
           <Route
-            path="/employee/attendance"
+            path="/admin/*"
             element={
-              <ProtectedRoute>
-                <AttendanceRecordsPage />
+              <ProtectedRoute allowedRoles={['admin']}>
+                <Routes>
+                  <Route path="employees" element={<AdminEmployeeManagement />} />
+                  <Route path="reports" element={<AdminReportGeneration />} />
+                  <Route path="employee/create" element={<AdminEmployeeForm />} />
+                  <Route path="employee/edit/:id" element={<AdminEmployeeForm />} />
+                  <Route path="clockin" element={<AdminClockInPage />} />
+                  <Route path="attendance" element={<AdminAttendanceRecordsPage />} />
+                  <Route path="leave-requests" element={<AdminLeaveRequestsPage />} />
+                  <Route path="edit-profile" element={<AdminEditProfilePage />} />
+                </Routes>
               </ProtectedRoute>
             }
           />
+
+          {/* Manager-specific routes */}
           <Route
-            path="/employee/leave-requests"
+            path="/manager/*"
             element={
-              <ProtectedRoute>
-                <LeaveRequestsPage />
+              <ProtectedRoute allowedRoles={['manager']}>
+                <Routes>
+                  <Route path="employees" element={<ManagerEmployeeManagement />} />
+                  <Route path="reports" element={<ManageReportGeneration />} />
+                  <Route path="employee/create" element={<ManagerEmployeeForm />} />
+                  <Route path="employee/edit/:id" element={<ManagerEmployeeForm />} />
+                  <Route path="clockin" element={<ManagerClockInPage />} />
+                  <Route path="attendance" element={<ManagerAttendanceRecordsPage />} />
+                  <Route path="leave-approvals" element={<ManagerLeaveApprovalPage />} />
+                  <Route path="edit-profile" element={<ManagerEditProfilePage />} />
+                  <Route path="analytics" element={<ManagerAnalysisPage/>} />
+                </Routes>
               </ProtectedRoute>
             }
           />
-        <Route
-            path="/employee/edit-profile"
-            element={
-              <ProtectedRoute>
-                <EditProfilePage />
-              </ProtectedRoute>
-            }
-            />
         </Routes>
       </Router>
     </AuthProvider>
