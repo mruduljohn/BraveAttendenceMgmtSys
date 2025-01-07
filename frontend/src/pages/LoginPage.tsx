@@ -1,22 +1,26 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";  // Import the useAuth hook
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();  // Access login function from context
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    // Mock API call
     try {
       // Replace this with a real API call
       const response = await fakeLogin(email, password);
 
       if (response.success) {
+        // Log in the user
+        login(response.role);
+        
         // Redirect based on role
         if (response.role === "admin") navigate("/admin/dashboard");
         else if (response.role === "manager") navigate("/manager/dashboard");
