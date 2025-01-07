@@ -114,13 +114,7 @@ const LoginPage: React.FC = () => {
                 Forgot password?
               </a>
               <p className="text-gray-400 text-sm">
-                Don't have an account?{" "}
-                <a 
-                  href="#" 
-                  className="font-medium text-aqua-400 hover:text-aqua-300 transition duration-200"
-                >
-                  Sign up
-                </a>
+                Please Contact the Administrator
               </p>
             </div>
           </div>
