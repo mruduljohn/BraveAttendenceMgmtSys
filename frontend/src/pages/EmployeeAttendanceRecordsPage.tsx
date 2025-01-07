@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import LiveTime from "@/components/LiveTime";
 
 interface AttendanceRecord {
   date: string;
@@ -142,7 +143,7 @@ const AttendanceRecordsPage: React.FC = () => {
 
       <footer className="relative z-10 bg-gray-800/50 backdrop-blur-lg border-t border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-4 text-center text-gray-400">
-          © 2025 Employee Management System. All rights reserved.
+          <LiveTime/>
         </div>
       </footer>
     </div>

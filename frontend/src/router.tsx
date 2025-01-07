@@ -9,6 +9,7 @@ import EmployeeClockInPage from "./pages/EmployeeClockInPage";
 import AttendanceRecordsPage from "./pages/EmployeeAttendanceRecordsPage";
 import LeaveRequestsPage from "./pages/EmployeeLeaveRequestsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import EditProfilePage from "./pages/EditProfilePage";
 
 const AppRouter: React.FC = () => {
   return (
@@ -68,6 +69,14 @@ const AppRouter: React.FC = () => {
               </ProtectedRoute>
             }
           />
+        <Route
+            path="/employee/edit-profile"
+            element={
+              <ProtectedRoute>
+                <EditProfilePage />
+              </ProtectedRoute>
+            }
+            />
         </Routes>
       </Router>
     </AuthProvider>

@@ -6,6 +6,8 @@ import LogoutButton from "../components/LogoutButton";
 import { useAuth } from "../context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import LiveTime from "@/components/LiveTime";
+
 
 const EmployeeDashboard: React.FC = () => {
   const { userRole } = useAuth();
@@ -14,6 +16,17 @@ const EmployeeDashboard: React.FC = () => {
   if (userRole !== "employee") {
     navigate("/");
   }
+
+ // Simulated user profile data
+ const user = {
+    name: "John Doe",
+    email: "johndoe@example.com",
+    role: "Software Engineer",
+    department: "IT",
+    joinedDate: "March 15, 2022",
+    profilePicture: "https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg",
+    
+  };
 
   const cards = [
     {
@@ -58,6 +71,7 @@ const EmployeeDashboard: React.FC = () => {
   };
 
   return (
+    
     <div className="min-h-screen flex flex-col bg-gray-900">
       <div 
         className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900"
@@ -82,6 +96,35 @@ const EmployeeDashboard: React.FC = () => {
           </div>
         </div>
       </header>
+    
+     {/* Employee Profile Section */}
+     <section className="relative z-10 p-6">
+        <div className="max-w-7xl mx-auto bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-lg p-6">
+          <h2 className="text-xl font-semibold text-white mb-4">Your Profile</h2>
+          <div className="flex items-center gap-6">
+            <img
+              src={user?.profilePicture || "/placeholder-avatar.png"} // Replace with user's profile picture URL
+              alt="Profile"
+              className="w-20 h-20 rounded-full border-2 border-aqua-400"
+            />
+            <div>
+              <h3 className="text-lg font-medium text-white">{user?.name || "Employee Name"}</h3>
+              <p className="text-gray-400">Email: {user?.email || "email@example.com"}</p>
+              <p className="text-gray-400">Role: {user?.role || "Employee Role"}</p>
+            </div>
+          </div>
+          {/* Edit Profile Button */}
+          <div className="mt-4">
+            <Button
+              className="w-full bg-aqua-500 hover:bg-aqua-600 text-gray-900 font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+              onClick={() => navigate("/employee/edit-profile")}
+            >
+              Edit Profile
+            </Button>
+          </div>
+        </div>
+      </section>
+
 
       <main className="relative z-10 flex-grow p-6">
         <div className="max-w-7xl mx-auto">
@@ -119,7 +162,7 @@ const EmployeeDashboard: React.FC = () => {
 
       <footer className="relative z-10 bg-gray-800/50 backdrop-blur-lg border-t border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-4 text-center text-gray-400">
-          © 2025 Employee Management System. All rights reserved.
+          <LiveTime />  
         </div>
       </footer>
     </div>
