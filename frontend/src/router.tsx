@@ -20,10 +20,10 @@ import AdminEditProfilePage from "./pages/AdminEditProfilePage";
 import ManagerEditProfilePage from "./pages/ManagerEditProfilePage";
 import AdminEmployeeManagement from "./pages/AdminEmployeeManagement";
 import ManagerEmployeeManagement from "./pages/ManagerEmployeeManagement";
-import AdminReportGeneration from "./pages/AdminReportGeneration";
+// import AdminReportGeneration from "./pages/AdminReportGeneration";
 import ManageReportGeneration from "./pages/ManagerReportGeneration";
 import AdminEmployeeForm from "./pages/AdminEmployeeForm";
-import ManagerEmployeeForm from "./pages/ManagerEmployeeForm";
+// import ManagerEmployeeForm from "./pages/ManagerEmployeeForm";
 import ManagerAnalysisPage from "./pages/ManagerAnalysisPage";
 
 import { useAuth } from "./context/AuthContext";
@@ -62,7 +62,7 @@ const AppRouter: React.FC = () => {
                 <Routes>
                   <Route path="dashboard" element={<AdminDashboard />} />
                   <Route path="employees" element={<AdminEmployeeManagement />} />
-                  <Route path="reports" element={<AdminReportGeneration />} />
+                  {/* <Route path="reports" element={<AdminReportGeneration />} /> */}
                   <Route path="employee/create" element={<AdminEmployeeForm />} />
                   <Route path="employee/edit/:id" element={<AdminEmployeeForm />} />
                   <Route path="clockin" element={<AdminClockInPage />} />
@@ -83,8 +83,8 @@ const AppRouter: React.FC = () => {
                   <Route path="dashboard" element={<ManagerDashboard />} />
                   <Route path="employees" element={<ManagerEmployeeManagement />} />
                   <Route path="reports" element={<ManageReportGeneration />} />
-                  <Route path="employee/create" element={<ManagerEmployeeForm />} />
-                  <Route path="employee/edit/:id" element={<ManagerEmployeeForm />} />
+                  {/* <Route path="employee/create" element={<ManagerEmployeeForm />} />
+                  <Route path="employee/edit/:id" element={<ManagerEmployeeForm />} /> */}
                   <Route path="clockin" element={<ManagerClockInPage />} />
                   <Route path="attendance" element={<ManagerAttendanceRecordsPage />} />
                   <Route path="leave-approvals" element={<ManagerLeaveApprovalPage />} />

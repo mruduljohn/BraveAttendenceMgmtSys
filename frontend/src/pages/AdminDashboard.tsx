@@ -33,12 +33,12 @@ const AdminDashboard: React.FC = () => {
       icon: Users,
       href: "/admin/employees",
     },
-    {
-      title: "Generate Reports",
-      description: "Create and view various reports",
-      icon: FileText,
-      href: "/admin/reports",
-    },
+    // {
+    //   title: "Generate Reports",
+    //   description: "Create and view various reports",
+    //   icon: FileText,
+    //   href: "/admin/reports",
+    // },
   ];
 
   const personalActions = [

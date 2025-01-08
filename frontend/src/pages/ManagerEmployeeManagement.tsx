@@ -80,20 +80,6 @@ const ManagerEmployeeManagement: React.FC = () => {
               </motion.div>
               <h1 className="text-2xl font-bold text-white">Team Management</h1>
             </div>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button
-                asChild
-                className="bg-green-500 hover:bg-green-600 text-slate-900 font-semibold"
-              >
-                <Link to="/manager/employee/create" className="flex items-center gap-2">
-                  <UserPlus className="w-4 h-4" />
-                  <span>Add Team Member</span>
-                </Link>
-              </Button>
-            </motion.div>
           </div>
         </div>
       </header>
