@@ -38,38 +38,13 @@ const AppRouter: React.FC = () => {
           {/* Public Route */}
           <Route path="/" element={<LoginPage />} />
 
-          {/* Protected routes */}
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={['admin']}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/manager/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={['manager', 'admin']}>
-                <ManagerDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/employee/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={['employee', 'admin']}>
-                <EmployeeDashboard />
-              </ProtectedRoute>
-            }
-          />
-
           {/* Employee-specific routes */}
           <Route
             path="/employee/*"
             element={
               <ProtectedRoute allowedRoles={['employee']}>
                 <Routes>
+                  <Route path="dashboard" element={<EmployeeDashboard />} />
                   <Route path="clockin" element={<EmployeeClockInPage />} />
                   <Route path="attendance" element={<EmployeeAttendanceRecordsPage />} />
                   <Route path="leave-requests" element={<EmployeeLeaveRequestsPage />} />
@@ -85,6 +60,7 @@ const AppRouter: React.FC = () => {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <Routes>
+                  <Route path="dashboard" element={<AdminDashboard />} />
                   <Route path="employees" element={<AdminEmployeeManagement />} />
                   <Route path="reports" element={<AdminReportGeneration />} />
                   <Route path="employee/create" element={<AdminEmployeeForm />} />
@@ -104,6 +80,7 @@ const AppRouter: React.FC = () => {
             element={
               <ProtectedRoute allowedRoles={['manager']}>
                 <Routes>
+                  <Route path="dashboard" element={<ManagerDashboard />} />
                   <Route path="employees" element={<ManagerEmployeeManagement />} />
                   <Route path="reports" element={<ManageReportGeneration />} />
                   <Route path="employee/create" element={<ManagerEmployeeForm />} />
