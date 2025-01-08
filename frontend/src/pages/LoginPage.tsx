@@ -5,10 +5,12 @@ import { motion } from "framer-motion";
 import { Mail, Lock, LogIn } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [token, setToken] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -18,17 +20,26 @@ const LoginPage: React.FC = () => {
     setError("");
 
     try {
-      const response = await fakeLogin(email, password);
-
-      if (response.success) {
-        login(response.role);
+      const response = await axios.post("http://localhost:8000/api/token/", {
+        username: email, // Or 'email' if you've customized the backend to accept email
+        password,
+      });
+  
+      // Save tokens to state/localStorage
+      setToken(response.data.access);
+      localStorage.setItem("refreshToken", response.data.refresh);
+  
+      // Fetch user role if required
+      const roleResponse = await axios.get("http://localhost:8000/api/user-role/", {
+        headers: { Authorization: `Bearer ${response.data.access}` },
+      });
+  
+      const role = roleResponse.data.role;
         
-        if (response.role === "admin") navigate("/admin/dashboard");
-        else if (response.role === "manager") navigate("/manager/dashboard");
+        if (role === "admin") navigate("/admin/dashboard");
+        else if (role === "manager") navigate("/manager/dashboard");
         else navigate("/employee/dashboard");
-      } else {
-        setError("Invalid credentials");
-      }
+     
     } catch (err) {
       setError("An error occurred. Please try again.");
     }
