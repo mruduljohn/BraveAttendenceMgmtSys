@@ -13,6 +13,7 @@ interface TeamMember {
   name: string;
   email: string;
   role: string;
+  position: string;
   department: string;
 }
 
@@ -24,14 +25,15 @@ const ManagerEmployeeForm: React.FC = () => {
   const [teamMember, setTeamMember] = useState<TeamMember>({
     name: '',
     email: '',
-    role: 'Employee',
-    department: 'Server Engineer'
+    role: 'employee',
+    position: 'Server Engineer',
+    department: 'IT'
   });
 
   useEffect(() => {
     if (isEditMode) {
       // Simulate fetching team member data
-      const dummyTeamMember = { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Employee', department: 'IT' };
+      const dummyTeamMember = { id: 1, name: 'John Doe', email: 'john@example.com', role: 'employee',position:'Server Engineer', department: 'IT' };
       setTeamMember(dummyTeamMember);
     }
   }, [isEditMode, id]);
@@ -148,26 +150,10 @@ const ManagerEmployeeForm: React.FC = () => {
               </motion.div>
 
               <motion.div variants={itemVariants}>
-                <Label htmlFor="role" className="text-white">Role</Label>
-                <div className="relative">
-                  <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 z-10" />
-                  <Select name="role" value={teamMember.role} onValueChange={(value) => handleSelectChange('role', value)}>
-                    <SelectTrigger className="pl-10 bg-slate-700 border-slate-600 text-white">
-                      <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Employee">Employee</SelectItem>
-                      <SelectItem value="Admin">Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </motion.div>
-
-              <motion.div variants={itemVariants}>
-                <Label htmlFor="department" className="text-white">Department</Label>
+                <Label htmlFor="position" className="text-white">Position</Label>
                 <div className="relative">
                   <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 z-10" />
-                  <Select name="department" value={teamMember.department} onValueChange={(value) => handleSelectChange('department', value)}>
+                  <Select name="position" value={teamMember.position} onValueChange={(value) => handleSelectChange('position', value)}>
                     <SelectTrigger className="pl-10 bg-slate-700 border-slate-600 text-white">
                       <SelectValue placeholder="Select a department" />
                     </SelectTrigger>
@@ -180,6 +166,39 @@ const ManagerEmployeeForm: React.FC = () => {
                   </Select>
                 </div>
               </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <Label htmlFor="department" className="text-white">Department</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                  <Input
+                    id="department"
+                    name="department"
+                    type="department"
+                    value={teamMember.department}
+                    onChange={handleInputChange}
+                    className="pl-10 bg-slate-700 border-slate-600 text-white"
+                  />
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <Label htmlFor="role" className="text-white">Role</Label>
+                <div className="relative">
+                  <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 z-10" />
+                  <Select name="role" value={teamMember.role} onValueChange={(value) => handleSelectChange('role', value)}>
+                    <SelectTrigger className="pl-10 bg-slate-700 border-slate-600 text-white">
+                      <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="employee">Employee</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </motion.div>
+
+              
 
               <motion.div variants={itemVariants}>
                 <Button
