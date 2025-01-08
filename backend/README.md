@@ -1,6 +1,2 @@
-# Django Backend
-
-## Setup Instructions
-
 
 
