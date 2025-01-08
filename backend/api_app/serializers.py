@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import users
-import bcrypt  # Assuming bcrypt is used for hashing (you can use the hashing method that matches your frontend)
+import bcrypt 
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -12,7 +12,7 @@ class LoginSerializer(serializers.Serializer):
 
         # Query the database to check if the email exists
         try:
-            user = users.objects.get(email=email)  # Query the 'users' table
+            user = users.objects.get(email=email)  
         except users.DoesNotExist:
             raise serializers.ValidationError("Invalid email or password")
 
