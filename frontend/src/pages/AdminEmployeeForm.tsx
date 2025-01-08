@@ -1,63 +1,63 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Mail, Briefcase, Building, Calendar, Camera } from 'lucide-react';
-import { useAuth } from "../context/AuthContext";
+import { User, Mail, Briefcase, Save, ArrowLeft } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import LiveTime from "@/components/LiveTime";
 
-const EditProfilePage: React.FC = () => {
-  const { userRole } = useAuth();
-  const navigate = useNavigate();
+interface Employee {
+  name: string;
+  email: string;
+  role: string;
+}
 
-  // Simulated user profile data
-  const [user, setUser] = useState({
-    name: "John Doe",
-    email: "johndoe@example.com",
-    role: "Software Engineer",
-    department: "IT",
-    joinedDate: "March 15, 2022",
-    profilePicture: "https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg",
+const AdminEmployeeForm: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const isEditMode = id !== undefined;
+
+  const [employee, setEmployee] = useState<Employee>({
+    name: '',
+    email: '',
+    role: 'Employee'
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  useEffect(() => {
+    if (isEditMode) {
+      // Simulate fetching employee data
+      const dummyEmployee = { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Employee' };
+      setEmployee(dummyEmployee);
+    }
+  }, [isEditMode, id]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setUser(prevUser => ({
-      ...prevUser,
+    setEmployee(prev => ({
+      ...prev,
       [name]: value
+    }));
+  };
+
+  const handleRoleChange = (value: string) => {
+    setEmployee(prev => ({
+      ...prev,
+      role: value
     }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the updated user data to your backend
-    console.log("Updated user data:", user);
-    // After successful update, navigate back to the dashboard
-    navigate("/employee/dashboard");
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUser(prevUser => ({
-          ...prevUser,
-          profilePicture: reader.result as string
-        }));
-      };
-      reader.readAsDataURL(file);
+    if (isEditMode) {
+      alert('Employee updated');
+    } else {
+      alert('Employee created');
     }
+    navigate('/admin/employees');
   };
-
-  if (userRole !== "employee") {
-    navigate("/");
-    return null;
-  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -89,7 +89,7 @@ const EditProfilePage: React.FC = () => {
       <header className="relative z-10 bg-gray-800/50 backdrop-blur-lg border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">Edit Your Profile</h1>
+            <h1 className="text-2xl font-bold text-white">{isEditMode ? 'Edit' : 'Create'} Employee</h1>
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -97,10 +97,10 @@ const EditProfilePage: React.FC = () => {
               <Button
                 variant="ghost"
                 className="flex items-center gap-2 text-gray-300 hover:text-white"
-                onClick={() => navigate("/employee/dashboard")}
+                onClick={() => navigate('/admin/employees')}
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Back to Dashboard</span>
+                <span>Back to Employees</span>
               </Button>
             </motion.div>
           </div>
@@ -112,30 +112,10 @@ const EditProfilePage: React.FC = () => {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="max-w-3xl mx-auto"
+          className="max-w-2xl mx-auto"
         >
           <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
-              <motion.div variants={itemVariants} className="flex items-center justify-center">
-                <div className="relative">
-                  <img
-                    src={user.profilePicture}
-                    alt="Profile"
-                    className="w-32 h-32 rounded-full border-2 border-aqua-400"
-                  />
-                  <Label htmlFor="profile-picture" className="absolute bottom-0 right-0 bg-aqua-500 text-gray-900 rounded-full p-2 cursor-pointer">
-                    <Camera className="w-5 h-5" />
-                  </Label>
-                  <Input
-                    id="profile-picture"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleFileChange}
-                  />
-                </div>
-              </motion.div>
-
               <motion.div variants={itemVariants}>
                 <Label htmlFor="name" className="text-white">Name</Label>
                 <div className="relative">
@@ -143,7 +123,7 @@ const EditProfilePage: React.FC = () => {
                   <Input
                     id="name"
                     name="name"
-                    value={user.name}
+                    value={employee.name}
                     onChange={handleInputChange}
                     className="pl-10 bg-gray-700 border-gray-600 text-white"
                   />
@@ -158,7 +138,7 @@ const EditProfilePage: React.FC = () => {
                     id="email"
                     name="email"
                     type="email"
-                    value={user.email}
+                    value={employee.email}
                     onChange={handleInputChange}
                     className="pl-10 bg-gray-700 border-gray-600 text-white"
                   />
@@ -168,42 +148,16 @@ const EditProfilePage: React.FC = () => {
               <motion.div variants={itemVariants}>
                 <Label htmlFor="role" className="text-white">Role</Label>
                 <div className="relative">
-                  <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input
-                    id="role"
-                    name="role"
-                    value={user.role}
-                    onChange={handleInputChange}
-                    className="pl-10 bg-gray-700 border-gray-600 text-white"
-                  />
-                </div>
-              </motion.div>
-
-              <motion.div variants={itemVariants}>
-                <Label htmlFor="department" className="text-white">Department</Label>
-                <div className="relative">
-                  <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input
-                    id="department"
-                    name="department"
-                    value={user.department}
-                    onChange={handleInputChange}
-                    className="pl-10 bg-gray-700 border-gray-600 text-white"
-                  />
-                </div>
-              </motion.div>
-
-              <motion.div variants={itemVariants}>
-                <Label htmlFor="joinedDate" className="text-white">Joined Date</Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input
-                    id="joinedDate"
-                    name="joinedDate"
-                    value={user.joinedDate}
-                    onChange={handleInputChange}
-                    className="pl-10 bg-gray-700 border-gray-600 text-white"
-                  />
+                  <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 z-10" />
+                  <Select name="role" value={employee.role} onValueChange={handleRoleChange}>
+                    <SelectTrigger className="pl-10 bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Employee">Employee</SelectItem>
+                      <SelectItem value="Admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </motion.div>
 
@@ -212,7 +166,8 @@ const EditProfilePage: React.FC = () => {
                   type="submit"
                   className="w-full bg-aqua-500 hover:bg-aqua-600 text-gray-900 font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
                 >
-                  Save Changes
+                  <Save className="w-4 h-4 mr-2" />
+                  {isEditMode ? 'Update' : 'Create'} Employee
                 </Button>
               </motion.div>
             </form>
@@ -227,7 +182,7 @@ const EditProfilePage: React.FC = () => {
       </footer>
     </div>
   );
-};
+}
 
-export default EditProfilePage;
+export default AdminEmployeeForm;
 

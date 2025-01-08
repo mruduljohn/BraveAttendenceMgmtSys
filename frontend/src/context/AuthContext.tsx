@@ -3,9 +3,13 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 // Define types
 interface AuthContextType {
   isAuthenticated: boolean;
-  userRole: string | null;
+  user: User | null; // User is either a user object or null
   login: (role: string) => void;
   logout: () => void;
+}
+
+interface User {
+  role: string;
 }
 
 // Default values for the context
@@ -13,20 +17,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   const login = (role: string) => {
     setIsAuthenticated(true);
-    setUserRole(role);
+    setUser({ role }); // Set the user with a role
   };
 
   const logout = () => {
     setIsAuthenticated(false);
-    setUserRole(null);
+    setUser(null); // Clear the user on logout
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, userRole, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

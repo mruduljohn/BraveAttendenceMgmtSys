@@ -10,15 +10,15 @@ import LiveTime from "@/components/LiveTime";
 
 
 const EmployeeDashboard: React.FC = () => {
-  const { userRole } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  if (userRole !== "employee") {
+  if (user?.role !== "employee") {
     navigate("/");
   }
 
  // Simulated user profile data
- const user = {
+ const user1 = {
     name: "John Doe",
     email: "johndoe@example.com",
     role: "Software Engineer",
@@ -103,14 +103,14 @@ const EmployeeDashboard: React.FC = () => {
           <h2 className="text-xl font-semibold text-white mb-4">Your Profile</h2>
           <div className="flex items-center gap-6">
             <img
-              src={user?.profilePicture || "/placeholder-avatar.png"} // Replace with user's profile picture URL
+              src={user1?.profilePicture || "/placeholder-avatar.png"} // Replace with user's profile picture URL
               alt="Profile"
               className="w-20 h-20 rounded-full border-2 border-aqua-400"
             />
             <div>
-              <h3 className="text-lg font-medium text-white">{user?.name || "Employee Name"}</h3>
-              <p className="text-gray-400">Email: {user?.email || "email@example.com"}</p>
-              <p className="text-gray-400">Role: {user?.role || "Employee Role"}</p>
+              <h3 className="text-lg font-medium text-white">{user1?.name || "Employee Name"}</h3>
+              <p className="text-gray-400">Email: {user1?.email || "email@example.com"}</p>
+              <p className="text-gray-400">Role: {user1?.role || "Employee Role"}</p>
             </div>
           </div>
           {/* Edit Profile Button */}
