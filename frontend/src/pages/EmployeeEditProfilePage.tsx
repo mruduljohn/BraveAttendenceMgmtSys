@@ -18,7 +18,7 @@ const EditProfilePage: React.FC = () => {
   const [user1, setUser] = useState({
     name: "John Doe",
     email: "johndoe@example.com",
-    role: "Software Engineer",
+    position: "Software Engineer",
     department: "IT",
     joinedDate: "March 15, 2022",
     profilePicture: "https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg",
@@ -166,13 +166,13 @@ const EditProfilePage: React.FC = () => {
               </motion.div>
 
               <motion.div variants={itemVariants}>
-                <Label htmlFor="role" className="text-white">Role</Label>
+                <Label htmlFor="position" className="text-white">Position</Label>
                 <div className="relative">
                   <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <Input
-                    id="role"
-                    name="role"
-                    value={user1.role}
+                    id="position"
+                    name="position"
+                    value={user1.position}
                     onChange={handleInputChange}
                     className="pl-10 bg-gray-700 border-gray-600 text-white"
                   />

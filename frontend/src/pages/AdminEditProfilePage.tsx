@@ -18,7 +18,7 @@ const AdminEditProfilePage: React.FC = () => {
   const [admin, setAdmin] = useState({
     name: "Admin User",
     email: "admin@example.com",
-    role: "System Administrator",
+    position: "System Administrator",
     department: "IT Administration",
     joinedDate: "January 1, 2020",
     accessLevel: "Full Access",
@@ -167,13 +167,13 @@ const AdminEditProfilePage: React.FC = () => {
               </motion.div>
 
               <motion.div variants={itemVariants}>
-                <Label htmlFor="role" className="text-white">Role</Label>
+                <Label htmlFor="position" className="text-white">Position</Label>
                 <div className="relative">
                   <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                   <Input
-                    id="role"
-                    name="role"
-                    value={admin.role}
+                    id="position"
+                    name="position"
+                    value={admin.position}
                     onChange={handleInputChange}
                     className="pl-10 bg-slate-700 border-slate-600 text-white"
                   />

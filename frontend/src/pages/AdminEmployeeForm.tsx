@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
-import { User, Mail, Briefcase, Save, ArrowLeft } from 'lucide-react';
+import { User, Mail, Briefcase, Save, ArrowLeft,Building } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,8 @@ interface Employee {
   name: string;
   email: string;
   role: string;
+  position: string;
+  department: string;
 }
 
 const AdminEmployeeForm: React.FC = () => {
@@ -23,13 +25,15 @@ const AdminEmployeeForm: React.FC = () => {
   const [employee, setEmployee] = useState<Employee>({
     name: '',
     email: '',
-    role: 'Employee'
+    role: 'employee',
+    position: 'Server Engineer',
+    department: 'IT'
   });
 
   useEffect(() => {
     if (isEditMode) {
       // Simulate fetching employee data
-      const dummyEmployee = { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Employee' };
+      const dummyEmployee = { id: 1, name: 'John Doe', email: 'john@example.com', role: 'employee',position:'Server Engineer', department: 'IT' };
       setEmployee(dummyEmployee);
     }
   }, [isEditMode, id]);
@@ -46,6 +50,13 @@ const AdminEmployeeForm: React.FC = () => {
     setEmployee(prev => ({
       ...prev,
       role: value
+    }));
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setEmployee(prev => ({
+      ...prev,
+      [name]: value
     }));
   };
 
@@ -139,6 +150,39 @@ const AdminEmployeeForm: React.FC = () => {
                     name="email"
                     type="email"
                     value={employee.email}
+                    onChange={handleInputChange}
+                    className="pl-10 bg-gray-700 border-gray-600 text-white"
+                  />
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <Label htmlFor="position" className="text-white">Position</Label>
+                <div className="relative">
+                  <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 z-10" />
+                  <Select name="position" value={employee.position} onValueChange={(value) => handleSelectChange('position', value)}>
+                    <SelectTrigger className="pl-10 bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Select a department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="SE">Server Engineer</SelectItem>
+                      <SelectItem value="AD">Android Developer</SelectItem>
+                      <SelectItem value="ID">IOS Developer</SelectItem>
+                      <SelectItem value="HR">Human Resources</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <Label htmlFor="department" className="text-white">Department</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <Input
+                    id="department"
+                    name="department"
+                    type="department"
+                    value={employee.department}
                     onChange={handleInputChange}
                     className="pl-10 bg-gray-700 border-gray-600 text-white"
                   />
