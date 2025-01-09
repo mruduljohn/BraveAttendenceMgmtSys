@@ -27,7 +27,7 @@ def clock_in_out(request):
         employee_id = employee.employee_id
 
         # Check if there's already an open attendance entry
-        open_entry = attendance.objects.filter(employee_id=employee_id, status='Open').first()
+        open_entry = attendance.objects.filter(employee__employee_id=employee_id, status='Open').first()
 
         if 'action' not in request.data:
             return Response({"error": "Action (clock_in/clock_out) is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -69,6 +69,8 @@ def clock_in_out(request):
         return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    
 class AddUserView(APIView):
     def post(self, request):
         serializer = AddUserSerializer(data=request.data)

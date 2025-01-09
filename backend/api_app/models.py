@@ -1,17 +1,18 @@
 from django.db import models
-
-class users(models.Model):
+from django.contrib.auth.models import AbstractUser 
+class users(AbstractUser):
     employee_id = models.AutoField(primary_key=True)  # Auto-incrementing primary key
     username = models.CharField(max_length=255)  # Not nullable
     email = models.EmailField(unique=True)  # Unique and not nullable
-    password_hash = models.TextField()  # Not nullable
+    password= models.TextField()  # Not nullable
     role = models.CharField(max_length=50, null=True, blank=True)  # Nullable
     position = models.CharField(max_length=100, default='Engineer')  # Default value is 'Engineer'
     department = models.CharField(max_length=100, default='Unknown')  # Default value is 'Unknown'
     joined_date = models.DateField()  # Not nullable
     created_at = models.DateTimeField(auto_now_add=True)  # Auto-set timestamp for record creation
     updated_at = models.DateTimeField(auto_now=True)  # Auto-set timestamp for updates
-
+    USERNAME_FIELD='email'
+    REQUIRED_FIELDS=[]
     def __str__(self):
         return self.email
 

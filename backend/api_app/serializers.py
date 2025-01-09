@@ -21,7 +21,7 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("Email doesn't exist")
 
         # Compare the hashed password with the stored password
-        if not self.check_password(password, user.password_hash):
+        if not self.check_password(password, user.password):
             raise serializers.ValidationError("Invalid password")
 
         # Generate JWT token for the authenticated user

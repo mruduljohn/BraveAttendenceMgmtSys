@@ -82,11 +82,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
          'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Test_Server',
+        'NAME': 'postgres',
         'USER': 'postgres',
-        'PASSWORD': '1234',
+        'PASSWORD': 'maluammu',
         'HOST': 'localhost',  # or your database server's address
-        'PORT': '5432',       # Default PostgreSQL port
+        'PORT': '5433',       # Default PostgreSQL port
     }
 }
 
@@ -136,12 +136,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'api_app.users'
 
 from datetime import timedelta
 
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'employee_id',
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
