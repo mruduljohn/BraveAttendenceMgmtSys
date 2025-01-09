@@ -9,6 +9,8 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+import dj_database_url
+import os
 
 from pathlib import Path
 
@@ -80,16 +82,10 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Test_Server',
-        'USER': 'postgres',
-        'PASSWORD': '1234',
-        'HOST': 'localhost',  # or your database server's address
-        'PORT': '5432',       # Default PostgreSQL port
-    }
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL', 'postgres://user:password@db:5432/mydb')
+    )
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
