@@ -52,7 +52,7 @@ class LoginSerializer(serializers.Serializer):
 class AddUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = users
-        fields = ['username', 'email', 'password_hash', 'role', 'position', 'department', 'joined_date']
+        fields = ['username', 'email', 'password', 'role', 'position', 'department', 'joined_date']
 
     def validate_email(self, value):
         # Check if the email already exists
@@ -62,9 +62,9 @@ class AddUserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # Hash the password before saving
-        raw_password = validated_data.pop('password_hash')  # Extract the raw password
+        raw_password = validated_data.pop('password')  # Extract the raw password
         hashed_password = bcrypt.hashpw(raw_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        validated_data['password_hash'] = hashed_password  # Replace with hashed password
+        validated_data['password'] = hashed_password  # Replace with hashed password
 
         # Create the user with the hashed password
         return users.objects.create(**validated_data)
@@ -75,24 +75,15 @@ class AddUserSerializer(serializers.ModelSerializer):
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = attendance
-        fields = ['attendance_id', 'date', 'status', 'total_hours']
+        fields = ['attendance_id','employee_id', 'date', 'status', 'total_hours']
 
 
-# serializers.py
+
 class LeaveRequestSerializer(serializers.ModelSerializer):
-    employee_id = serializers.IntegerField()
-
     class Meta:
         model = leave_requests
-        fields = ['leave_type', 'start_date', 'end_date', 'status', 'employee_id']
-
-    def create(self, validated_data):
-        # Extract and assign employee_id
-        employee_id = validated_data.pop('employee_id')
-
-        # Create the LeaveRequests instance with the employee_id
-        leave_request = leave_requests.objects.create(employee_id=employee_id, **validated_data)
-        return leave_request
+        fields = ['leave_id', 'employee', 'leave_type', 'start_date', 'end_date', 'status', 'created_at', 'updated_at']
+        read_only_fields = ['employee']  # Ensure the employee field is read-only in the response
 
 class FetchLeaveRequestSerializer(serializers.ModelSerializer):
 
@@ -101,8 +92,7 @@ class FetchLeaveRequestSerializer(serializers.ModelSerializer):
         fields = ['leave_type', 'start_date', 'end_date', 'status']
 
 
-from rest_framework import serializers
-from .models import users
+
 
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
