@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { Mail, Lock, LogIn } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -18,13 +18,29 @@ const LoginPage: React.FC = () => {
     setError("");
 
     try {
-      const response = await fakeLogin(email, password);
+      const response = await apiLogin(email, password);
 
       if (response.success) {
-        login(response.role);
-        
-        if (response.role === "admin") navigate("/admin/dashboard");
-        else if (response.role === "manager") navigate("/manager/dashboard");
+        const { access_token, refresh_token, role,employee_id, username, email, position, department, joined_date } = response;
+
+        // Store tokens
+        localStorage.setItem("access_token", access_token);
+        localStorage.setItem("refresh_token", refresh_token);
+
+        login({
+          employee_id,
+          role,
+          username,
+          email,
+          position,
+          department,
+          joined_date,
+          access_token,
+          refresh_token
+        });
+        // Navigate based on role
+        if (role === "admin") navigate("/admin/dashboard");
+        else if (role === "manager") navigate("/manager/dashboard");
         else navigate("/employee/dashboard");
       } else {
         setError("Invalid credentials");
@@ -34,27 +50,49 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  const fakeLogin = (email: string, password: string) => {
-    return new Promise<{ success: boolean; role: string }>((resolve) => {
-      setTimeout(() => {
-        if (email === "admin@test.com" && password === "admin123") {
-          resolve({ success: true, role: "admin" });
-        } else if (email === "manager@test.com" && password === "manager123") {
-          resolve({ success: true, role: "manager" });
-        } else if (email === "employee@test.com" && password === "employee123") {
-          resolve({ success: true, role: "employee" });
-        } else {
-          resolve({ success: false, role: "" });
-        }
-      }, 1000);
-    });
+  const apiLogin = async (email: string, password: string) => {
+    const url = "http://127.0.0.1:8000/api/login/";
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.access_token && data.refresh_token && data.role) {
+        return {
+          success: true,
+          employee_id: data.employee_id,
+          access_token: data.access_token,
+          refresh_token: data.refresh_token,
+          role: data.role,
+          username: data.username,
+          email: data.email,
+          position: data.position,
+          department: data.department,
+          joined_date: data.joined_date
+        };
+      }
+
+      return { success: false };
+    } catch (error) {
+      console.error("Error logging in:", error);
+      throw error;
+    }
   };
 
   return (
     <div className="w-full min-h-screen flex items-center justify-center bg-gray-900">
-      <div 
-        className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900"
-      ></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900"></div>
       <div className="w-full h-full absolute inset-0 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -107,15 +145,13 @@ const LoginPage: React.FC = () => {
               </Button>
             </form>
             <div className="mt-8 text-center space-y-2">
-              <a 
-                href="#" 
+              <a
+                href="#"
                 className="block text-sm text-gray-400 hover:text-aqua-400 transition duration-200"
               >
                 Forgot password?
               </a>
-              <p className="text-gray-400 text-sm">
-                Please Contact the Administrator
-              </p>
+              <p className="text-gray-400 text-sm">Please Contact the Administrator</p>
             </div>
           </div>
         </motion.div>
@@ -125,4 +161,3 @@ const LoginPage: React.FC = () => {
 };
 
 export default LoginPage;
-

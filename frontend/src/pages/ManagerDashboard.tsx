@@ -17,7 +17,7 @@ const ManagerDashboard: React.FC = () => {
   }
 
   // Simulated manager profile data
-  const manager = {
+  const temp = {
     name: "Manager User",
     email: "manager@example.com",
     role: "General Manager",
@@ -120,15 +120,15 @@ const ManagerDashboard: React.FC = () => {
           <h2 className="text-xl font-semibold text-white mb-4">Manager Profile</h2>
           <div className="flex items-center gap-6">
             <img
-              src={manager.profilePicture || "/placeholder-avatar.png"}
+              src={temp.profilePicture || "/placeholder-avatar.png"}
               alt="Profile"
               className="w-20 h-20 rounded-full border-2 border-green-400"
             />
             <div>
-              <h3 className="text-lg font-medium text-white">{manager.name}</h3>
-              <p className="text-blue-300">Email: {manager.email}</p>
-              <p className="text-blue-300">Role: {manager.role}</p>
-              <p className="text-blue-300">Department: {manager.department}</p>
+              <h3 className="text-lg font-medium text-white">{user?.username}</h3>
+              <p className="text-blue-300">Email: {user?.email}</p>
+              <p className="text-blue-300">Role: {user?.role}</p>
+              <p className="text-blue-300">Department: {user?.department}</p>
             </div>
           </div>
           {/* Edit Profile Button */}

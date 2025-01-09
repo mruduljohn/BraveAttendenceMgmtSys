@@ -17,7 +17,7 @@ const AdminDashboard: React.FC = () => {
   }
 
   // Simulated admin profile data
-  const admin = {
+  const temp = {
     name: "Admin User",
     email: "admin@example.com",
     role: "System Administrator",
@@ -115,14 +115,14 @@ const AdminDashboard: React.FC = () => {
           <h2 className="text-xl font-semibold text-white mb-4">Admin Profile</h2>
           <div className="flex items-center gap-6">
             <img
-              src={admin.profilePicture || "/placeholder-avatar.png"}
+              src={temp.profilePicture || "/placeholder-avatar.png"}
               alt="Profile"
               className="w-20 h-20 rounded-full border-2 border-amber-400"
             />
             <div>
-              <h3 className="text-lg font-medium text-white">{admin.name}</h3>
-              <p className="text-slate-400">Email: {admin.email}</p>
-              <p className="text-slate-400">Role: {admin.role}</p>
+              <h3 className="text-lg font-medium text-white">{user?.username}</h3>
+              <p className="text-slate-400">Email: {user?.email}</p>
+              <p className="text-slate-400">Role: {user?.role}</p>
             </div>
           </div>
           {/* Edit Profile Button */}

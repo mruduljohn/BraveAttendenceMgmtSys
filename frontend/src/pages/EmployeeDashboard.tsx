@@ -17,7 +17,7 @@ const EmployeeDashboard: React.FC = () => {
     navigate("/");
   }
 
- // Simulated user profile data
+//  Simulated user profile data
  const user1 = {
     name: "John Doe",
     email: "johndoe@example.com",
@@ -108,9 +108,9 @@ const EmployeeDashboard: React.FC = () => {
               className="w-20 h-20 rounded-full border-2 border-aqua-400"
             />
             <div>
-              <h3 className="text-lg font-medium text-white">{user1?.name || "Employee Name"}</h3>
-              <p className="text-gray-400">Email: {user1?.email || "email@example.com"}</p>
-              <p className="text-gray-400">Role: {user1?.role || "Employee Role"}</p>
+              <h3 className="text-lg font-medium text-white">{user?.username || "Employee Name"}</h3>
+              <p className="text-gray-400">Email: {user?.email || "email@example.com"}</p>
+              <p className="text-gray-400">Role: {user?.role || "Employee Role"}</p>
             </div>
           </div>
           {/* Edit Profile Button */}
