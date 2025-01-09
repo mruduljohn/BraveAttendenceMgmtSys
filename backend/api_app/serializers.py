@@ -4,6 +4,8 @@ from rest_framework import serializers
 from django.contrib.auth.hashers import check_password
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import users
+from .models import attendance
+from .models import leave_requests
 import bcrypt
 
 class LoginSerializer(serializers.Serializer):
@@ -66,3 +68,45 @@ class AddUserSerializer(serializers.ModelSerializer):
 
         # Create the user with the hashed password
         return users.objects.create(**validated_data)
+
+
+
+
+class AttendanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = attendance
+        fields = ['attendance_id', 'date', 'status', 'total_hours']
+
+
+# serializers.py
+class LeaveRequestSerializer(serializers.ModelSerializer):
+    employee_id = serializers.IntegerField()
+
+    class Meta:
+        model = leave_requests
+        fields = ['leave_type', 'start_date', 'end_date', 'status', 'employee_id']
+
+    def create(self, validated_data):
+        # Extract and assign employee_id
+        employee_id = validated_data.pop('employee_id')
+
+        # Create the LeaveRequests instance with the employee_id
+        leave_request = leave_requests.objects.create(employee_id=employee_id, **validated_data)
+        return leave_request
+
+class FetchLeaveRequestSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = leave_requests
+        fields = ['leave_type', 'start_date', 'end_date', 'status']
+
+
+from rest_framework import serializers
+from .models import users
+
+class UpdateUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = users
+        fields = ['username', 'department', 'role', 'position']  # Only the fields we want to allow updating
+
+
