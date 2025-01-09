@@ -6,8 +6,12 @@ from django.utils.timezone import now
 from rest_framework.views import APIView
 from .serializers import AddUserSerializer
 from .serializers import LoginSerializer
-from .models import attendance, users
+from .serializers import AttendanceSerializer
+from .models import attendance, users, leave_requests
 from datetime import datetime
+from .serializers import LeaveRequestSerializer
+from .serializers import FetchLeaveRequestSerializer
+from .serializers import UpdateUserSerializer
 
 @api_view(['POST'])
 def login_view(request):
@@ -78,3 +82,89 @@ class AddUserView(APIView):
             serializer.save()
             return Response({"message": "User created successfully!"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class FetchAttendanceView(APIView):
+    def get(self, request, employee_id):
+        # Filter attendance records by employee_id
+        records = attendance.objects.filter(employee_id=employee_id)
+
+        # If no records are found, return an appropriate message
+        if not records.exists():
+            return Response({"message": "No attendance records found for this employee."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Serialize the data
+        serializer = AttendanceSerializer(records, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+
+# views.py
+class CreateLeaveRequestView(APIView):
+    def post(self, request, *args, **kwargs):
+        data = request.data
+
+        # Validate and process the request data
+        serializer = LeaveRequestSerializer(data=data)
+        if serializer.is_valid():
+            # Save the leave request
+            serializer.save()
+            return Response(
+                {"message": "Leave request created successfully!", "data": serializer.data},
+                status=status.HTTP_201_CREATED
+            )
+
+        # Return validation errors if any
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+# views.py
+class FetchLeaveRequestsView(APIView):
+    def get(self, request, *args, **kwargs):
+        employee_id = request.query_params.get('employee_id')  # Get the employee_id from query params
+
+        if not employee_id:
+            return Response(
+                {"error": "Employee ID is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Fetch leave requests for the given employee_id
+        requests = leave_requests.objects.filter(employee_id=employee_id)
+
+        if not requests.exists():
+            return Response(
+                {"message": "No leave requests found for this employee."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Serialize the data
+        serializer = FetchLeaveRequestSerializer(requests, many=True)
+        return Response(
+            {"employee_id": employee_id, "Leave Requests": serializer.data},
+            status=status.HTTP_200_OK
+        )
+
+
+
+
+class UpdateUserDetailsView(APIView):
+    def patch(self, request, *args, **kwargs):
+        employee_id = request.data.get('employee_id')  # Get employee_id from the request
+
+        if not employee_id:
+            return Response({"error": "Employee ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Fetch the user by employee_id
+            user = users.objects.get(employee_id=employee_id)
+
+            # Serialize the data
+            serializer = UpdateUserSerializer(user, data=request.data, partial=True)  # partial=True for partial updates
+            if serializer.is_valid():
+                serializer.save()  # Save the updated user
+                return Response({"message": "User details updated successfully!", "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except users.DoesNotExist:
+            return Response({"error": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)
