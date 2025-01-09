@@ -18,7 +18,7 @@ const LoginPage: React.FC = () => {
     setError("");
 
     try {
-      const response = await apiLogin(email, password);
+      const response = await fakeLogin(email, password);
 
       if (response.success) {
         login(response.role);
@@ -34,36 +34,21 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  const apiLogin = async (email: string, password: string) => {
-    const url = "https://925e09f3-068a-4a7c-b11b-c99dadb99083.mock.pstmn.io/api/login";
-  
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
-  
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-  
-      const data = await response.json();
-      return {
-        success: data.success,
-        role: data.role,
-      };
-    } catch (error) {
-      console.error("Error logging in:", error);
-      throw error;
-    }
+  const fakeLogin = (email: string, password: string) => {
+    return new Promise<{ success: boolean; role: string }>((resolve) => {
+      setTimeout(() => {
+        if (email === "admin@test.com" && password === "admin123") {
+          resolve({ success: true, role: "admin" });
+        } else if (email === "manager@test.com" && password === "manager123") {
+          resolve({ success: true, role: "manager" });
+        } else if (email === "employee@test.com" && password === "employee123") {
+          resolve({ success: true, role: "employee" });
+        } else {
+          resolve({ success: false, role: "" });
+        }
+      }, 1000);
+    });
   };
-  
 
   return (
     <div className="w-full min-h-screen flex items-center justify-center bg-gray-900">
