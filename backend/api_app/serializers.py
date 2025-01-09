@@ -26,11 +26,37 @@ class LoginSerializer(serializers.Serializer):
 
         # Generate JWT token for the authenticated user
         refresh = RefreshToken.for_user(user)
-        data['access_token'] = str(refresh.access_token)
-        data['refresh_token'] = str(refresh)
+        # data['access_token'] = str(refresh.access_token)
+        # data['refresh_token'] = str(refresh)
 
-        return data
+        return {
+            'message': 'Login successful!',
+            'role': user.role,  # Include the user's role
+            'access_token': str(refresh.access_token),
+            'refresh_token': str(refresh),
+        }
+
 
     def check_password(self, password, password_hash):
         # Assuming bcrypt hash comparison
         return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
+    
+class AddUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = users
+        fields = ['username', 'email', 'password_hash', 'role', 'position', 'department', 'joined_date']
+
+    def validate_email(self, value):
+        # Check if the email already exists
+        if users.objects.filter(email=value).exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return value
+
+    def create(self, validated_data):
+        # Hash the password before saving
+        raw_password = validated_data.pop('password_hash')  # Extract the raw password
+        hashed_password = bcrypt.hashpw(raw_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        validated_data['password_hash'] = hashed_password  # Replace with hashed password
+
+        # Create the user with the hashed password
+        return users.objects.create(**validated_data)
