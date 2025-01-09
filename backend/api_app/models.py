@@ -20,7 +20,7 @@ class attendance(models.Model):
     employee = models.ForeignKey(
         'users',  # Refers to the `users` model
         on_delete=models.CASCADE,
-        db_column='employee_id'  # Ensures the column matches the database schema
+        db_column='employee_id' 
     )
     date = models.DateField()  # Date of attendance
     clock_in_time = models.DateTimeField()  # Not nullable
