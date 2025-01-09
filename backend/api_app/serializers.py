@@ -31,7 +31,13 @@ class LoginSerializer(serializers.Serializer):
 
         return {
             'message': 'Login successful!',
+            'employee_id': user.employee_id,  # Include the user's ID
+            'username': user.username,  # Include the user's username
+            'email': user.email,  # Include the user's email
             'role': user.role,  # Include the user's role
+            'position': user.position,
+            'department': user.department,
+            'joined_date': user.joined_date,
             'access_token': str(refresh.access_token),
             'refresh_token': str(refresh),
         }
