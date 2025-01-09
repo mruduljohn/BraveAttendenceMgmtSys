@@ -3,14 +3,54 @@
 from django.db import models
 
 class users(models.Model):
-    user_id = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=255)
-    email = models.EmailField(unique=True)
-    password_hash = models.TextField()
-    user_role = models.CharField(max_length=50, null=True, blank=True)
-    position_name = models.CharField(max_length=100, default='Engineer')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    employee_id = models.AutoField(primary_key=True)  # Auto-incrementing primary key
+    username = models.CharField(max_length=255)  # Not nullable
+    email = models.EmailField(unique=True)  # Unique and not nullable
+    password_hash = models.TextField()  # Not nullable
+    role = models.CharField(max_length=50, null=True, blank=True)  # Nullable
+    position = models.CharField(max_length=100, default='Engineer')  # Default value is 'Engineer'
+    department = models.CharField(max_length=100, default='Unknown')  # Default value is 'Unknown'
+    joined_date = models.DateField()  # Not nullable
+    created_at = models.DateTimeField(auto_now_add=True)  # Auto-set timestamp for record creation
+    updated_at = models.DateTimeField(auto_now=True)  # Auto-set timestamp for updates
 
     def __str__(self):
         return self.email
+
+class attendance(models.Model):
+    attendance_id = models.AutoField(primary_key=True)  # Auto-incrementing primary key
+    employee = models.ForeignKey(
+        'users',  # Refers to the `users` model
+        on_delete=models.CASCADE,
+        db_column='employee_id'  # Ensures the column matches the database schema
+    )
+    date = models.DateField()  # Date of attendance
+    clock_in_time = models.DateTimeField()  # Not nullable
+    clock_out_time = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=10, default='Open')
+    total_hours = models.FloatField(null=True, blank=True)  # Nullable field
+
+    def __str__(self):
+        # Customize to return a readable string, e.g., "Attendance - Employee ID on Date"
+        return f"Attendance {self.attendance_id} - {self.employee_id} on {self.date}"
+
+
+
+class leave_requests(models.Model):
+
+    leave_id = models.AutoField(primary_key=True)  # Auto-incrementing primary key
+    employee = models.ForeignKey(
+        'users',  # Refers to the `users` model
+        on_delete=models.CASCADE,
+        db_column='employee_id'  # Ensures the column matches the database schema
+    )
+    leave_type = models.CharField(max_length=50)  # Type of leave, e.g., 'sick', 'vacation'
+    start_date = models.DateField()  # Start date of the leave
+    end_date = models.DateField()  # End date of the leave
+    status = models.CharField(max_length=50)  # Leave status, e.g., 'approved', 'pending'
+    created_at = models.DateTimeField(auto_now_add=True)  # Timestamp for record creation
+    updated_at = models.DateTimeField(auto_now=True)  # Timestamp for record update
+
+    def __str__(self):
+        return f"Leave Request {self.leave_id} - {self.employee_id} from {self.start_date} to {self.end_date}"
+

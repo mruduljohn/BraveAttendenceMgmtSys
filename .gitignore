@@ -4,3 +4,5 @@ backend/venv
 __pycache__/
 .venv/
 __pycache__
+migrations/__pycache__/
+db.txt
