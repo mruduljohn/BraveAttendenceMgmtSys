@@ -32,3 +32,8 @@ class IsManagerorEmployee(BasePermission):
         if request.user.role not in ['Employee', 'Manager']:
             raise PermissionDenied("Access denied: Employee or Manager role is required.")
         return request.user.role in ['Employee', 'Manager']
+class IsAdminorEmployee(BasePermission):
+    def has_permission(self, request, view):
+        if request.user.role not in ['Employee', 'Admin']:
+            raise PermissionDenied("Access denied: Employee or Admin role is required.")
+        return request.user.role in ['Employee', 'Admin']

@@ -17,7 +17,9 @@ from .serializers import (
 )
 from .models import attendance, users, leave_requests
 from datetime import datetime
-from .permissions import IsAdmin, IsManager, IsEmployee,IsAdminOrManager,IsManagerorEmployee
+from .permissions import (IsAdmin, IsManager, 
+                          IsEmployee,IsAdminOrManager,
+                          IsManagerorEmployee,IsAdminorEmployee)
 from django.shortcuts import get_object_or_404
 
 def assign_role(user, role):
@@ -37,9 +39,9 @@ def login_view(request):
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-#employee only access-- admin , manger, admin
+#employee only access-- admin , manger, employee
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsManagerorEmployee])
+@permission_classes([IsAuthenticated])
 def clock_in_out(request):
         user = request.user  # Get logged-in user from token
         try:
@@ -107,9 +109,9 @@ class AddUserView(APIView):
             # Custom error message when permission is denied
             return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
 
-#employee only access -- everyone
+#access -- everyone
 class FetchAttendanceView(APIView):
-    @permission_classes([IsAuthenticated,IsEmployee])
+    @permission_classes([IsAuthenticated])
     def get(self, request):
         user = request.user  
         try:
@@ -129,7 +131,7 @@ class FetchAttendanceView(APIView):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated ,IsEmployee])
+@permission_classes([IsAuthenticated ,IsAdminorEmployee])
 #employee , admin
 def create_leave_request(request):
     user = request.user  
@@ -179,7 +181,7 @@ def create_leave_request(request):
 
 class FetchLeaveRequestsView(APIView):
     #admin,employee
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminorEmployee]
 
     def get(self, request, *args, **kwargs):
         # Get the employee_id from the authenticated user's token
@@ -227,11 +229,11 @@ class UpdateUserDetailsView(APIView):
             return Response({"error": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)
         
         
-        #edit, delete ,userlist --> admin
+        
         #fetch all request, fetch all attendance record, accept or reject leave req ---> manager
 
 class EditUserView(APIView):
-    permission_classes = [IsAuthenticated]  # Optional; remove if no authentication is needed for now
+    permission_classes = [IsAuthenticated, IsAdmin]  # Optional; remove if no authentication is needed for now
 
     def patch(self, request, *args, **kwargs):
         try:
@@ -269,7 +271,7 @@ class EditUserView(APIView):
 
 
 class UserListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdmin] 
     def get(self, request, *args, **kwargs):
         try:
             # Fetch all users from the users table
@@ -292,7 +294,7 @@ class UserListView(APIView):
         
 
 class DeleteUserView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdmin] 
     def delete(self, request, *args, **kwargs):
         # Get the employee_id from the request data
         employee_id = request.data.get('employee_id')
@@ -327,7 +329,7 @@ class DeleteUserView(APIView):
         
 
 class FetchAllLeaveRequestsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsManager]
 
     def get(self, request, *args, **kwargs):
         # Fetch leave requests for all employees (no employee_id filter)
@@ -347,7 +349,7 @@ class FetchAllLeaveRequestsView(APIView):
         )
 
 class FetchAllAttendanceRecordsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsManager]
 
     def get(self, request, *args, **kwargs):
         try:
@@ -376,7 +378,7 @@ class FetchAllAttendanceRecordsView(APIView):
 
 
 class AcceptRejectLeaveRequestView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsManager]
 
     def patch(self, request, *args, **kwargs):
         serializer = AcceptRejectLeaveRequestSerializer(data=request.data)
