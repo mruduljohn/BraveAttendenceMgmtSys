@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, User, Mail, Briefcase, Building, Calendar, Camera } from 'lucide-react';
@@ -12,11 +12,10 @@ import LiveTime from "@/components/LiveTime";
 
 const EditProfilePage: React.FC = () => {
   const { user, setUser, accessToken } = useAuth();
-  console.log('setUser:', setUser);
   const navigate = useNavigate();
 
-  // Simulated user profile data
-  const [user1, setUser1] = useState({
+  // Initialize state with user data
+  const [profileData, setProfileData] = useState({
     employee_id: user?.employee_id || 0,
     role: user?.role || "",
     username: user?.username || "",
@@ -24,19 +23,27 @@ const EditProfilePage: React.FC = () => {
     position: user?.position || "",
     department: user?.department || "",
     joined_date: user?.joined_date || "",
-    profilePicture: "https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg",
+    profilePicture: user?.profilePicture || "https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg",
   });
+
+  // Protect the route
+  useEffect(() => {
+    if (!user || user.role !== "employee") {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setUser1(prevUser => ({
-      ...prevUser,
+    setProfileData(prev => ({
+      ...prev,
       [name]: value
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     try {
       const response = await fetch(
         "http://127.0.0.1:8000/api/update_user_details/",
@@ -46,20 +53,31 @@ const EditProfilePage: React.FC = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
-          body: JSON.stringify(user1),
+          body: JSON.stringify(profileData),
         }
       );
 
-      
       if (!response.ok) {
-        throw new Error("Failed to update profile.");
+        throw new Error(`Failed to update profile: ${response.statusText}`);
       }
-      console.log("Profile updated successfully!");
-      const updatedData = await response.json(); // Ensure backend returns updated user info
-      console.log("Updated Data:", updatedData);
-      setUser1(updatedData); // Update local state
-      console.log('User:', user?.username);
-      //setUser(user1); // Update global state
+
+      const result = await response.json();
+      console.log("Full API response:", result);
+
+      const updatedData = result.data;
+      console.log("Extracted updated data:", updatedData);
+
+      console.log("User state before update:", user);
+      // Update both local and global state
+      setProfileData(updatedData);
+      setUser(prevUser=> {
+        const newUser = { ...prevUser, ...updatedData };
+        console.log('New user state:', newUser);
+        return newUser;
+      });
+
+      console.log("User state after update:", user);
+      // Navigate after successful update
       navigate("/employee/dashboard");
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -72,19 +90,14 @@ const EditProfilePage: React.FC = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setUser1(prevUser => ({
-          ...prevUser,
+        setProfileData(prev => ({
+          ...prev,
           profilePicture: reader.result as string
         }));
       };
       reader.readAsDataURL(file);
     }
   };
-
-  if (user?.role !== "employee") {
-    navigate("/");
-    return null;
-  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -104,15 +117,14 @@ const EditProfilePage: React.FC = () => {
     },
   };
 
+  // Return null if user is not authorized
+  if (!user || user.role !== "employee") {
+    return null;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-900">
-      <div 
-        className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }}
-      ></div>
-      
+      {/* Rest of the JSX remains the same */}
       <header className="relative z-10 bg-gray-800/50 backdrop-blur-lg border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
@@ -146,7 +158,7 @@ const EditProfilePage: React.FC = () => {
               <motion.div variants={itemVariants} className="flex items-center justify-center">
                 <div className="relative">
                   <img
-                    src={user1.profilePicture}
+                    src={profileData.profilePicture}
                     alt="Profile"
                     className="w-32 h-32 rounded-full border-2 border-aqua-400"
                   />
@@ -170,7 +182,7 @@ const EditProfilePage: React.FC = () => {
                   <Input
                     id="username"
                     name="username"
-                    value={user1.username}
+                    value={profileData.username}
                     onChange={handleInputChange}
                     className="pl-10 bg-gray-700 border-gray-600 text-white"
                   />
@@ -185,9 +197,8 @@ const EditProfilePage: React.FC = () => {
                     id="email"
                     name="email"
                     type="email"
-                    value={user1.email}
+                    value={profileData.email}
                     readOnly
-                    // onChange={handleInputChange}
                     className="pl-10 bg-gray-700 border-gray-600 text-white"
                   />
                 </div>
@@ -200,7 +211,7 @@ const EditProfilePage: React.FC = () => {
                   <Input
                     id="position"
                     name="position"
-                    value={user1.position}
+                    value={profileData.position}
                     onChange={handleInputChange}
                     className="pl-10 bg-gray-700 border-gray-600 text-white"
                   />
@@ -214,7 +225,7 @@ const EditProfilePage: React.FC = () => {
                   <Input
                     id="department"
                     name="department"
-                    value={user1.department}
+                    value={profileData.department}
                     onChange={handleInputChange}
                     className="pl-10 bg-gray-700 border-gray-600 text-white"
                   />
@@ -222,13 +233,13 @@ const EditProfilePage: React.FC = () => {
               </motion.div>
 
               <motion.div variants={itemVariants}>
-                <Label htmlFor="joinedDate" className="text-white">Joined Date</Label>
+                <Label htmlFor="joined_date" className="text-white">Joined Date</Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <Input
-                    id="joinedDate"
-                    name="joinedDate"
-                    value={user1.joined_date}
+                    id="joined_date"
+                    name="joined_date"
+                    value={profileData.joined_date}
                     readOnly
                     className="pl-10 bg-gray-700 border-gray-600 text-white"
                   />
@@ -258,4 +269,3 @@ const EditProfilePage: React.FC = () => {
 };
 
 export default EditProfilePage;
-

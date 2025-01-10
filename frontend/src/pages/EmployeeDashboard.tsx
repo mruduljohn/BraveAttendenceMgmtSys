@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Clock, Calendar, FileText, LogOut } from 'lucide-react';
@@ -8,25 +8,18 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import LiveTime from "@/components/LiveTime";
 
-
 const EmployeeDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  if (user?.role !== "employee") {
-    navigate("/");
-  }
+  console.log("User in Dashboard ", user);
 
-//  Simulated user profile data
- const user1 = {
-    name: "John Doe",
-    email: "johndoe@example.com",
-    role: "Software Engineer",
-    department: "IT",
-    joinedDate: "March 15, 2022",
-    profilePicture: "https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg",
-    
-  };
+  // Protect the route
+  useEffect(() => {
+    if (!user || user.role !== "employee") {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const cards = [
     {
@@ -70,13 +63,17 @@ const EmployeeDashboard: React.FC = () => {
     },
   };
 
+  // Return null if user is not authenticated
+  if (!user) {
+    return null;
+  }
+
   return (
-    
     <div className="min-h-screen flex flex-col bg-gray-900">
       <div 
         className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }}
       ></div>
       
@@ -97,20 +94,21 @@ const EmployeeDashboard: React.FC = () => {
         </div>
       </header>
     
-     {/* Employee Profile Section */}
-     <section className="relative z-10 p-6">
+      {/* Employee Profile Section */}
+      <section className="relative z-10 p-6">
         <div className="max-w-7xl mx-auto bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-lg p-6">
           <h2 className="text-xl font-semibold text-white mb-4">Your Profile</h2>
           <div className="flex items-center gap-6">
             <img
-              src={user1?.profilePicture || "/placeholder-avatar.png"} // Replace with user's profile picture URL
+              src={"https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg"}
               alt="Profile"
               className="w-20 h-20 rounded-full border-2 border-aqua-400"
             />
             <div>
-              <h3 className="text-lg font-medium text-white">{user?.username || "Employee Name"}</h3>
-              <p className="text-gray-400">Email: {user?.email || "email@example.com"}</p>
-              <p className="text-gray-400">Role: {user?.role || "Employee Role"}</p>
+              <h3 className="text-lg font-medium text-white">{user.username}</h3>
+              <p className="text-gray-400">Email: {user.email}</p>
+              <p className="text-gray-400">Position: {user.position}</p>
+              <p className="text-gray-400">Department: {user.department}</p>
             </div>
           </div>
           {/* Edit Profile Button */}
@@ -124,7 +122,6 @@ const EmployeeDashboard: React.FC = () => {
           </div>
         </div>
       </section>
-
 
       <main className="relative z-10 flex-grow p-6">
         <div className="max-w-7xl mx-auto">
@@ -162,7 +159,7 @@ const EmployeeDashboard: React.FC = () => {
 
       <footer className="relative z-10 bg-gray-800/50 backdrop-blur-lg border-t border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-4 text-center text-gray-400">
-          <LiveTime />  
+          <LiveTime />
         </div>
       </footer>
     </div>
@@ -170,4 +167,3 @@ const EmployeeDashboard: React.FC = () => {
 };
 
 export default EmployeeDashboard;
-

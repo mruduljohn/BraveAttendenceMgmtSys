@@ -3,8 +3,8 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 // Define types
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: User | null; // User object or null
-  setUser: (user: User) => void;
+  user: User | null;
+  setUser: (user: User | null) => void; // Updated to handle null case
   accessToken: string | null;
   refreshToken: string | null;
   login: (userDetails: UserDetails) => void;
@@ -84,7 +84,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, accessToken, refreshToken, login, logout }}>
+    <AuthContext.Provider 
+      value={{ 
+        isAuthenticated, 
+        user, 
+        setUser, // Added setUser to the context value
+        accessToken, 
+        refreshToken, 
+        login, 
+        logout 
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -94,8 +104,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    console.error("AuthContext is missing, ensure the component is wrapped with AuthProvider.");
+    console.error("AuthContext is missing, ensure the component is wrapped with AuthProvider");
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
+
+export default AuthProvider;
