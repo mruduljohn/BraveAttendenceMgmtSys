@@ -9,9 +9,12 @@ from .serializers import LoginSerializer
 from .serializers import AttendanceSerializer
 from .models import attendance, users, leave_requests
 from datetime import datetime
-from .serializers import LeaveRequestSerializer
+from .serializers import user_details
 from .serializers import FetchLeaveRequestSerializer
 from .serializers import UpdateUserSerializer
+from .serializers import EditUserSerializer
+
+import bcrypt
 
 @api_view(['POST'])
 def login_view(request):
@@ -197,3 +200,99 @@ class UpdateUserDetailsView(APIView):
 
         except users.DoesNotExist:
             return Response({"error": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+
+class EditUserView(APIView):
+    permission_classes = [IsAuthenticated]  # Optional; remove if no authentication is needed for now
+
+    def patch(self, request, *args, **kwargs):
+        try:
+            # Extract employee_id from the request data
+            employee_id = request.data.get('employee_id')
+
+            if not employee_id:
+                return Response({"error": "Employee ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Fetch the user by employee_id
+            user = users.objects.get(employee_id=employee_id)
+
+            # Check if a new password is provided, hash it
+            raw_password = request.data.get('password')
+            if raw_password:
+                hashed_password = bcrypt.hashpw(raw_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                request.data['password'] = hashed_password  # Replace raw password with hashed password in the request data
+
+            # Serialize the data
+            serializer = EditUserSerializer(user, data=request.data, partial=True)  # partial=True allows updating specific fields
+            if serializer.is_valid():
+                serializer.save()  # Save the updated user
+                return Response(
+                    {"message": "User details updated successfully!", "data": serializer.data},
+                    status=status.HTTP_200_OK
+                )
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except users.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+class UserListView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, *args, **kwargs):
+        try:
+            # Fetch all users from the users table
+            user_list = users.objects.all()
+
+            # Serialize the data
+            serializer = user_details(user_list, many=True)
+
+            # Return the serialized data
+            return Response(
+                {"message": "User list fetched successfully!", "data": serializer.data},
+                status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+
+class DeleteUserView(APIView):
+    permission_classes = [IsAuthenticated]
+    def delete(self, request, *args, **kwargs):
+        # Get the employee_id from the request data
+        employee_id = request.data.get('employee_id')
+
+        if not employee_id:
+            return Response(
+                {"error": "Employee ID is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Fetch the user by employee_id
+            user = users.objects.get(employee_id=employee_id)
+            
+            # Delete the user
+            user.delete()
+            
+            return Response(
+                {"message": f"User with employee_id {employee_id} has been deleted successfully!"},
+                status=status.HTTP_200_OK
+            )
+        except users.DoesNotExist:
+            return Response(
+                {"error": f"No user found with employee_id {employee_id}."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

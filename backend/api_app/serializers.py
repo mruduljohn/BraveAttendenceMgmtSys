@@ -100,3 +100,15 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         fields = ['username', 'department', 'role', 'position']  # Only the fields we want to allow updating
 
 
+class EditUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = users
+        fields = ['employee_id','username', 'email', 'password', 'department', 'role', 'position']  # Only the fields we want to allow updating
+        extra_kwargs = {
+            'password': {'write_only': True},  # Ensures the password isn't returned in responses
+        }
+
+class user_details(serializers.ModelSerializer):
+    class Meta:
+        model = users
+        fields = ['username', 'email', 'role', 'position', 'department', 'joined_date']  # Only the fields we want to return

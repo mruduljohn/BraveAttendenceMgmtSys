@@ -5,6 +5,8 @@ from .views import AddUserView
 from .views import FetchAttendanceView
 from .views import FetchLeaveRequestsView
 from .views import UpdateUserDetailsView
+from .views import DeleteUserView
+
 
 urlpatterns = [
     path('login/', views.login_view, name='login'),
@@ -16,4 +18,7 @@ urlpatterns = [
     path('create_leave_requests/', views.create_leave_request, name='create_leave_requests'),
     path('fetch_leave_requests/', FetchLeaveRequestsView.as_view(), name='fetch_leave_requests'),
     path('update_user_details/', UpdateUserDetailsView.as_view(), name='update_user_details'),
+    path('edit_user/', views.EditUserView.as_view(), name='edit_user'),
+    path('user_list/', views.UserListView.as_view(), name='user_list'),
+    path('delete_user/', DeleteUserView.as_view(), name='delete_user'),
 ]
