@@ -11,33 +11,60 @@ import { Textarea } from "@/components/ui/textarea";
 import LiveTime from "@/components/LiveTime";
 
 const EditProfilePage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, setUser, accessToken } = useAuth();
+  console.log('setUser:', setUser);
   const navigate = useNavigate();
 
   // Simulated user profile data
-  const [user1, setUser] = useState({
-    name: "John Doe",
-    email: "johndoe@example.com",
-    position: "Software Engineer",
-    department: "IT",
-    joinedDate: "March 15, 2022",
+  const [user1, setUser1] = useState({
+    employee_id: user?.employee_id || 0,
+    role: user?.role || "",
+    username: user?.username || "",
+    email: user?.email || "",
+    position: user?.position || "",
+    department: user?.department || "",
+    joined_date: user?.joined_date || "",
     profilePicture: "https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setUser(prevUser => ({
+    setUser1(prevUser => ({
       ...prevUser,
       [name]: value
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the updated user data to your backend
-    console.log("Updated user data:", user);
-    // After successful update, navigate back to the dashboard
-    navigate("/employee/dashboard");
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/update_user_details/",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(user1),
+        }
+      );
+
+      
+      if (!response.ok) {
+        throw new Error("Failed to update profile.");
+      }
+      console.log("Profile updated successfully!");
+      const updatedData = await response.json(); // Ensure backend returns updated user info
+      console.log("Updated Data:", updatedData);
+      setUser1(updatedData); // Update local state
+      console.log('User:', user?.username);
+      //setUser(user1); // Update global state
+      navigate("/employee/dashboard");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("There was an issue updating your profile. Please try again.");
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,7 +72,7 @@ const EditProfilePage: React.FC = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setUser(prevUser => ({
+        setUser1(prevUser => ({
           ...prevUser,
           profilePicture: reader.result as string
         }));
@@ -137,13 +164,13 @@ const EditProfilePage: React.FC = () => {
               </motion.div>
 
               <motion.div variants={itemVariants}>
-                <Label htmlFor="name" className="text-white">Name</Label>
+                <Label htmlFor="username" className="text-white">Name</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <Input
-                    id="name"
-                    name="name"
-                    value={user1.name}
+                    id="username"
+                    name="username"
+                    value={user1.username}
                     onChange={handleInputChange}
                     className="pl-10 bg-gray-700 border-gray-600 text-white"
                   />
@@ -159,7 +186,8 @@ const EditProfilePage: React.FC = () => {
                     name="email"
                     type="email"
                     value={user1.email}
-                    onChange={handleInputChange}
+                    readOnly
+                    // onChange={handleInputChange}
                     className="pl-10 bg-gray-700 border-gray-600 text-white"
                   />
                 </div>
@@ -200,8 +228,8 @@ const EditProfilePage: React.FC = () => {
                   <Input
                     id="joinedDate"
                     name="joinedDate"
-                    value={user1.joinedDate}
-                    onChange={handleInputChange}
+                    value={user1.joined_date}
+                    readOnly
                     className="pl-10 bg-gray-700 border-gray-600 text-white"
                   />
                 </div>
