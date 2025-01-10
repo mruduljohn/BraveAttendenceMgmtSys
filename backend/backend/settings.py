@@ -82,14 +82,13 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
          'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
+        'NAME': 'Test_Server',
         'USER': 'postgres',
-        'PASSWORD': 'maluammu',
+        'PASSWORD': '1234',
         'HOST': 'localhost',  # or your database server's address
-        'PORT': '5433',       # Default PostgreSQL port
+        'PORT': '5432',       # Default PostgreSQL port
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
