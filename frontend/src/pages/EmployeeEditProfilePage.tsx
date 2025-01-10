@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import LiveTime from "@/components/LiveTime";
 
 const EditProfilePage: React.FC = () => {
-  const { user, setUser, accessToken } = useAuth();
+  const { user, updateUser, accessToken } = useAuth();
   const navigate = useNavigate();
 
   // Initialize state with user data
@@ -70,13 +70,7 @@ const EditProfilePage: React.FC = () => {
       console.log("User state before update:", user);
       // Update both local and global state
       setProfileData(updatedData);
-      setUser(prevUser=> {
-        const newUser = { ...prevUser, ...updatedData };
-        console.log('New user state:', newUser);
-        return newUser;
-      });
-
-      console.log("User state after update:", user);
+      updateUser(updatedData);
       // Navigate after successful update
       navigate("/employee/dashboard");
     } catch (error) {
@@ -84,6 +78,10 @@ const EditProfilePage: React.FC = () => {
       alert("There was an issue updating your profile. Please try again.");
     }
   };
+
+  // useEffect(() => {
+  //   updateUser(profileData);
+  // }, [profileData, updateUser]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

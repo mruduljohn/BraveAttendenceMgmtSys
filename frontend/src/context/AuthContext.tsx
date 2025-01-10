@@ -9,6 +9,7 @@ interface AuthContextType {
   refreshToken: string | null;
   login: (userDetails: UserDetails) => void;
   logout: () => void;
+  updateUser: (userUpdates: Partial<User>) => void; // Added updateUser to the context value
 }
 
 interface User {
@@ -83,12 +84,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.removeItem("user");
   };
 
+  // Added updateUser to partially update user information
+  const updateUser = (userUpdates: Partial<User>) => {
+    setUser((prevUser) => {
+      if (prevUser) {
+        // Merging the previous user state with the updated fields
+        const updatedUser = { ...prevUser, ...userUpdates };
+        // Update user data in localStorage
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        return updatedUser;
+      }
+      return prevUser;
+    });
+  };
+
+
   return (
     <AuthContext.Provider 
       value={{ 
         isAuthenticated, 
         user, 
         setUser, // Added setUser to the context value
+        updateUser,
         accessToken, 
         refreshToken, 
         login, 
