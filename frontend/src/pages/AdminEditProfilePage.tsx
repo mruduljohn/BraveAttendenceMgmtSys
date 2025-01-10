@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect,useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, User, Mail, Briefcase, Building, Calendar, Camera, Shield } from 'lucide-react';
@@ -11,54 +11,87 @@ import { Textarea } from "@/components/ui/textarea";
 import LiveTime from "@/components/LiveTime";
 
 const AdminEditProfilePage: React.FC = () => {
-  const { user } = useAuth();
+  const { user,updateUser,accessToken } = useAuth();
   const navigate = useNavigate();
 
-  // Simulated admin profile data
-  const [admin, setAdmin] = useState({
-    name: "Admin User",
-    email: "admin@example.com",
-    position: "System Administrator",
-    department: "IT Administration",
-    joinedDate: "January 1, 2020",
-    accessLevel: "Full Access",
-    profilePicture: "https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg",
-  });
+  // Initialize state with user data
+    const [profileData, setProfileData] = useState({
+      employee_id: user?.employee_id || 0,
+      role: user?.role || "",
+      username: user?.username || "",
+      email: user?.email || "",
+      position: user?.position || "",
+      department: user?.department || "",
+      joined_date: user?.joined_date || "",
+      profilePicture: user?.profilePicture || "https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg",
+    });
+
+    // Protect the route
+      useEffect(() => {
+        if (!user || user.role !== "admin") {
+          navigate("/");
+        }
+      }, [user, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setAdmin(prevAdmin => ({
-      ...prevAdmin,
+    setProfileData(prev => ({
+      ...prev,
       [name]: value
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Here you would typically send the updated admin data to your backend
-    console.log("Updated admin data:", admin);
-    // After successful update, navigate back to the dashboard
-    navigate("/admin/dashboard");
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      
+      try {
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/update_user_details/",
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(profileData),
+          }
+        );
+  
+        if (!response.ok) {
+          throw new Error(`Failed to update profile: ${response.statusText}`);
+        }
+  
+        const result = await response.json();
+        console.log("Full API response:", result);
+  
+        const updatedData = result.data;
+        console.log("Extracted updated data:", updatedData);
+  
+        console.log("User state before update:", user);
+        // Update both local and global state
+        setProfileData(updatedData);
+        updateUser(updatedData);
+        // Navigate after successful update
+        navigate("/admin/dashboard");
+      } catch (error) {
+        console.error("Error updating profile:", error);
+        alert("There was an issue updating your profile. Please try again.");
+      }
+    };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setAdmin(prevAdmin => ({
-          ...prevAdmin,
+        setProfileData(prev => ({
+          ...prev,
           profilePicture: reader.result as string
         }));
       };
       reader.readAsDataURL(file);
     }
   };
-
-  if (user?.role !== "admin") {
-    navigate("/");
-    return null;
-  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -77,6 +110,11 @@ const AdminEditProfilePage: React.FC = () => {
       y: 0,
     },
   };
+
+    // Return null if user is not authorized
+    if (!user || user.role !== "admin") {
+      return null;
+    }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-900">
@@ -120,7 +158,7 @@ const AdminEditProfilePage: React.FC = () => {
               <motion.div variants={itemVariants} className="flex items-center justify-center">
                 <div className="relative">
                   <img
-                    src={admin.profilePicture}
+                    src={profileData.profilePicture}
                     alt="Profile"
                     className="w-32 h-32 rounded-full border-2 border-amber-400"
                   />
@@ -138,13 +176,13 @@ const AdminEditProfilePage: React.FC = () => {
               </motion.div>
 
               <motion.div variants={itemVariants}>
-                <Label htmlFor="name" className="text-white">Name</Label>
+                <Label htmlFor="username" className="text-white">Name</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                   <Input
-                    id="name"
-                    name="name"
-                    value={admin.name}
+                    id="username"
+                    name="username"
+                    value={profileData.username}
                     onChange={handleInputChange}
                     className="pl-10 bg-slate-700 border-slate-600 text-white"
                   />
@@ -159,8 +197,8 @@ const AdminEditProfilePage: React.FC = () => {
                     id="email"
                     name="email"
                     type="email"
-                    value={admin.email}
-                    onChange={handleInputChange}
+                    value={profileData.email}
+                    readOnly
                     className="pl-10 bg-slate-700 border-slate-600 text-white"
                   />
                 </div>
@@ -173,7 +211,7 @@ const AdminEditProfilePage: React.FC = () => {
                   <Input
                     id="position"
                     name="position"
-                    value={admin.position}
+                    value={profileData.position}
                     onChange={handleInputChange}
                     className="pl-10 bg-slate-700 border-slate-600 text-white"
                   />
@@ -187,7 +225,7 @@ const AdminEditProfilePage: React.FC = () => {
                   <Input
                     id="department"
                     name="department"
-                    value={admin.department}
+                    value={profileData.department}
                     onChange={handleInputChange}
                     className="pl-10 bg-slate-700 border-slate-600 text-white"
                   />
@@ -201,8 +239,8 @@ const AdminEditProfilePage: React.FC = () => {
                   <Input
                     id="joinedDate"
                     name="joinedDate"
-                    value={admin.joinedDate}
-                    onChange={handleInputChange}
+                    value={profileData.joined_date}
+                    readOnly
                     className="pl-10 bg-slate-700 border-slate-600 text-white"
                   />
                 </div>
@@ -215,8 +253,8 @@ const AdminEditProfilePage: React.FC = () => {
                   <Input
                     id="accessLevel"
                     name="accessLevel"
-                    value={admin.accessLevel}
-                    onChange={handleInputChange}
+                    value={profileData.role}
+                    readOnly
                     className="pl-10 bg-slate-700 border-slate-600 text-white"
                   />
                 </div>
