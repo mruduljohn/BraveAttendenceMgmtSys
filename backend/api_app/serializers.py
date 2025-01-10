@@ -1,7 +1,7 @@
 # api_app/serializers.py
 
 from rest_framework import serializers
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password,make_password
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import users
 from .models import attendance
@@ -47,12 +47,16 @@ class LoginSerializer(serializers.Serializer):
 
     def check_password(self, password, password_hash):
         # Assuming bcrypt hash comparison
-        return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
+        return check_password(password, password_hash)
     
 class AddUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = users
         fields = ['username', 'email', 'password', 'role', 'position', 'department', 'joined_date']
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'username': {'required': True},  # Mark username as required
+        }
 
     def validate_email(self, value):
         # Check if the email already exists
@@ -62,12 +66,10 @@ class AddUserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # Hash the password before saving
-        raw_password = validated_data.pop('password')  # Extract the raw password
-        hashed_password = bcrypt.hashpw(raw_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        validated_data['password'] = hashed_password  # Replace with hashed password
-
-        # Create the user with the hashed password
-        return users.objects.create(**validated_data)
+         raw_password = validated_data.pop('password')
+         hashed_password = make_password(raw_password)  # This handles the bcrypt hashing
+         validated_data['password'] = hashed_password 
+         return users.objects.create(**validated_data)
 
 
 
@@ -97,6 +99,8 @@ class FetchLeaveRequestSerializer(serializers.ModelSerializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = users
-        fields = ['username', 'department', 'role', 'position']  # Only the fields we want to allow updating
-
+        fields = ['username', 'email', 'role', 'position', 'department']
+        extra_kwargs = {
+            'username': {'required': True},  # Ensure username is always required
+        }
 

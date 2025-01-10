@@ -1,18 +1,30 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser 
+from django.utils import timezone
 class users(AbstractUser):
-    employee_id = models.AutoField(primary_key=True)  # Auto-incrementing primary key
-    username = models.CharField(max_length=255)  # Not nullable
-    email = models.EmailField(unique=True)  # Unique and not nullable
-    password= models.TextField()  # Not nullable
-    role = models.CharField(max_length=50, null=True, blank=True)  # Nullable
-    position = models.CharField(max_length=100, default='Engineer')  # Default value is 'Engineer'
-    department = models.CharField(max_length=100, default='Unknown')  # Default value is 'Unknown'
-    joined_date = models.DateField()  # Not nullable
-    created_at = models.DateTimeField(auto_now_add=True)  # Auto-set timestamp for record creation
-    updated_at = models.DateTimeField(auto_now=True)  # Auto-set timestamp for updates
-    USERNAME_FIELD='email'
-    REQUIRED_FIELDS=[]
+    class Roles(models.TextChoices):
+        ADMIN = 'Admin', 'Admin'
+        MANAGER = 'Manager', 'Manager'
+        EMPLOYEE = 'Employee', 'Employee'
+
+    employee_id = models.AutoField(primary_key=True)
+    username = models.CharField(max_length=255)
+    email = models.EmailField(unique=True)
+    password = models.TextField()
+    role = models.CharField(
+        max_length=50, 
+        choices=Roles.choices, 
+        default=Roles.EMPLOYEE
+    )
+    position = models.CharField(max_length=100, default='Engineer')
+    department = models.CharField(max_length=100, default='Unknown')
+    joined_date = models.DateField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username','employee_id']
+
     def __str__(self):
         return self.email
 

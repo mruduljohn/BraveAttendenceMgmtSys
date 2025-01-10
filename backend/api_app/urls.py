@@ -9,7 +9,6 @@ from .views import UpdateUserDetailsView
 urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('attendance/clock_in_out/', views.clock_in_out, name='clock_in_out'),
-
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('add_user/', AddUserView.as_view(), name='add_user'),
     path('fetch_attendance/', FetchAttendanceView.as_view(), name='fetch_attendance'),

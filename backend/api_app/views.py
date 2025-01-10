@@ -4,15 +4,28 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.utils.timezone import now
 from rest_framework.views import APIView
-from .serializers import AddUserSerializer
-from .serializers import LoginSerializer
-from .serializers import AttendanceSerializer
+from .serializers import (
+    AddUserSerializer,
+    LoginSerializer,
+    AttendanceSerializer,
+    LeaveRequestSerializer,
+    FetchLeaveRequestSerializer,
+    UpdateUserSerializer,
+)
 from .models import attendance, users, leave_requests
 from datetime import datetime
-from .serializers import LeaveRequestSerializer
-from .serializers import FetchLeaveRequestSerializer
-from .serializers import UpdateUserSerializer
+from .permissions import IsAdmin, IsManager, IsEmployee,IsAdminOrManager,IsManagerorEmployee
+from django.shortcuts import get_object_or_404
 
+def assign_role(user, role):
+    """
+    Assign a role dynamically to a user.
+    """
+    user.role = role
+    user.save()
+    return user
+
+#everyone can access
 @api_view(['POST'])
 def login_view(request):
     if request.method == 'POST':
@@ -21,8 +34,9 @@ def login_view(request):
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+#employee only access-- admin , manger, admin
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsManagerorEmployee])
 def clock_in_out(request):
         user = request.user  # Get logged-in user from token
         try:
@@ -74,17 +88,25 @@ def clock_in_out(request):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    
+#admin only access   
 class AddUserView(APIView):
+    permission_classes = [IsAdmin]
     def post(self, request):
         serializer = AddUserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "User created successfully!"}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            # Your logic here
+            serializer = AddUserSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "User created successfully!"}, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except PermissionDenied as e:
+            # Custom error message when permission is denied
+            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
 
+#employee only access -- everyone
 class FetchAttendanceView(APIView):
-    @permission_classes([IsAuthenticated])
+    @permission_classes([IsAuthenticated,IsEmployee])
     def get(self, request):
         user = request.user  
         try:
@@ -104,7 +126,8 @@ class FetchAttendanceView(APIView):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated ,IsEmployee])
+#employee , admin
 def create_leave_request(request):
     user = request.user  
 
@@ -152,6 +175,7 @@ def create_leave_request(request):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  
 
 class FetchLeaveRequestsView(APIView):
+    #admin,employee
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -177,6 +201,7 @@ class FetchLeaveRequestsView(APIView):
 
 
 class UpdateUserDetailsView(APIView):
+    #everyone
     permission_classes = [IsAuthenticated]
     def patch(self, request, *args, **kwargs):
         employee_id = request.user.employee_id   #
@@ -197,3 +222,7 @@ class UpdateUserDetailsView(APIView):
 
         except users.DoesNotExist:
             return Response({"error": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        
+        #edit, delete ,userlist --> admin
+        #fetch all request, fetch all attendance record, accept or reject leave req ---> manager
