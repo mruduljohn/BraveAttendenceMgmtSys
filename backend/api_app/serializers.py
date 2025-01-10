@@ -112,3 +112,37 @@ class user_details(serializers.ModelSerializer):
     class Meta:
         model = users
         fields = ['username', 'email', 'role', 'position', 'department', 'joined_date']  # Only the fields we want to return
+
+class FetchAllAttendanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = attendance  # Replace with the name of your attendance model
+        fields = '__all__'  # Include all fields or specify the required fields
+
+
+
+class AcceptRejectLeaveRequestSerializer(serializers.Serializer):
+    employee_id = serializers.IntegerField(required=True)
+    action = serializers.ChoiceField(choices=["approve", "reject"], required=True)
+
+    def validate_employee_id(self, value):
+        # Check if the employee has a leave request
+        if not leave_requests.objects.filter(employee_id=value).exists():
+            raise serializers.ValidationError("No leave request found for the given employee ID.")
+        return value
+
+    def update_status(self):
+        """
+        Updates the status of the leave request based on the provided employee_id and action.
+        """
+        validated_data = self.validated_data
+        employee_id = validated_data['employee_id']
+        action = validated_data['action']
+
+        # Fetch the most recent leave request for the employee
+        leave_request = leave_requests.objects.filter(employee_id=employee_id).last()
+
+        if leave_request:
+            leave_request.status = "Approved" if action == "approve" else "Rejected"
+            leave_request.save()
+            return leave_request
+        raise serializers.ValidationError("Leave request not found.")

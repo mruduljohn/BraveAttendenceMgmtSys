@@ -21,4 +21,7 @@ urlpatterns = [
     path('edit_user/', views.EditUserView.as_view(), name='edit_user'),
     path('user_list/', views.UserListView.as_view(), name='user_list'),
     path('delete_user/', DeleteUserView.as_view(), name='delete_user'),
+    path('fetch_all_leave_requests/', views.FetchAllLeaveRequestsView.as_view(), name='fetch_all_leave_requests'),
+    path('fetch_all_attendance_records/', views.FetchAllAttendanceRecordsView.as_view(), name='fetch_all_attendance_records'),
+    path('accept_reject_leave_request/', views.AcceptRejectLeaveRequestView.as_view(), name='accept_reject_leave_request'),
 ]

@@ -13,7 +13,7 @@ from .serializers import user_details
 from .serializers import FetchLeaveRequestSerializer
 from .serializers import UpdateUserSerializer
 from .serializers import EditUserSerializer
-
+from .serializers import AcceptRejectLeaveRequestSerializer
 import bcrypt
 
 @api_view(['POST'])
@@ -296,3 +296,70 @@ class DeleteUserView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+        
+
+class FetchAllLeaveRequestsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        # Fetch leave requests for all employees (no employee_id filter)
+        requests = leave_requests.objects.all()
+
+        if not requests.exists():
+            return Response(
+                {"message": "No leave requests found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Serialize the data
+        serializer = FetchLeaveRequestSerializer(requests, many=True)
+        return Response(
+            {"Leave Requests": serializer.data},
+            status=status.HTTP_200_OK
+        )
+
+class FetchAllAttendanceRecordsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            # Fetch all attendance records
+            attendance_records = attendance.objects.all()
+
+            if not attendance_records.exists():
+                return Response(
+                    {"message": "No attendance records found."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Serialize the data
+            serializer = AttendanceSerializer(attendance_records, many=True)
+            return Response(
+                {"message": "Attendance records fetched successfully!", "data": serializer.data},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+
+
+
+class AcceptRejectLeaveRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, *args, **kwargs):
+        serializer = AcceptRejectLeaveRequestSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            try:
+                leave_request = serializer.update_status()
+                return Response(
+                    {"message": f"Leave request has been {leave_request.status} successfully."},
+                    status=status.HTTP_200_OK
+                )
+            except serializers.ValidationError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
