@@ -42,6 +42,7 @@ services:
       POSTGRES_PASSWORD: password  # Password
     volumes:
       - postgres_data:/var/lib/postgresql/data  # Persist data
+      - ./backups:/backups  # Mount backups folder to /backups inside container
     ports:
       - "5432:5432"  # Expose PostgreSQL on port 5432
     networks:
