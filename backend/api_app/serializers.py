@@ -26,6 +26,7 @@ class LoginSerializer(serializers.Serializer):
 
         # Generate JWT token for the authenticated user
         refresh = RefreshToken.for_user(user)
+        refresh['role'] = user.role
         # data['access_token'] = str(refresh.access_token)
         # data['refresh_token'] = str(refresh)
 
@@ -113,7 +114,7 @@ class EditUserSerializer(serializers.ModelSerializer):
 class user_details(serializers.ModelSerializer):
     class Meta:
         model = users
-        fields = ['username', 'email', 'role', 'position', 'department', 'joined_date']  # Only the fields we want to return
+        fields = ['employee_id','username', 'email', 'role', 'position', 'department', 'joined_date']  # Only the fields we want to return
 
 class FetchAllAttendanceSerializer(serializers.ModelSerializer):
     class Meta:

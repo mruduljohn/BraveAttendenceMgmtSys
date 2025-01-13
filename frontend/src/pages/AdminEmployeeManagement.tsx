@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
 import { ArrowLeft, Edit, Trash2, UserPlus, Users } from 'lucide-react';
 import { Card } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -15,21 +16,69 @@ import {
 import LiveTime from "@/components/LiveTime";
 
 interface Employee {
-  id: number;
-  name: string;
+  employee_id: number;
+  position: string;
+  department: string;
+  username: string;
   email: string;
   role: string;
 }
 
 const EmployeeManagement: React.FC = () => {
+  const {accessToken} = useAuth()
   const navigate = useNavigate();
-  const [employees, setEmployees] = useState<Employee[]>([
-    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Employee' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Admin' }
-  ]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
 
-  const deleteEmployee = (id: number): void => {
-    setEmployees(employees.filter(emp => emp.id !== id));
+  useEffect(() => {
+    // Fetch employees from the API
+    const fetchEmployees = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/user_list/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+
+          },
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          setEmployees(result.data); // Update state with API data
+        } else {
+          console.error('Failed to fetch employees:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching employees:', error);
+      }
+    };
+
+    fetchEmployees();
+  }, [accessToken]);
+
+  const deleteEmployee = async (id: number) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this employee?");
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/delete_user/", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ employee_id: id }),
+      });
+
+      if (response.ok) {
+        setEmployees(employees.filter((emp) => emp.employee_id !== id));
+        alert("Employee deleted successfully!");
+      } else {
+        console.error("Failed to delete employee:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error deleting employee:", error);
+    }
   };
 
   const containerVariants = {
@@ -107,17 +156,23 @@ const EmployeeManagement: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="text-slate-300">Employee ID</TableHead>
                   <TableHead className="text-slate-300">Name</TableHead>
                   <TableHead className="text-slate-300">Email</TableHead>
+                  <TableHead className="text-slate-300">Position</TableHead>
+                  <TableHead className="text-slate-300">Department</TableHead>
                   <TableHead className="text-slate-300">Role</TableHead>
                   <TableHead className="text-slate-300">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {employees.map(emp => (
-                  <TableRow key={emp.id}>
-                    <TableCell className="font-medium text-white">{emp.name}</TableCell>
+                  <TableRow key={emp.employee_id}>
+                    <TableCell className="text-slate-300">{emp.employee_id}</TableCell>
+                    <TableCell className="font-medium text-white">{emp.username}</TableCell>
                     <TableCell className="text-slate-300">{emp.email}</TableCell>
+                    <TableCell className="text-slate-300">{emp.position}</TableCell>
+                    <TableCell className="text-slate-300">{emp.department}</TableCell>
                     <TableCell className="text-slate-300">{emp.role}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -127,7 +182,7 @@ const EmployeeManagement: React.FC = () => {
                           size="icon"
                           className="text-slate-300 hover:text-white"
                         >
-                          <Link to={`/admin/employee/edit/${emp.id}`}>
+                          <Link to={`/admin/employee/edit/${emp.employee_id}`}>
                             <Edit className="w-4 h-4" />
                             <span className="sr-only">Edit</span>
                           </Link>
@@ -136,7 +191,7 @@ const EmployeeManagement: React.FC = () => {
                           variant="ghost"
                           size="icon"
                           className="text-slate-300 hover:text-white"
-                          onClick={() => deleteEmployee(emp.id)}
+                          onClick={() => deleteEmployee(emp.employee_id)}
                         >
                           <Trash2 className="w-4 h-4" />
                           <span className="sr-only">Delete</span>
