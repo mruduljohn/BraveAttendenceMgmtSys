@@ -1,7 +1,5 @@
-# api_app/serializers.py
-
 from rest_framework import serializers
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password,make_password
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import users
 from .models import attendance
@@ -47,12 +45,16 @@ class LoginSerializer(serializers.Serializer):
 
     def check_password(self, password, password_hash):
         # Assuming bcrypt hash comparison
-        return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
+        return check_password(password, password_hash)
     
 class AddUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = users
         fields = ['username', 'email', 'password', 'role', 'position', 'department', 'joined_date']
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'username': {'required': True},  # Mark username as required
+        }
 
     def validate_email(self, value):
         # Check if the email already exists
@@ -62,12 +64,10 @@ class AddUserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # Hash the password before saving
-        raw_password = validated_data.pop('password')  # Extract the raw password
-        hashed_password = bcrypt.hashpw(raw_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        validated_data['password'] = hashed_password  # Replace with hashed password
-
-        # Create the user with the hashed password
-        return users.objects.create(**validated_data)
+         raw_password = validated_data.pop('password')
+         hashed_password = make_password(raw_password)  # This handles the bcrypt hashing
+         validated_data['password'] = hashed_password 
+         return users.objects.create(**validated_data)
 
 
 
@@ -97,6 +97,62 @@ class FetchLeaveRequestSerializer(serializers.ModelSerializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = users
-        fields = ['username', 'department', 'role', 'position']  # Only the fields we want to allow updating
+        fields = ['username', 'email', 'role', 'position', 'department']
+        extra_kwargs = {
+            'username': {'required': True},  # Ensure username is always required
+        }
+
+class EditUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = users
+        fields = ['employee_id','username', 'email', 'password', 'department', 'role', 'position']  # Only the fields we want to allow updating
+        extra_kwargs = {
+            'password': {'write_only': True},  # Ensures the password isn't returned in responses
+        }
+
+class user_details(serializers.ModelSerializer):
+    class Meta:
+        model = users
+        fields = ['username', 'email', 'role', 'position', 'department', 'joined_date']  # Only the fields we want to return
+
+class FetchAllAttendanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = attendance  # Replace with the name of your attendance model
+        fields = '__all__'  # Include all fields or specify the required fields
 
 
+
+class AcceptRejectLeaveRequestSerializer(serializers.Serializer):
+    employee_id = serializers.IntegerField(required=True)
+    action = serializers.ChoiceField(choices=["approve", "reject"], required=True)
+
+    def validate_employee_id(self, value):
+        # Check if the employee has a leave request
+        if not leave_requests.objects.filter(employee_id=value).exists():
+            raise serializers.ValidationError("No leave request found for the given employee ID.")
+        return value
+
+    def update_status(self):
+        """
+        Updates the status of the leave request based on the provided employee_id and action.
+        """
+        validated_data = self.validated_data
+        employee_id = validated_data['employee_id']
+        action = validated_data['action']
+
+        # Fetch the most recent leave request for the employee
+        leave_request = leave_requests.objects.filter(employee_id=employee_id).last()
+
+        if leave_request:
+            leave_request.status = "Approved" if action == "approve" else "Rejected"
+            leave_request.save()
+            return leave_request
+        raise serializers.ValidationError("Leave request not found.")
+    
+class GenerateAttendanceRecordsSerializer(serializers.Serializer):
+    username = serializers.CharField(source='employee_id.username', read_only=True)  # Fetches username from related user
+    role = serializers.CharField(source='employee_id.role', read_only=True)          # Fetches role from related user
+
+    class Meta:
+        model = attendance
+        fields = ['attendance_id', 'employee_id', 'username', 'role', 'date', 'status', 'total_hours']

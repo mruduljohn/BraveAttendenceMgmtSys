@@ -1,18 +1,37 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import PermissionDenied  
 from rest_framework.permissions import IsAuthenticated
 from django.utils.timezone import now
 from rest_framework.views import APIView
-from .serializers import AddUserSerializer
-from .serializers import LoginSerializer
-from .serializers import AttendanceSerializer
+from .serializers import (
+    AddUserSerializer,
+    LoginSerializer,
+    AttendanceSerializer,
+    LeaveRequestSerializer,
+    GenerateAttendanceRecordsSerializer,
+    FetchLeaveRequestSerializer,
+    UpdateUserSerializer,
+    EditUserSerializer,
+    AcceptRejectLeaveRequestSerializer
+)
 from .models import attendance, users, leave_requests
 from datetime import datetime
-from .serializers import LeaveRequestSerializer
-from .serializers import FetchLeaveRequestSerializer
-from .serializers import UpdateUserSerializer
+from .permissions import (IsAdmin, IsManager, 
+                          IsEmployee,IsAdminOrManager,
+                          IsManagerorEmployee,IsAdminorEmployee)
+from django.shortcuts import get_object_or_404
 
+def assign_role(user, role):
+    """
+    Assign a role dynamically to a user.
+    """
+    user.role = role
+    user.save()
+    return user
+
+#everyone can access
 @api_view(['POST'])
 def login_view(request):
     if request.method == 'POST':
@@ -21,6 +40,7 @@ def login_view(request):
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+#employee only access-- admin , manger, employee
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def clock_in_out(request):
@@ -74,15 +94,23 @@ def clock_in_out(request):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    
+#admin only access   
 class AddUserView(APIView):
+    permission_classes = [IsAdmin]
     def post(self, request):
         serializer = AddUserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "User created successfully!"}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            # Your logic here
+            serializer = AddUserSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "User created successfully!"}, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except PermissionDenied as e:
+            # Custom error message when permission is denied
+            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
 
+#access -- everyone
 class FetchAttendanceView(APIView):
     @permission_classes([IsAuthenticated])
     def get(self, request):
@@ -104,7 +132,8 @@ class FetchAttendanceView(APIView):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated ,IsAdminorEmployee])
+#employee , admin
 def create_leave_request(request):
     user = request.user  
 
@@ -152,7 +181,8 @@ def create_leave_request(request):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  
 
 class FetchLeaveRequestsView(APIView):
-    permission_classes = [IsAuthenticated]
+    #admin,employee
+    permission_classes = [IsAuthenticated, IsAdminorEmployee]
 
     def get(self, request, *args, **kwargs):
         # Get the employee_id from the authenticated user's token
@@ -177,6 +207,7 @@ class FetchLeaveRequestsView(APIView):
 
 
 class UpdateUserDetailsView(APIView):
+    #everyone
     permission_classes = [IsAuthenticated]
     def patch(self, request, *args, **kwargs):
         employee_id = request.user.employee_id   #
@@ -197,3 +228,217 @@ class UpdateUserDetailsView(APIView):
 
         except users.DoesNotExist:
             return Response({"error": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        
+        
+        #fetch all request, fetch all attendance record, accept or reject leave req ---> manager
+
+class EditUserView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]  # Optional; remove if no authentication is needed for now
+
+    def patch(self, request, *args, **kwargs):
+        try:
+            # Extract employee_id from the request data
+            employee_id = request.data.get('employee_id')
+
+            if not employee_id:
+                return Response({"error": "Employee ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Fetch the user by employee_id
+            user = users.objects.get(employee_id=employee_id)
+
+            # Check if a new password is provided, hash it
+            raw_password = request.data.get('password')
+            if raw_password:
+                hashed_password = bcrypt.hashpw(raw_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                request.data['password'] = hashed_password  # Replace raw password with hashed password in the request data
+
+            # Serialize the data
+            serializer = EditUserSerializer(user, data=request.data, partial=True)  # partial=True allows updating specific fields
+            if serializer.is_valid():
+                serializer.save()  # Save the updated user
+                return Response(
+                    {"message": "User details updated successfully!", "data": serializer.data},
+                    status=status.HTTP_200_OK
+                )
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except users.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+class UserListView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin] 
+    def get(self, request, *args, **kwargs):
+        try:
+            # Fetch all users from the users table
+            user_list = users.objects.all()
+
+            # Serialize the data
+            serializer = user_details(user_list, many=True)
+
+            # Return the serialized data
+            return Response(
+                {"message": "User list fetched successfully!", "data": serializer.data},
+                status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+
+class DeleteUserView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin] 
+    def delete(self, request, *args, **kwargs):
+        # Get the employee_id from the request data
+        employee_id = request.data.get('employee_id')
+
+        if not employee_id:
+            return Response(
+                {"error": "Employee ID is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Fetch the user by employee_id
+            user = users.objects.get(employee_id=employee_id)
+            
+            # Delete the user
+            user.delete()
+            
+            return Response(
+                {"message": f"User with employee_id {employee_id} has been deleted successfully!"},
+                status=status.HTTP_200_OK
+            )
+        except users.DoesNotExist:
+            return Response(
+                {"error": f"No user found with employee_id {employee_id}."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+
+
+class FetchAllLeaveRequestsView(APIView):
+    permission_classes = [IsAuthenticated, IsManager]
+
+    def get(self, request, *args, **kwargs):
+        # Fetch leave requests for all employees (no employee_id filter)
+        requests = leave_requests.objects.all()
+
+        if not requests.exists():
+            return Response(
+                {"message": "No leave requests found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Serialize the data
+        serializer = FetchLeaveRequestSerializer(requests, many=True)
+        return Response(
+            {"Leave Requests": serializer.data},
+            status=status.HTTP_200_OK
+        )
+
+class FetchAllAttendanceRecordsView(APIView):
+    permission_classes = [IsAuthenticated, IsManager]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            # Fetch all attendance records
+            attendance_records = attendance.objects.all()
+
+            if not attendance_records.exists():
+                return Response(
+                    {"message": "No attendance records found."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Serialize the data
+            serializer = AttendanceSerializer(attendance_records, many=True)
+            return Response(
+                {"message": "Attendance records fetched successfully!", "data": serializer.data},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+
+
+
+class AcceptRejectLeaveRequestView(APIView):
+    permission_classes = [IsAuthenticated, IsManager]
+
+    def patch(self, request, *args, **kwargs):
+        serializer = AcceptRejectLeaveRequestSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            try:
+                leave_request = serializer.update_status()
+                return Response(
+                    {"message": f"Leave request has been {leave_request.status} successfully."},
+                    status=status.HTTP_200_OK
+                )
+            except serializers.ValidationError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+from django.db.models import Count, Sum, Q, F
+
+class GenerateAttendanceRecordsView(APIView):
+    permission_classes = [IsAuthenticated, IsManager]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            # Fetch the month from query parameters
+            month = request.query_params.get('month', None)
+
+            # Filter attendance records based on the month
+            if month:
+                attendance_records = attendance.objects.filter(date__month=month)
+            else:
+                attendance_records = attendance.objects.all()
+
+            if not attendance_records.exists():
+                return Response(
+                    {"message": "No attendance records found for the given month."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Summarize attendance for each employee
+            summary = (
+                attendance_records.values('employee_id')
+                .annotate(
+                    employee_name=F('employee_username'),  # Fetch related user data
+                    role=F('employee_role'),
+                    total_days=Count('attendance_id'),
+                    days_present=Count('attendance_id', filter=Q(status='Present')),
+                    days_absent=Count('attendance_id', filter=Q(status='Absent')),
+                    total_hours=Sum('total_hours'),
+                )
+            )
+
+            return Response(
+                {"message": "Attendance summary fetched successfully!", "data": list(summary)},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
