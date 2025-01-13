@@ -42,7 +42,7 @@ const AppRouter: React.FC = () => {
           <Route
             path="/employee/*"
             element={
-              <ProtectedRoute allowedRoles={['employee']}>
+              <ProtectedRoute allowedRoles={['Employee']}>
                 <Routes>
                   <Route path="dashboard" element={<EmployeeDashboard />} />
                   <Route path="clockin" element={<EmployeeClockInPage />} />
@@ -58,7 +58,7 @@ const AppRouter: React.FC = () => {
           <Route
             path="/admin/*"
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={['Admin']}>
                 <Routes>
                   <Route path="dashboard" element={<AdminDashboard />} />
                   <Route path="employees" element={<AdminEmployeeManagement />} />
@@ -78,7 +78,7 @@ const AppRouter: React.FC = () => {
           <Route
             path="/manager/*"
             element={
-              <ProtectedRoute allowedRoles={['manager']}>
+              <ProtectedRoute allowedRoles={['Manager']}>
                 <Routes>
                   <Route path="dashboard" element={<ManagerDashboard />} />
                   <Route path="employees" element={<ManagerEmployeeManagement />} />
