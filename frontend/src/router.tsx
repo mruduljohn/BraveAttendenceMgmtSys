@@ -75,10 +75,11 @@ const AppRouter: React.FC = () => {
           />
 
           {/* Manager-specific routes */}
+       
           <Route
             path="/manager/*"
             element={
-              <ProtectedRoute allowedRoles={['manager']}>
+              <ProtectedRoute allowedRoles={['Manager']}>
                 <Routes>
                   <Route path="dashboard" element={<ManagerDashboard />} />
                   <Route path="employees" element={<ManagerEmployeeManagement />} />

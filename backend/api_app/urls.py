@@ -5,7 +5,7 @@ from .views import AddUserView
 from .views import FetchAttendanceView
 from .views import FetchLeaveRequestsView
 from .views import UpdateUserDetailsView
-from .views import DeleteUserView
+from .views import DeleteUserView,LoginSerializer
 
 
 urlpatterns = [
