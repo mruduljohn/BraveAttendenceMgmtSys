@@ -39,8 +39,8 @@ const LoginPage: React.FC = () => {
           refresh_token
         });
         // Navigate based on role
-        if (role === "admin") navigate("/admin/dashboard");
-        else if (role === "manager") navigate("/manager/dashboard");
+        if (role === "Admin") navigate("/admin/dashboard");
+        else if (role === "Manager") navigate("/manager/dashboard");
         else navigate("/employee/dashboard");
       } else {
         setError("Invalid credentials");
