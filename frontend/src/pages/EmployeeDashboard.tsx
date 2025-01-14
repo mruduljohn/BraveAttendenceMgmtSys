@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Clock, Calendar, FileText, LogOut } from 'lucide-react';
+import { Clock, Calendar, FileText, LogOut, Users, ArrowLeft } from 'lucide-react';
 import LogoutButton from "../components/LogoutButton";
 import { useAuth } from "../context/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -11,24 +11,71 @@ import LiveTime from "@/components/LiveTime";
 const EmployeeDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isClockedIn, setIsClockedIn] = useState(false);
 
   console.log("User in Dashboard ", user);
 
-  // // Protect the route
-  // useEffect(() => {
-  //   if (!user || user.role !== "Employee") {
-  //     navigate("/");
-  //   }
-  // }, [user, navigate]);
+  useEffect(() => {
+    const fetchAttendanceStatus = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/attendance/status/', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setIsClockedIn(data.isClockedIn)
+        } else {
+          const errorData = await response.json();
+          if (errorData.messages[0].message === "Token is invalid or expired")
+            console.log('Error response body:', errorData);
+        }
+      } catch (error) {
+        console.error('Error fetching attendance status:', error);
+      }
+    };
+
+    fetchAttendanceStatus();
+  }, []);
+
+  const handleClockInOut = async () => {
+    const action = isClockedIn ? "clock_out" : "clock_in";
+
+    try {
+      const response = await fetch("http://localhost:8000/api/attendance/clock_in_out/", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('access_token')}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data.message);
+        setIsClockedIn(data.isClockedIn);
+      } else {
+        const errorData = await response.json();
+        console.error("Error response:", errorData);
+
+        if (errorData.error === "No clockout sessions!" || errorData.error === "clocked in already") {
+          alert("Error: " + errorData.error);
+          setIsClockedIn((prevState) => !prevState);
+        } else {
+          alert("Failed: " + (errorData.error || "Unknown error, please contact admin"));
+        }
+      }
+    } catch (error) {
+      console.error("Error during clock in/out:", error);
+      alert("An error occurred while trying to clock in/out.");
+    }
+  };
 
   const cards = [
-    {
-      title: "Clock In/Out",
-      description: "Record your daily attendance",
-      icon: Clock,
-      buttonText: "Clock In / Out",
-      href: "/employee/clockin",
-    },
     {
       title: "Attendance Records",
       description: "View your attendance history",
@@ -63,7 +110,6 @@ const EmployeeDashboard: React.FC = () => {
     },
   };
 
-  // Return null if user is not authenticated
   if (!user) {
     return null;
   }
@@ -94,32 +140,57 @@ const EmployeeDashboard: React.FC = () => {
         </div>
       </header>
     
-      {/* Employee Profile Section */}
+      {/* Employee Profile and Clock In/Out Section */}
       <section className="relative z-10 p-6">
-        <div className="max-w-7xl mx-auto bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-white mb-4">Your Profile</h2>
-          <div className="flex items-center gap-6">
-            <img
-              src={"https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg"}
-              alt="Profile"
-              className="w-20 h-20 rounded-full border-2 border-aqua-400"
-            />
-            <div>
-              <h3 className="text-lg font-medium text-white">{user.username}</h3>
-              <p className="text-gray-400">Email: {user.email}</p>
-              <p className="text-gray-400">Position: {user.position}</p>
-              <p className="text-gray-400">Department: {user.department}</p>
+        <div className="max-w-7xl mx-auto grid grid-cols-3 gap-6">
+          {/* Employee Profile */}
+          <Card className="col-span-2 bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-lg p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">Your Profile</h2>
+            <div className="flex items-center gap-6">
+              <img
+                src={"https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg"}
+                alt="Profile"
+                className="w-20 h-20 rounded-full border-2 border-aqua-400"
+              />
+              <div>
+                <h3 className="text-lg font-medium text-white">{user.username}</h3>
+                <p className="text-gray-400">Email: {user.email}</p>
+                <p className="text-gray-400">Position: {user.position}</p>
+                <p className="text-gray-400">Department: {user.department}</p>
+              </div>
             </div>
-          </div>
-          {/* Edit Profile Button */}
-          <div className="mt-4">
-            <Button
-              className="w-full bg-aqua-500 hover:bg-aqua-600 text-gray-900 font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-              onClick={() => navigate("/employee/edit-profile")}
-            >
-              Edit Profile
-            </Button>
-          </div>
+            {/* Edit Profile Button */}
+            <div className="mt-4">
+              <Button
+                className="w-full bg-aqua-500 hover:bg-aqua-600 text-gray-900 font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                onClick={() => navigate("/employee/edit-profile")}
+              >
+                Edit Profile
+              </Button>
+            </div>
+          </Card>
+
+          {/* Clock In/Out Card */}
+          <Card className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-lg p-6 flex flex-col justify-between">
+            <div className="text-center">
+              <Clock className="w-16 h-16 mx-auto mb-4 text-aqua-400" />
+              <h2 className="text-xl font-semibold mb-4 text-white">
+                {isClockedIn ? "You are currently clocked in!" : "You are currently clocked out!"}
+              </h2>
+            </div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                className={`w-full py-3 text-lg font-semibold ${
+                  isClockedIn
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-green-500 hover:bg-green-600"
+                } text-gray-900 mb-4`}
+                onClick={handleClockInOut}
+              >
+                {isClockedIn ? "Clock Out" : "Clock In"}
+              </Button>
+            </motion.div>
+          </Card>
         </div>
       </section>
 
@@ -130,7 +201,7 @@ const EmployeeDashboard: React.FC = () => {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
             {cards.map((card, index) => (
               <motion.div key={index} variants={itemVariants}>
