@@ -41,9 +41,17 @@ const LoginPage: React.FC = () => {
           refresh_token
         });
 
+        function capitalizeFirstLetter(role: string) {
+          return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+        }
+        
+        const Role = capitalizeFirstLetter(role);
+        //print role
+        console.log(Role);
+
         // Navigate based on role
-        if (role === "Admin") navigate("/admin/dashboard");
-        else if (role === "Manager") navigate("/manager/dashboard");
+        if (Role === "Admin") navigate("/admin/dashboard");
+        else if (Role === "Manager") navigate("/manager/dashboard");
         else navigate("/employee/dashboard");
       }
       else {
@@ -81,13 +89,17 @@ const LoginPage: React.FC = () => {
 
 
 
+      const capitalizeFirstLetter = (str: string) => {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+      };
+
       if (data.access_token && data.refresh_token && data.role) {
         return {
           success: true,
           employee_id: data.employee_id,
           access_token: data.access_token,
           refresh_token: data.refresh_token,
-          role: data.role,
+          role: capitalizeFirstLetter(data.role),
           username: data.username,
           email: data.email,
           position: data.position,

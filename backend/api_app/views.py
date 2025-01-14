@@ -10,6 +10,7 @@ from .serializers import (
     LoginSerializer,
     AttendanceSerializer,
     LeaveRequestSerializer,
+    user_details,
     GenerateAttendanceRecordsSerializer,
     FetchLeaveRequestSerializer,
     UpdateUserSerializer,
