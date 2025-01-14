@@ -18,33 +18,49 @@ import LiveTime from "@/components/LiveTime";
 
 interface AttendanceRecord {
   date: string;
+  attendance_id: string;
+  total_hours: number;
+  extra_hours: number;
   status: "Present" | "Absent";
 }
 
 const ManagerAttendanceRecordsPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user,accessToken } = useAuth();
   const navigate = useNavigate();
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Fetch the manager's personal attendance records from the API
     const fetchAttendance = async () => {
-      // Example fetch - this should be replaced with actual API call
-      setAttendanceRecords([
-        { date: "2025-01-01", status: "Present" },
-        { date: "2025-01-02", status: "Absent" },
-        { date: "2025-01-03", status: "Present" },
-        { date: "2025-01-04", status: "Present" },
-        { date: "2025-01-05", status: "Absent" },
-      ]);
-    };
-    
-    fetchAttendance();
-  }, []);
+      setLoading(true);
+      setError(null);
 
-  if (user?.role !== "manager") {
-    navigate("/"); // Redirect if user is not a manager
-  }
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/fetch_attendance/", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`, // Pass the access token
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch attendance records");
+        }
+
+        const data = await response.json();
+        setAttendanceRecords(data || []); // Assuming the API returns `attendance`
+      } catch (error: any) {
+        setError(error.message || "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAttendance();
+  }, [user, navigate,accessToken]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -104,11 +120,18 @@ const ManagerAttendanceRecordsPage: React.FC = () => {
           animate="visible"
           className="max-w-7xl mx-auto"
         >
+           {loading ? (
+            <p className="text-white">Loading...</p>
+          ) : error ? (
+            <p className="text-red-500">{error}</p>
+          ) : (
           <Card className="bg-slate-800/50 backdrop-blur-lg border-blue-700 overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-slate-300">Date</TableHead>
+                  <TableHead className="text-slate-300">Total Hours</TableHead>
+                  <TableHead className="text-slate-300">Extra Hours</TableHead>
                   <TableHead className="text-slate-300">Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -121,6 +144,11 @@ const ManagerAttendanceRecordsPage: React.FC = () => {
                         {record.date}
                       </div>
                     </TableCell>
+                    <TableCell className="text-slate-300">{record.total_hours}</TableCell>
+                    <TableCell className="text-slate-300">
+                    {Math.round(record.total_hours - 7 > 0 ? record.total_hours - 7 : 0)}
+                      </TableCell>
+
                     <TableCell>
                       <div className="flex items-center">
                         {record.status === "Present" ? (
@@ -138,6 +166,7 @@ const ManagerAttendanceRecordsPage: React.FC = () => {
               </TableBody>
             </Table>
           </Card>
+          )}
         </motion.div>
       </main>
 
