@@ -17,7 +17,6 @@ const EmployeeDashboard: React.FC = () => {
   // Protect the route
   useEffect(() => {
     if (!user || user.role !== "Employee") {
-    
       navigate("/");
     }
   }, [user, navigate]);
