@@ -117,9 +117,11 @@ class user_details(serializers.ModelSerializer):
         fields = ['employee_id','username', 'email', 'role', 'position', 'department', 'joined_date']  # Only the fields we want to return
 
 class FetchAllAttendanceSerializer(serializers.ModelSerializer):
+    employee_id = serializers.PrimaryKeyRelatedField(source='employee.id', queryset=users.objects.all())
+    employee_name = serializers.CharField(source='users.name')
     class Meta:
         model = attendance  # Replace with the name of your attendance model
-        fields = '__all__'  # Include all fields or specify the required fields
+        ['leave_id','leave_type', 'start_date', 'end_date', 'status', 'employee_id', 'employee_name']  # Include all fields or specify the required fields
 
 
 

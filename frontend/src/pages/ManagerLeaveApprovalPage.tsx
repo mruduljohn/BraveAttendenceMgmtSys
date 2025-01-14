@@ -38,7 +38,7 @@ interface LeaveRequest {
 }
 
 const ManagerLeaveApprovalPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user,accessToken } = useAuth();
   const navigate = useNavigate();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null);
@@ -47,24 +47,40 @@ const ManagerLeaveApprovalPage: React.FC = () => {
   useEffect(() => {
     // Fetch leave requests from the API
     const fetchLeaveRequests = async () => {
-      // Example fetch - this should be replaced with actual API call
-      setLeaveRequests([
-        { id: 1, employeeName: "John Doe", startDate: "2025-01-15", endDate: "2025-01-20", reason: "Vacation", status: "Pending" },
-        { id: 2, employeeName: "Jane Smith", startDate: "2025-02-01", endDate: "2025-02-03", reason: "Family event", status: "Pending" },
-        { id: 3, employeeName: "Alice Johnson", startDate: "2025-03-10", endDate: "2025-03-15", reason: "Medical leave", status: "Pending" },
-      ]);
-    };
-    
-    fetchLeaveRequests();
-  }, []);
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/fetch_all_leave_requests/", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`, // Pass the access token
+            "Content-Type": "application/json",
+          },
+        });
 
-  // if (user?.role !== "manager") {
-  //   navigate("/"); // Redirect if user is not a manager
-  // }
+        if (!response.ok) {
+          throw new Error("Failed to fetch leave requests");
+        }
+
+        const data = await response.json();
+        const formattedReport = data.data.map((emp: any) => ({
+          id: emp.leave_id, // Adjust based on API response
+          employeeName: emp.employee_name, // Adjust based on API response
+          startDate: emp.start_date, // Adjust based on API response
+          endDate: emp.end_date, // Adjust based on API response
+          reason: emp.reason, // Adjust based on API response
+          status: emp.status, // Adjust based on API response
+        }));
+        setLeaveRequests(formattedReport);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchLeaveRequests();
+  }, [accessToken]);
 
   const handleValidation = async (id: number, status: "Approved" | "Rejected") => {
     // Update leave request status
-    const updatedRequests = leaveRequests.map(request =>
+    const updatedRequests = leaveRequests.map((request: { id: number; }) =>
       request.id === id ? { ...request, status } : request
     );
     setLeaveRequests(updatedRequests);
@@ -73,6 +89,7 @@ const ManagerLeaveApprovalPage: React.FC = () => {
     // Here you would typically make an API call to update the status
     console.log(`Leave request ${id} ${status.toLowerCase()} with comment: ${comment}`);
   };
+
 
   const containerVariants = {
     hidden: { opacity: 0 },
