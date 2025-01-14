@@ -25,5 +25,6 @@ urlpatterns = [
     path('fetch_all_leave_requests/', views.FetchAllLeaveRequestsView.as_view(), name='fetch_all_leave_requests'),
     path('fetch_all_attendance_records/', views.FetchAllAttendanceRecordsView.as_view(), name='fetch_all_attendance_records'),
     path('accept_reject_leave_request/', views.AcceptRejectLeaveRequestView.as_view(), name='accept_reject_leave_request'),
-    path('generate_reports/', views.GenerateAttendanceRecordsView.as_view(), name='generate_reports'),
+    path('generate_reports/<int:month>/', views.GenerateAttendanceRecordsView.as_view(), name='generate_reports')
+
 ]
