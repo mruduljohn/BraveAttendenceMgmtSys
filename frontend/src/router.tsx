@@ -5,9 +5,7 @@ import LoginPage from "./pages/LoginPage";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
-import EmployeeClockInPage from "./pages/EmployeeClockInPage";
-import AdminClockInPage from "./pages/AdminClockInPage";
-import ManagerClockInPage from "./pages/ManagerClockInPage";
+import ClockInPage from "./pages/ClockInPage";
 import EmployeeAttendanceRecordsPage from "./pages/EmployeeAttendanceRecordsPage";
 import AdminAttendanceRecordsPage from "./pages/AdminAttendanceRecordsPage";
 import ManagerAttendanceRecordsPage from "./pages/ManagerAttendanceRecordsPage";
@@ -45,7 +43,7 @@ const AppRouter: React.FC = () => {
               <ProtectedRoute allowedRoles={['Employee']}>
                 <Routes>
                   <Route path="dashboard" element={<EmployeeDashboard />} />
-                  <Route path="clockin" element={<EmployeeClockInPage />} />
+                  <Route path="clockin" element={<ClockInPage />} />
                   <Route path="attendance" element={<EmployeeAttendanceRecordsPage />} />
                   <Route path="leave-requests" element={<EmployeeLeaveRequestsPage />} />
                   <Route path="edit-profile" element={<EmployeeEditProfilePage />} />
@@ -65,7 +63,7 @@ const AppRouter: React.FC = () => {
                   {/* <Route path="reports" element={<AdminReportGeneration />} /> */}
                   <Route path="employee/create" element={<AdminEmployeeForm />} />
                   <Route path="employee/edit/:id" element={<AdminEmployeeForm />} />
-                  <Route path="clockin" element={<AdminClockInPage />} />
+                  <Route path="clockin" element={<ClockInPage />} />
                   <Route path="attendance" element={<AdminAttendanceRecordsPage />} />
                   <Route path="leave-requests" element={<AdminLeaveRequestsPage />} />
                   <Route path="edit-profile" element={<AdminEditProfilePage />} />
@@ -86,7 +84,7 @@ const AppRouter: React.FC = () => {
                   <Route path="reports" element={<ManageReportGeneration />} />
                   {/* <Route path="employee/create" element={<ManagerEmployeeForm />} />
                   <Route path="employee/edit/:id" element={<ManagerEmployeeForm />} /> */}
-                  <Route path="clockin" element={<ManagerClockInPage />} />
+                  <Route path="clockin" element={<ClockInPage />} />
                   <Route path="attendance" element={<ManagerAttendanceRecordsPage />} />
                   <Route path="leave-approvals" element={<ManagerLeaveApprovalPage />} />
                   <Route path="edit-profile" element={<ManagerEditProfilePage />} />

@@ -12,8 +12,8 @@ const ManagerClockInPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  if (user?.role !== "Manager") {
-    navigate("/"); // Redirect if user is not a manager
+  if (!["Manager", "Admin", "Employee"].includes(user?.role)) {
+    navigate("/"); // Redirect if user is not allowed
   }
   const getAccessToken = () => {
     return localStorage.getItem('access_token');
@@ -130,7 +130,16 @@ const ManagerClockInPage: React.FC = () => {
 
   const handleViewTeamClockIns = () => {
     // Navigate to a page where manager can view team clock-ins
-    navigate("/manager/team-clock-ins");
+    //check user role and use conditional rendering
+    if (user?.role === "Manager") {
+      navigate("/manager/team-clock-ins");
+    }
+    if (user?.role === "Admin") {
+      navigate("/admin/team-clock-ins");
+    }
+    if (user?.role === "Employee") {
+      navigate("/employee/team-clock-ins");
+    }
   };
 
   return (
@@ -145,7 +154,7 @@ const ManagerClockInPage: React.FC = () => {
       <header className="relative z-10 bg-slate-800/50 backdrop-blur-lg border-b border-blue-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">Manager Clock In / Out</h1>
+            <h1 className="text-2xl font-bold text-white">Clock In / Out</h1>
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -153,11 +162,12 @@ const ManagerClockInPage: React.FC = () => {
               <Button
                 variant="ghost"
                 className="flex items-center gap-2 text-slate-300 hover:text-white"
-                onClick={() => navigate("/manager/dashboard")}
+                onClick={() => navigate(`/${user?.role?.toLowerCase()}/dashboard`)}
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to Dashboard</span>
               </Button>
+
             </motion.div>
           </div>
         </div>
