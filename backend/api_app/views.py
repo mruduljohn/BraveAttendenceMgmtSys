@@ -19,11 +19,14 @@ from .serializers import (
 )
 from .models import attendance, users, leave_requests
 from datetime import datetime
+from django.utils import timezone
 from .permissions import (IsAdmin, IsManager, 
                           IsEmployee,IsAdminOrManager,
                           IsManagerorEmployee,IsAdminorEmployee)
 from django.shortcuts import get_object_or_404
-
+from django.http import JsonResponse
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 def assign_role(user, role):
     """
     Assign a role dynamically to a user.
@@ -40,6 +43,28 @@ def login_view(request):
         if serializer.is_valid():
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class TokenValidityCheckView(APIView):
+   
+
+    def get(self, request):
+        """
+        Check if the JWT token is expired or valid.
+        """
+        auth = JWTAuthentication()
+
+        # Try to authenticate the request token
+        try:
+            # JWT Authentication will decode and validate the token
+            res = auth.authenticate(request)
+            if(res is None):
+                raise AuthenticationFailed()
+            # If token is valid, the user will be authenticated, and we proceed
+            return Response({"isAuthenticated": True})
+
+        except AuthenticationFailed as e:
+            # Handle the case where the token is invalid or expired
+            return Response({"isAuthenticated": False}, status=401)
 
 #employee only access-- admin , manger, employee
 @api_view(['POST'])
@@ -61,7 +86,7 @@ def clock_in_out(request):
 
             if action == 'clock_in':
                 if open_entry:
-                    return Response({"error": "You already have an open session. Please clock out first."}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"error": "clocked in already"}, status=status.HTTP_400_BAD_REQUEST)
 
                 # Create new clock-in entry
                 attendance_entry = attendance.objects.create(
@@ -70,11 +95,11 @@ def clock_in_out(request):
                     clock_in_time=now(),
                     status='Open',
                 )
-                return Response({"message": "Clock-in successful", "entry_id": attendance_entry.attendance_id}, status=status.HTTP_201_CREATED)
+                return Response({"message": "Clock-in successful","isClockedIn": True, "entry_id": attendance_entry.attendance_id}, status=status.HTTP_201_CREATED)
 
             elif action == 'clock_out':
                 if not open_entry:
-                    return Response({"error": "No open session found to clock out."}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"error": "No clockout sessions!"}, status=status.HTTP_400_BAD_REQUEST)
 
                 # Update the clock-out time and calculate total hours
                 clock_in_time = open_entry.clock_in_time
@@ -85,7 +110,7 @@ def clock_in_out(request):
                 open_entry.total_hours = total_hours if open_entry.total_hours is None else open_entry.total_hours + total_hours
                 open_entry.save()
 
-                return Response({"message": "Clock-out successful", "entry_id": open_entry.attendance_id, "total_hours": open_entry.total_hours}, status=status.HTTP_200_OK)
+                return Response({"message": "Clock-out successful","isClockedIn": False, "entry_id": open_entry.attendance_id, "total_hours": open_entry.total_hours}, status=status.HTTP_200_OK)
 
             else:
                 return Response({"error": "Invalid action. Use 'clock_in' or 'clock_out'."}, status=status.HTTP_400_BAD_REQUEST)
@@ -94,7 +119,32 @@ def clock_in_out(request):
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+@api_view(['GET'])
+def check_attendance_status(request):
+    try:
+      
+        user = request.user
+        
+        
+        current_attendance = attendance.objects.filter(employee=user, status='Open').first()
 
+        if current_attendance:
+           
+            return Response({
+                'isClockedIn': True,
+                'entry_id': current_attendance.attendance_id,
+                'clock_in_time': current_attendance.clock_in_time,
+            })
+        else:
+       
+            return Response({
+                'isClockedIn': False,
+            })
+
+    except Exception as e:
+        # In case of error
+        return Response({'error': str(e)}, status=400)
+    
 #admin only access   
 class AddUserView(APIView):
     permission_classes = [IsAdmin]
@@ -399,15 +449,28 @@ class AcceptRejectLeaveRequestView(APIView):
     
 
 
-from django.db.models import Count, Sum, Q, F
+from django.db.models import Count, Sum, Q, F, Func
+
+class Cast(Func):
+    function = 'CAST'
+    template = '%(expressions)s AS NUMERIC'
 
 class GenerateAttendanceRecordsView(APIView):
-    permission_classes = [IsAuthenticated, IsManager]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         try:
-            # Fetch the month from query parameters
-            month = request.query_params.get('month', None)
+            # Fetch the month from the URL parameters
+            month = kwargs.get('month', None)
+
+            if month:
+                try:
+                    month = int(month)
+                except ValueError:
+                    return Response(
+                        {"message": "Invalid month parameter."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
             # Filter attendance records based on the month
             if month:
@@ -425,12 +488,16 @@ class GenerateAttendanceRecordsView(APIView):
             summary = (
                 attendance_records.values('employee_id')
                 .annotate(
-                    employee_name=F('employee_username'),  # Fetch related user data
-                    role=F('employee_role'),
+                    employee_name=F('employee_id__username'),  # Fetching the username from the related user model
+                    position=F('employee_id__position'),  # Fetching the role from the related user model
                     total_days=Count('attendance_id'),
-                    days_present=Count('attendance_id', filter=Q(status='Present')),
-                    days_absent=Count('attendance_id', filter=Q(status='Absent')),
-                    total_hours=Sum('total_hours'),
+                    days_present=Count('attendance_id', filter=Q(status='present')),
+                    days_absent=Count('attendance_id', filter=Q(status='absent')),
+                    total_hours=Func(
+                        Func(F('total_hours'), function='CAST', template='(%(expressions)s)::NUMERIC'),
+                        function='ROUND',
+                        template="ROUND(%(expressions)s, 0)"
+                    ),
                 )
             )
 

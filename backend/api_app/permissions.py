@@ -6,7 +6,6 @@ from rest_framework import status
 class IsAdmin(BasePermission):
     def has_permission(self, request, view):
         if request.user.role != 'Admin':
-            # You can modify this to return a custom error message if the permission fails
             raise PermissionDenied("Access denied: Admin role is required.")
         return request.user.role == 'Admin'
 
@@ -32,6 +31,7 @@ class IsManagerorEmployee(BasePermission):
         if request.user.role not in ['Employee', 'Manager']:
             raise PermissionDenied("Access denied: Employee or Manager role is required.")
         return request.user.role in ['Employee', 'Manager']
+
 class IsAdminorEmployee(BasePermission):
     def has_permission(self, request, view):
         if request.user.role not in ['Employee', 'Admin']:

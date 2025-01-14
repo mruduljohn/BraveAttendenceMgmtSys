@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
+import apiClient from "../utils/apiClient";
 
 interface AttendanceRecord {
   date: string;
@@ -42,9 +43,9 @@ const ManagerAttendanceRecordsPage: React.FC = () => {
     fetchAttendance();
   }, []);
 
-  if (user?.role !== "manager") {
-    navigate("/"); // Redirect if user is not a manager
-  }
+  // if (user?.role !== "manager") {
+  //   navigate("/"); // Redirect if user is not a manager
+  // }
 
   const containerVariants = {
     hidden: { opacity: 0 },

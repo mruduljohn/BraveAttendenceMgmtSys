@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import axios from "axios";
+import { getAccessToken } from "@/utils/auth";
 
 // Define types
 interface AuthContextType {
@@ -10,6 +12,7 @@ interface AuthContextType {
   login: (userDetails: UserDetails) => void;
   logout: () => void;
   updateUser: (userUpdates: Partial<User>) => void; // Added updateUser to the context value
+  isLoading: Boolean | null
 }
 
 interface User {
@@ -38,9 +41,35 @@ interface UserDetails {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return !!localStorage.getItem("access_token");
-  });
+
+  
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(true)
+
+  const checkAuthentication = async (): Promise<any> => {
+    try {
+      setIsLoading(true)
+      const accessToken = getAccessToken()
+      const response = await axios.get("http://localhost:8000/api/token/validity-check/", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      }
+      );
+      console.log("authenticated", response.data.isAuthenticated)
+      setIsAuthenticated(response.data.isAuthenticated);
+    } catch (error) {
+      setIsAuthenticated(false)
+    } finally {
+      setIsLoading(false)
+    }
+  };
+
+  useEffect(() => {
+    checkAuthentication()
+  }, [])
+  
 
   const [user, setUser] = useState<User | null>(() => {
     const userFromLocalStorage = localStorage.getItem("user");
@@ -71,6 +100,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem("access_token", userDetails.access_token);
     localStorage.setItem("refresh_token", userDetails.refresh_token);
     localStorage.setItem("user", JSON.stringify(userDetails));
+    console.log(userDetails);
+    
   };
 
   const logout = () => {
@@ -109,7 +140,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         accessToken, 
         refreshToken, 
         login, 
-        logout 
+        logout ,
+        isLoading
       }}
     >
       {children}

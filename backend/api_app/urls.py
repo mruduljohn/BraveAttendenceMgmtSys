@@ -6,11 +6,13 @@ from .views import FetchAttendanceView
 from .views import FetchLeaveRequestsView
 from .views import UpdateUserDetailsView
 from .views import DeleteUserView
-
+from .views import TokenValidityCheckView
 
 urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('attendance/clock_in_out/', views.clock_in_out, name='clock_in_out'),
+     path('attendance/status/', views.check_attendance_status, name='attendance-status'),
+    path('token/validity-check/', TokenValidityCheckView.as_view(), name='token_validity_check'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('add_user/', AddUserView.as_view(), name='add_user'),
     path('fetch_attendance/', FetchAttendanceView.as_view(), name='fetch_attendance'),
@@ -23,5 +25,6 @@ urlpatterns = [
     path('fetch_all_leave_requests/', views.FetchAllLeaveRequestsView.as_view(), name='fetch_all_leave_requests'),
     path('fetch_all_attendance_records/', views.FetchAllAttendanceRecordsView.as_view(), name='fetch_all_attendance_records'),
     path('accept_reject_leave_request/', views.AcceptRejectLeaveRequestView.as_view(), name='accept_reject_leave_request'),
-    path('generate_reports/', views.GenerateAttendanceRecordsView.as_view(), name='generate_reports'),
+    path('generate_reports/<int:month>/', views.GenerateAttendanceRecordsView.as_view(), name='generate_reports')
+
 ]

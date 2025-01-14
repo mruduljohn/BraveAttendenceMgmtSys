@@ -82,9 +82,14 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', 'postgres://user:password@db:5432/mydb')
-    )
+    'default': {
+         'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'maluammu',
+        'HOST': 'localhost',  # or your database server's address
+        'PORT': '5433',       # Default PostgreSQL port
+    }
 }
 
 # Password validation
@@ -138,8 +143,8 @@ from datetime import timedelta
 
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'employee_id',
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=10),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
 }
