@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import LiveTime from "@/components/LiveTime";
 
-const ManagerClockInPage: React.FC = () => {
+const ClockInPage: React.FC = () => {
   const [isClockedIn, setIsClockedIn] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -15,63 +15,30 @@ const ManagerClockInPage: React.FC = () => {
   if (!["Manager", "Admin", "Employee"].includes(user?.role)) {
     navigate("/"); // Redirect if user is not allowed
   }
-  const decodeToken = (token) => {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      return JSON.parse(atob(base64));
-    } catch (error) {
-      console.error("Error decoding token:", error);
-      return null;
-    }
-  };
+  // const decodeToken = (token) => {
+  //   try {
+  //     const base64Url = token.split('.')[1];
+  //     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  //     return JSON.parse(atob(base64));
+  //   } catch (error) {
+  //     console.error("Error decoding token:", error);
+  //     return null;
+  //   }
+  // };
   
-  const isTokenExpired = (token) => {
-    const decoded = decodeToken(token);
-    if (!decoded) return true; // Treat invalid tokens as expired
-    const currentTime = Math.floor(Date.now() / 1000);
-    return decoded.exp < currentTime;
-  };
+  // const isTokenExpired = (token) => {
+  //   const decoded = decodeToken(token);
+  //   if (!decoded) return true; // Treat invalid tokens as expired
+  //   const currentTime = Math.floor(Date.now() / 1000);
+  //   return decoded.exp < currentTime;
+  // };
   
   const getAccessToken = async () => {
     let accessToken = localStorage.getItem('access_token');
-  
-    if (!accessToken || isTokenExpired(accessToken)) {
-      console.log("Access token expired. Refreshing...");
-      accessToken = await refreshAccessToken();
-    }
-  
     return accessToken;
   };
   
-  const refreshAccessToken = async () => {
-    const refreshToken = localStorage.getItem('refresh_token');
-    if (!refreshToken) {
-      console.error("No refresh token available.");
-      return null;
-    }
 
-    try {
-      const response = await fetch("http://localhost:8000/api/token/refresh/", {
-        method: "POST",
-        body: JSON.stringify({ refresh: refreshToken }),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("data",data)
-        localStorage.setItem('access_token', data.access);
-        return data.access;
-      } else {
-        console.error("Failed to refresh token.");
-        return null;
-      }
-    } catch (error) {
-      console.error("Error refreshing token:", error);
-      return null;
-    }
-  };
 
   useEffect(() => {
     console.log("useEffect triggered");
@@ -84,7 +51,7 @@ const ManagerClockInPage: React.FC = () => {
           },
         });
 
-        // console.log('Response object:', response);
+        
 
         if (response.ok) {
           const data = await response.json();
@@ -92,7 +59,8 @@ const ManagerClockInPage: React.FC = () => {
           setIsClockedIn(data.isClockedIn)
         } else {
 
-          const errorData = await response.text();
+          const errorData = await response.json();
+          if( errorData.messages[0].message === "Token is invalid or expired")
           console.log('Error response body:', errorData);
         }
       } catch (error) {
@@ -104,55 +72,55 @@ const ManagerClockInPage: React.FC = () => {
   }, []); // Dependency array ensures it runs only once on mount
 
 
-const handleClockInOut = async () => {
-    let accessToken = getAccessToken();
-
-    // If there's no access token or if it's expired, refresh it
+  const handleClockInOut = async () => {
+    let accessToken = await getAccessToken(); 
     if (!accessToken) {
-      console.log("refreshihg")
-      accessToken = await refreshAccessToken();
+        console.log("No access token, redirecting to login");
+        navigate("/"); 
+        return; 
     }
 
-    if (!accessToken) {
-      alert("Failed to authenticate. Please log in again.");
-      navigate("/");
-    }
-
-    // Determine whether to clock in or out
     const action = isClockedIn ? "clock_out" : "clock_in";
 
-    // Make the clock-in/clock-out request
     try {
-      const response = await fetch("http://localhost:8000/api/attendance/clock_in_out/", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action }),
-      });
+        const response = await fetch("http://localhost:8000/api/attendance/clock_in_out/", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ action }),
+        });
 
-      if (response.ok) {
-        // Parse the response data
-        const data = await response.json();
-        console.log(data.message);
-        setIsClockedIn(data.isClockedIn);
-      } else {
-        const errorData = await response.json();
-        console.error("Error response:", errorData);
-       
-        if (errorData.error === "No clockout sessions!" || errorData.error === "clocked in already") {
-          alert("Error: " + (errorData.error))
-          setIsClockedIn((prevState) => !prevState); 
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data.message);
+            setIsClockedIn(data.isClockedIn);
         } else {
-          alert("Failed to clock in/out. Error: " + (errorData.error || "Unknown error."));
+            const errorData = await response.json();
+            console.error("Error response:", errorData);
+
+            // Check if the token is invalid or expired and redirect to login
+            if (errorData.messages && errorData.messages[0]?.message === "Token is invalid or expired") {
+                alert("Your session has expired. Please log in again.");
+                navigate("/");
+                return; 
+            }
+
+            // Handle specific business logic errors
+            if (errorData.error === "No clockout sessions!" || errorData.error === "clocked in already") {
+                alert("Error: " + errorData.error);
+                setIsClockedIn((prevState) => !prevState); 
+            } else {
+        
+                alert("Failed: " + (errorData.error || "Unknown error, please contact admin"));
+            }
         }
-      }
     } catch (error) {
-      console.error("Error during clock in/out:", error);
-      alert("An error occurred while trying to clock in/out.");
+        console.error("Error during clock in/out:", error);
+        alert("An error occurred while trying to clock in/out.");
     }
-  };
+};
 
 
   const handleViewTeamClockIns = () => {
@@ -247,4 +215,4 @@ const handleClockInOut = async () => {
   );
 };
 
-export default ManagerClockInPage;
+export default ClockInPage;
