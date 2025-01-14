@@ -18,11 +18,12 @@ from .serializers import (
 )
 from .models import attendance, users, leave_requests
 from datetime import datetime
+from django.utils import timezone
 from .permissions import (IsAdmin, IsManager, 
                           IsEmployee,IsAdminOrManager,
                           IsManagerorEmployee,IsAdminorEmployee)
 from django.shortcuts import get_object_or_404
-
+from django.http import JsonResponse
 def assign_role(user, role):
     """
     Assign a role dynamically to a user.
@@ -60,7 +61,7 @@ def clock_in_out(request):
 
             if action == 'clock_in':
                 if open_entry:
-                    return Response({"error": "You already have an open session. Please clock out first."}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"error": "clocked in already"}, status=status.HTTP_400_BAD_REQUEST)
 
                 # Create new clock-in entry
                 attendance_entry = attendance.objects.create(
@@ -69,11 +70,11 @@ def clock_in_out(request):
                     clock_in_time=now(),
                     status='Open',
                 )
-                return Response({"message": "Clock-in successful", "entry_id": attendance_entry.attendance_id}, status=status.HTTP_201_CREATED)
+                return Response({"message": "Clock-in successful","isClockedIn": True, "entry_id": attendance_entry.attendance_id}, status=status.HTTP_201_CREATED)
 
             elif action == 'clock_out':
                 if not open_entry:
-                    return Response({"error": "No open session found to clock out."}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"error": "No clockout sessions!"}, status=status.HTTP_400_BAD_REQUEST)
 
                 # Update the clock-out time and calculate total hours
                 clock_in_time = open_entry.clock_in_time
@@ -84,7 +85,7 @@ def clock_in_out(request):
                 open_entry.total_hours = total_hours if open_entry.total_hours is None else open_entry.total_hours + total_hours
                 open_entry.save()
 
-                return Response({"message": "Clock-out successful", "entry_id": open_entry.attendance_id, "total_hours": open_entry.total_hours}, status=status.HTTP_200_OK)
+                return Response({"message": "Clock-out successful","isClockedIn": False, "entry_id": open_entry.attendance_id, "total_hours": open_entry.total_hours}, status=status.HTTP_200_OK)
 
             else:
                 return Response({"error": "Invalid action. Use 'clock_in' or 'clock_out'."}, status=status.HTTP_400_BAD_REQUEST)
@@ -93,7 +94,32 @@ def clock_in_out(request):
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+@api_view(['GET'])
+def check_attendance_status(request):
+    try:
+      
+        user = request.user
+        
+        
+        current_attendance = attendance.objects.filter(employee=user, status='Open').first()
 
+        if current_attendance:
+           
+            return Response({
+                'isClockedIn': True,
+                'entry_id': current_attendance.attendance_id,
+                'clock_in_time': current_attendance.clock_in_time,
+            })
+        else:
+       
+            return Response({
+                'isClockedIn': False,
+            })
+
+    except Exception as e:
+        # In case of error
+        return Response({'error': str(e)}, status=400)
+    
 #admin only access   
 class AddUserView(APIView):
     permission_classes = [IsAdmin]

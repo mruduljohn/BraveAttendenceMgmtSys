@@ -25,6 +25,7 @@ const LoginPage: React.FC = () => {
         const { access_token, refresh_token, role, employee_id, username, email, position, department, joined_date } = response;
 
         // Store tokens
+        
         localStorage.setItem("access_token", access_token);
         localStorage.setItem("refresh_token", refresh_token);
 

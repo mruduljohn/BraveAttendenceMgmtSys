@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
+import apiClient from "../utils/apiClient";
 
 interface AttendanceRecord {
   date: string;
