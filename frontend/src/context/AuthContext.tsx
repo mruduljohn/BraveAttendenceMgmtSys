@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const response = await axios.get("http://localhost:8000/api/token/validity-check/", {
         headers: {
           Authorization: `Bearer ${accessToken}`
-        }//edaaa njnn othrii neram orngyoo ehh? ippzha enittee illa 10mins maxokiee
+        }
       }
       );
       console.log("authenticated", response.data.isAuthenticated)
