@@ -15,30 +15,7 @@ const ClockInPage: React.FC = () => {
   if (!["Manager", "Admin", "Employee"].includes(user?.role)) {
     navigate("/"); // Redirect if user is not allowed
   }
-  // const decodeToken = (token) => {
-  //   try {
-  //     const base64Url = token.split('.')[1];
-  //     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-  //     return JSON.parse(atob(base64));
-  //   } catch (error) {
-  //     console.error("Error decoding token:", error);
-  //     return null;
-  //   }
-  // };
   
-  // const isTokenExpired = (token) => {
-  //   const decoded = decodeToken(token);
-  //   if (!decoded) return true; // Treat invalid tokens as expired
-  //   const currentTime = Math.floor(Date.now() / 1000);
-  //   return decoded.exp < currentTime;
-  // };
-  
-  const getAccessToken = async () => {
-    let accessToken = localStorage.getItem('access_token');
-    return accessToken;
-  };
-  
-
 
   useEffect(() => {
     console.log("useEffect triggered");
@@ -50,8 +27,6 @@ const ClockInPage: React.FC = () => {
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
           },
         });
-
-        
 
         if (response.ok) {
           const data = await response.json();
@@ -73,20 +48,13 @@ const ClockInPage: React.FC = () => {
 
 
   const handleClockInOut = async () => {
-    let accessToken = await getAccessToken(); 
-    if (!accessToken) {
-        console.log("No access token, redirecting to login");
-        navigate("/"); 
-        return; 
-    }
-
     const action = isClockedIn ? "clock_out" : "clock_in";
 
     try {
         const response = await fetch("http://localhost:8000/api/attendance/clock_in_out/", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${accessToken}`,
+                "Authorization": `Bearer ${localStorage.getItem('access_token')}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({ action }),
@@ -100,14 +68,13 @@ const ClockInPage: React.FC = () => {
             const errorData = await response.json();
             console.error("Error response:", errorData);
 
-            // Check if the token is invalid or expired and redirect to login
-            if (errorData.messages && errorData.messages[0]?.message === "Token is invalid or expired") {
-                alert("Your session has expired. Please log in again.");
-                navigate("/");
-                return; 
-            }
+            // // Check if the token is invalid or expired and redirect to login
+            // if (errorData.messages && errorData.messages[0]?.message === "Token is invalid or expired") {
+            //     alert("Your session has expired. Please log in again.");
+            //     navigate("/");
+            //     return; 
+            // }
 
-            // Handle specific business logic errors
             if (errorData.error === "No clockout sessions!" || errorData.error === "clocked in already") {
                 alert("Error: " + errorData.error);
                 setIsClockedIn((prevState) => !prevState); 

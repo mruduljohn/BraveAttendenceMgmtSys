@@ -12,9 +12,9 @@ const ManagerDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  if (user?.role !== "manager") {
-    navigate("/");
-  }
+  // if (user?.role !== "manager") {
+  //   navigate("/");
+  // }
 
   // Simulated manager profile data
   const temp = {

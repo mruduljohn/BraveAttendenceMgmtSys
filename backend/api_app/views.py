@@ -25,6 +25,8 @@ from .permissions import (IsAdmin, IsManager,
                           IsManagerorEmployee,IsAdminorEmployee)
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 def assign_role(user, role):
     """
     Assign a role dynamically to a user.
@@ -41,6 +43,28 @@ def login_view(request):
         if serializer.is_valid():
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class TokenValidityCheckView(APIView):
+   
+
+    def get(self, request):
+        """
+        Check if the JWT token is expired or valid.
+        """
+        auth = JWTAuthentication()
+
+        # Try to authenticate the request token
+        try:
+            # JWT Authentication will decode and validate the token
+            res = auth.authenticate(request)
+            if(res is None):
+                raise AuthenticationFailed()
+            # If token is valid, the user will be authenticated, and we proceed
+            return Response({"isAuthenticated": True})
+
+        except AuthenticationFailed as e:
+            # Handle the case where the token is invalid or expired
+            return Response({"isAuthenticated": False}, status=401)
 
 #employee only access-- admin , manger, employee
 @api_view(['POST'])

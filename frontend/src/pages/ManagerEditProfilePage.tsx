@@ -27,11 +27,11 @@ const ManagerEditProfilePage: React.FC = () => {
    });
  
     // Protect the route
-     useEffect(() => {
-       if (!user || user.role !== "manager") {
-         navigate("/");
-       }
-     }, [user, navigate]);
+    //  useEffect(() => {
+    //    if (!user || user.role !== "manager") {
+    //      navigate("/");
+    //    }
+    //  }, [user, navigate]);
 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -113,7 +113,7 @@ const ManagerEditProfilePage: React.FC = () => {
   };
 
     // Return null if user is not authorized
-    if (!user || user.role !== "manager") {
+    if (!user || user.role !== "Manager") {
       return null;
     }
 
