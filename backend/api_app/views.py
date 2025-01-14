@@ -425,15 +425,28 @@ class AcceptRejectLeaveRequestView(APIView):
     
 
 
-from django.db.models import Count, Sum, Q, F
+from django.db.models import Count, Sum, Q, F, Func
+
+class Cast(Func):
+    function = 'CAST'
+    template = '%(expressions)s AS NUMERIC'
 
 class GenerateAttendanceRecordsView(APIView):
-    permission_classes = [IsAuthenticated, IsManager]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         try:
-            # Fetch the month from query parameters
-            month = request.query_params.get('month', None)
+            # Fetch the month from the URL parameters
+            month = kwargs.get('month', None)
+
+            if month:
+                try:
+                    month = int(month)
+                except ValueError:
+                    return Response(
+                        {"message": "Invalid month parameter."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
             # Filter attendance records based on the month
             if month:
@@ -451,12 +464,16 @@ class GenerateAttendanceRecordsView(APIView):
             summary = (
                 attendance_records.values('employee_id')
                 .annotate(
-                    employee_name=F('employee_username'),  # Fetch related user data
-                    role=F('employee_role'),
+                    employee_name=F('employee_id__username'),  # Fetching the username from the related user model
+                    position=F('employee_id__position'),  # Fetching the role from the related user model
                     total_days=Count('attendance_id'),
-                    days_present=Count('attendance_id', filter=Q(status='Present')),
-                    days_absent=Count('attendance_id', filter=Q(status='Absent')),
-                    total_hours=Sum('total_hours'),
+                    days_present=Count('attendance_id', filter=Q(status='present')),
+                    days_absent=Count('attendance_id', filter=Q(status='absent')),
+                    total_hours=Func(
+                        Func(F('total_hours'), function='CAST', template='(%(expressions)s)::NUMERIC'),
+                        function='ROUND',
+                        template="ROUND(%(expressions)s, 0)"
+                    ),
                 )
             )
 
