@@ -90,7 +90,7 @@ class FetchLeaveRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = leave_requests
-        fields = ['leave_type', 'start_date', 'end_date', 'status']
+        fields = ['leave_id','leave_type', 'start_date', 'end_date', 'status']
 
 
 
