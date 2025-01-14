@@ -45,12 +45,12 @@ const ManagerDashboard: React.FC = () => {
       icon: UserCheck,
       href: "/manager/leave-approvals",
     },
-    {
-      title: "Attendance Analytics",
-      description: "View and analyze team attendance data",
-      icon: PieChart,
-      href: "/manager/analytics",
-    },
+    // {
+    //   title: "Attendance Analytics",
+    //   description: "View and analyze team attendance data",
+    //   icon: PieChart,
+    //   href: "/manager/analytics",
+    // },
   ];
 
   const personalActions = [
