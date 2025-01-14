@@ -12,7 +12,7 @@ const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  if (user?.role !== "admin") {
+  if (user?.role !== "Admin") {
     navigate("/");
   }
 

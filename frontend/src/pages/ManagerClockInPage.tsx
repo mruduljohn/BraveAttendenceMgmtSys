@@ -15,9 +15,35 @@ const ManagerClockInPage: React.FC = () => {
   if (user?.role !== "Manager") {
     navigate("/"); // Redirect if user is not a manager
   }
-  const getAccessToken = () => {
-    return localStorage.getItem('access_token');
+  const decodeToken = (token) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(atob(base64));
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return null;
+    }
   };
+  
+  const isTokenExpired = (token) => {
+    const decoded = decodeToken(token);
+    if (!decoded) return true; // Treat invalid tokens as expired
+    const currentTime = Math.floor(Date.now() / 1000);
+    return decoded.exp < currentTime;
+  };
+  
+  const getAccessToken = async () => {
+    let accessToken = localStorage.getItem('access_token');
+  
+    if (!accessToken || isTokenExpired(accessToken)) {
+      console.log("Access token expired. Refreshing...");
+      accessToken = await refreshAccessToken();
+    }
+  
+    return accessToken;
+  };
+  
   const refreshAccessToken = async () => {
     const refreshToken = localStorage.getItem('refresh_token');
     if (!refreshToken) {
@@ -34,8 +60,9 @@ const ManagerClockInPage: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        localStorage.setItem('access_token', data.access_token);
-        return data.access_token;
+        console.log("data",data)
+        localStorage.setItem('access_token', data.access);
+        return data.access;
       } else {
         console.error("Failed to refresh token.");
         return null;
@@ -77,7 +104,7 @@ const ManagerClockInPage: React.FC = () => {
   }, []); // Dependency array ensures it runs only once on mount
 
 
-  const handleClockInOut = async () => {
+const handleClockInOut = async () => {
     let accessToken = getAccessToken();
 
     // If there's no access token or if it's expired, refresh it
