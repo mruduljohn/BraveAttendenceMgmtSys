@@ -19,11 +19,13 @@ const LoginPage: React.FC = () => {
 
     try {
       const response = await apiLogin(email, password);
-
+      console.log(response)
       if (response.success) {
-        const { access_token, refresh_token, role,employee_id, username, email, position, department, joined_date } = response;
+
+        const { access_token, refresh_token, role, employee_id, username, email, position, department, joined_date } = response;
 
         // Store tokens
+        
         localStorage.setItem("access_token", access_token);
         localStorage.setItem("refresh_token", refresh_token);
 
@@ -38,15 +40,26 @@ const LoginPage: React.FC = () => {
           access_token,
           refresh_token
         });
+
+        function capitalizeFirstLetter(role: string) {
+          return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+        }
+        
+        const Role = capitalizeFirstLetter(role);
+        //print role
+        console.log(Role);
+
         // Navigate based on role
-        if (role === "Admin") navigate("/admin/dashboard");
-        else if (role === "Manager") navigate("/manager/dashboard");
+        if (Role === "Admin") navigate("/admin/dashboard");
+        else if (Role === "Manager") navigate("/manager/dashboard");
         else navigate("/employee/dashboard");
-      } else {
+      }
+      else {
         setError("Invalid credentials");
       }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
+    } catch (err: any) {
+      console.log(err)
+      setError(err.message || "An error occurred. Please try again.");
     }
   };
 
@@ -62,11 +75,23 @@ const LoginPage: React.FC = () => {
         body: JSON.stringify({ email, password }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        console.log(response)
+        if (data && data.non_field_errors && data.non_field_errors.length > 0) {
+          throw new Error(data.non_field_errors[0]);
+        } else {
+          console.log(`HTTP error! status: ${response.status}`)
+          throw new Error(`An error occurred. Please try again`)
+        }
       }
 
-      const data = await response.json();
+
+
+      const capitalizeFirstLetter = (str: string) => {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+      };
 
       if (data.access_token && data.refresh_token && data.role) {
         return {
@@ -74,7 +99,7 @@ const LoginPage: React.FC = () => {
           employee_id: data.employee_id,
           access_token: data.access_token,
           refresh_token: data.refresh_token,
-          role: data.role,
+          role: capitalizeFirstLetter(data.role),
           username: data.username,
           email: data.email,
           position: data.position,

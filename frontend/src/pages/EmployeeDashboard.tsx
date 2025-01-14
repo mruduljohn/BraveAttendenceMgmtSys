@@ -14,12 +14,12 @@ const EmployeeDashboard: React.FC = () => {
 
   console.log("User in Dashboard ", user);
 
-  // Protect the route
-  useEffect(() => {
-    if (!user || user.role !== "employee") {
-      navigate("/");
-    }
-  }, [user, navigate]);
+  // // Protect the route
+  // useEffect(() => {
+  //   if (!user || user.role !== "Employee") {
+  //     navigate("/");
+  //   }
+  // }, [user, navigate]);
 
   const cards = [
     {

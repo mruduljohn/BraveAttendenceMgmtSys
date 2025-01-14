@@ -90,7 +90,7 @@ class FetchLeaveRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = leave_requests
-        fields = ['leave_type', 'start_date', 'end_date', 'status']
+        fields = ['leave_id','leave_type', 'start_date', 'end_date', 'status']
 
 
 
@@ -150,10 +150,11 @@ class AcceptRejectLeaveRequestSerializer(serializers.Serializer):
             return leave_request
         raise serializers.ValidationError("Leave request not found.")
     
-class GenerateAttendanceRecordsSerializer(serializers.Serializer):
-    username = serializers.CharField(source='employee_id.username', read_only=True)  # Fetches username from related user
-    role = serializers.CharField(source='employee_id.role', read_only=True)          # Fetches role from related user
+class GenerateAttendanceRecordsSerializer(serializers.ModelSerializer):
+    # Fetch username and role from the related user model
+    username = serializers.CharField(source='employee_id.username', read_only=True)
+    position = serializers.CharField(source='employee_id.position', read_only=True)
 
     class Meta:
         model = attendance
-        fields = ['attendance_id', 'employee_id', 'username', 'role', 'date', 'status', 'total_hours']
+        fields = ['attendance_id', 'employee_id', 'date', 'status', 'total_hours', 'username', 'position']

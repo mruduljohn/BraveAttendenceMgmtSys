@@ -59,8 +59,14 @@ const EmployeeAttendanceRecordsPage: React.FC = () => {
       }
     };
 
+
     fetchAttendance();
   }, [user, navigate,accessToken]);
+
+  // if (user?.role !== "employee") {
+  //   navigate("/"); // Redirect if user is not an employee
+  // }
+
 
   const containerVariants = {
     hidden: { opacity: 0 },

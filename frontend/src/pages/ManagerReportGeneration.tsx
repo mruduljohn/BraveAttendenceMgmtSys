@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
+import { useAuth } from "../context/AuthContext";
 
 interface EmployeeReport {
   name: string;
-  role: string;
+  position: string;
   totalWorkingDays: number;
   daysPresent: number;
   daysAbsent: number;
@@ -21,52 +22,133 @@ const ManagerReportGeneration: React.FC = () => {
   const navigate = useNavigate();
   const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [report, setReport] = useState<EmployeeReport[]>([]);
+  const { user } = useAuth();
+
+  // if (!["Manager"].includes(user?.role)) {
+  //   navigate("/"); // Redirect if user is not allowed
+  // }
+
+  // Function to get the access token from local storage
+  const getAccessToken = () => {
+    return localStorage.getItem('access_token');
+  };
+
+  // Function to refresh the access token
+  const refreshAccessToken = async () => {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) {
+      console.error("No refresh token available.");
+      return null;
+    }
+
+    try {
+      const response = await fetch("http://localhost:8000/api/token/refresh/", {
+        method: "POST",
+        body: JSON.stringify({ refresh: refreshToken }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('access_token', data.access_token);
+        return data.access_token;
+      } else {
+        console.error("Failed to refresh token.");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error refreshing token:", error);
+      return null;
+    }
+  };
 
   const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    { name: 'January', value: 1 },
+    { name: 'February', value: 2 },
+    { name: 'March', value: 3 },
+    { name: 'April', value: 4 },
+    { name: 'May', value: 5 },
+    { name: 'June', value: 6 },
+    { name: 'July', value: 7 },
+    { name: 'August', value: 8 },
+    { name: 'September', value: 9 },
+    { name: 'October', value: 10 },
+    { name: 'November', value: 11 },
+    { name: 'December', value: 12 },
   ];
 
-  const generateReport = () => {
-    // Dummy data generation - replace with actual API call in production
-    const dummyReport: EmployeeReport[] = [
-      {
-        name: "Alice Johnson",
-        role: "Software Developer",
-        totalWorkingDays: 22,
-        daysPresent: 20,
-        daysAbsent: 2,
-        overtimeHours: 10
-      },
-      {
-        name: "Bob Smith",
-        role: "UX Designer",
-        totalWorkingDays: 22,
-        daysPresent: 21,
-        daysAbsent: 1,
-        overtimeHours: 5
-      },
-      {
-        name: "Charlie Brown",
-        role: "QA Tester",
-        totalWorkingDays: 22,
-        daysPresent: 22,
-        daysAbsent: 0,
-        overtimeHours: 8
-      }
-    ];
+  const generateReport = async () => {
+    if (!selectedMonth) {
+      alert("Please select a month first!");
+      return;
+    }
 
-    setReport(dummyReport);
+    // Find the selected month's numeric value
+    const selectedMonthObj = months.find(m => m.name === selectedMonth);
+    const monthValue = selectedMonthObj?.value;
+
+    if (!monthValue) {
+      alert("Invalid month selected.");
+      return;
+    }
+
+    let accessToken = getAccessToken();
+
+    // If there's no access token or if it's expired, refresh it
+    if (!accessToken) {
+      console.log("Refreshing token...");
+      accessToken = await refreshAccessToken();
+    }
+
+    if (!accessToken) {
+      alert("Failed to authenticate. Please log in again.");
+      navigate("/");
+      return;
+    }
+
+    // Make the API request to generate the report
+    try {
+      const response = await fetch(`http://localhost:8000/api/generate_reports/${monthValue}/`, {
+
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const errorMessage = errorData.message || "Unknown error occurred";
+        alert(errorMessage);
+        alert(errorData.message || "Failed to generate report");
+        return;
+      }
+
+      const data = await response.json();
+      const formattedReport = data.data.map((emp: any) => ({
+        name: emp.employee_name, // Adjust based on API response
+        position: emp.position,
+        totalWorkingDays: emp.total_days, // Adjust based on API response
+        daysPresent: emp.days_present, // Adjust based on API response
+        daysAbsent: emp.days_absent, // Adjust based on API response
+        overtimeHours: emp.total_hours, // Adjust based on API response
+      }));
+      setReport(formattedReport); // Populate the report with actual data
+      alert("Report generated successfully!");
+    } catch (error) {
+      console.error("Error fetching report:", error);
+      alert("An error occurred while generating the report. Please try again.");
+    }
   };
 
   const downloadReport = () => {
-    const headers = "Employee Name,Role,Total Working Days,Days Present,Days Absent,Overtime Hours\n";
+    const headers = "Employee Name,Position,Total Working Days,Days Present,Days Absent,Overtime Hours\n";
     const csvContent = report.map(emp => 
-      `${emp.name},${emp.role},${emp.totalWorkingDays},${emp.daysPresent},${emp.daysAbsent},${emp.overtimeHours}`
+      `${emp.name},${emp.position},${emp.totalWorkingDays},${emp.daysPresent},${emp.daysAbsent},${emp.overtimeHours}`
     ).join("\n");
 
     const element = document.createElement("a");
-    const file = new Blob([headers + csvContent], {type: 'text/csv'});
+    const file = new Blob([headers + csvContent], { type: 'text/csv' });
     element.href = URL.createObjectURL(file);
     element.download = `team_attendance_report_${selectedMonth}.csv`;
     document.body.appendChild(element);
@@ -134,16 +216,19 @@ const ManagerReportGeneration: React.FC = () => {
           <Card className="bg-slate-800/50 backdrop-blur-lg border-blue-700 p-6">
             <motion.div variants={itemVariants} className="mb-6">
               <div className="flex items-center gap-4">
-                <Select onValueChange={setSelectedMonth} value={selectedMonth}>
-                  <SelectTrigger className="w-[180px] bg-slate-700 border-blue-600 text-white">
-                    <SelectValue placeholder="Select month" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {months.map((month) => (
-                      <SelectItem key={month} value={month}>{month}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <Select onValueChange={setSelectedMonth} value={selectedMonth}>
+                <SelectTrigger className="w-[180px] bg-slate-700 border-blue-600 text-white">
+                  <SelectValue placeholder="Select month" />
+                </SelectTrigger>
+                <SelectContent>
+                  {months.map((month) => (
+                    <SelectItem key={month.value} value={month.name}> {/* Using month.name as text */}
+                      {month.name} {/* Displaying month name */}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
                 <Button
                   onClick={generateReport}
                   className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
@@ -163,7 +248,7 @@ const ManagerReportGeneration: React.FC = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="text-slate-300">Employee Name</TableHead>
-                        <TableHead className="text-slate-300">Role</TableHead>
+                        <TableHead className="text-slate-300">Position</TableHead>
                         <TableHead className="text-slate-300">Total Working Days</TableHead>
                         <TableHead className="text-slate-300">Days Present</TableHead>
                         <TableHead className="text-slate-300">Days Absent</TableHead>
@@ -174,7 +259,7 @@ const ManagerReportGeneration: React.FC = () => {
                       {report.map((employee, index) => (
                         <TableRow key={index}>
                           <TableCell className="font-medium text-white">{employee.name}</TableCell>
-                          <TableCell className="text-slate-300">{employee.role}</TableCell>
+                          <TableCell className="text-slate-300">{employee.position}</TableCell>
                           <TableCell className="text-slate-300">{employee.totalWorkingDays}</TableCell>
                           <TableCell className="text-slate-300">{employee.daysPresent}</TableCell>
                           <TableCell className="text-slate-300">{employee.daysAbsent}</TableCell>

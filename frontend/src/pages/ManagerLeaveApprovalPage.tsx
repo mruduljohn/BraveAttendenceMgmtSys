@@ -58,9 +58,9 @@ const ManagerLeaveApprovalPage: React.FC = () => {
     fetchLeaveRequests();
   }, []);
 
-  if (user?.role !== "manager") {
-    navigate("/"); // Redirect if user is not a manager
-  }
+  // if (user?.role !== "manager") {
+  //   navigate("/"); // Redirect if user is not a manager
+  // }
 
   const handleValidation = async (id: number, status: "Approved" | "Rejected") => {
     // Update leave request status
