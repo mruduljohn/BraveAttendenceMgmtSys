@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/context/AuthContext";
 import {
   Table,
   TableBody,
@@ -17,53 +18,103 @@ import {
 import LiveTime from "@/components/LiveTime";
 
 interface LeaveRequest {
-  id: number;
-  startDate: string;
-  endDate: string;
-  reason: string;
+  leave_id: number;
+  start_date: string;
+  end_date: string;
+  leave_type: string;
   status: string;
 }
 
 const AdminLeaveRequestsPage: React.FC = () => {
+  const { user,accessToken } = useAuth();
   const navigate = useNavigate();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [newLeaveRequest, setNewLeaveRequest] = useState({
-    startDate: "",
-    endDate: "",
-    reason: "",
-  });
+      start_date: "",
+      end_date: "",
+      leave_type: "",
+      status: "Pending",
+    });
 
   useEffect(() => {
-    // Fetch the leave requests from the backend API
-    // Here, you would make an actual API call to your backend to fetch leave requests
-    // For now, we'll use a static example
-    setLeaveRequests([
-      {
-        id: 1,
-        startDate: "2025-01-15",
-        endDate: "2025-01-18",
-        reason: "Vacation",
-        status: "Pending",
-      },
-      {
-        id: 2,
-        startDate: "2025-02-01",
-        endDate: "2025-02-02",
-        reason: "Sick leave",
-        status: "Approved",
-      },
-    ]);
-  }, []);
+      // Fetch the leave requests from the backend API
+      const fetchLeaveRequests = async () => {
+        try {
+          const response = await fetch("http://127.0.0.1:8000/api/fetch_leave_requests/", {
+            headers: {
+              "content-type": "application/json",
+              "Authorization": `Bearer ${accessToken}`,
+            },
+          });
+          if (!response.ok) {
+            throw new Error("Failed to fetch leave requests");
+          }
+          const data = await response.json();
+          const mappedRequests = data["Leave Requests"].map((req: any) => ({
+            leave_id: req.leave_id, // Generate a temporary unique ID for each request
+            leave_type: req.leave_type,
+            start_date: req.start_date,
+            end_date: req.end_date,
+            status: req.status,
+          }));
+          setLeaveRequests(mappedRequests);
+          //console.log("Leave Requests:", mappedRequests);
+        } catch (error) {
+          console.error("Error fetching leave requests:", error);
+        }
+      };
+  
+      fetchLeaveRequests();
+    }, [accessToken]);
 
-  const handleLeaveRequestSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle the submission of the new leave request
-    // You should make an API call to submit the leave request to the backend
-    console.log("Leave request submitted", newLeaveRequest);
+  const handleLeaveRequestSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+  
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/create_leave_requests/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(newLeaveRequest),
+        });
+  
+        if (!response.ok) {
+          throw new Error("Failed to submit leave request");
+        }
+  
+        // Re-fetch leave requests after successfully creating a new one
+    const fetchResponse = await fetch("http://127.0.0.1:8000/api/fetch_leave_requests/", {
+      headers: {
+        "content-type": "application/json",
+        "Authorization": `Bearer ${accessToken}`,
+      },
+    });
 
-    // After submission, you could clear the form or show a success message
-    setNewLeaveRequest({ startDate: "", endDate: "", reason: "" });
-  };
+    if (!fetchResponse.ok) {
+      throw new Error("Failed to fetch leave requests");
+    }
+
+    const data = await fetchResponse.json();
+    const mappedRequests = data["Leave Requests"].map((req: any) => ({
+      leave_id: req.leave_id,
+      leave_type: req.leave_type,
+      start_date: req.start_date,
+      end_date: req.end_date,
+      status: req.status,
+    }));
+    setLeaveRequests(mappedRequests);
+
+    // Clear the form fields
+    setNewLeaveRequest({ start_date: "", end_date: "", leave_type: "", status: "Pending" });
+
+    alert("Leave request submitted successfully!");
+  } catch (error) {
+    console.error("Error submitting leave request:", error);
+    alert("Failed to submit leave request. Please try again.");
+  }
+};
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -126,6 +177,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="text-gray-300">Leave ID</TableHead>
                     <TableHead className="text-slate-300">Start Date</TableHead>
                     <TableHead className="text-slate-300">End Date</TableHead>
                     <TableHead className="text-slate-300">Reason</TableHead>
@@ -134,10 +186,11 @@ const AdminLeaveRequestsPage: React.FC = () => {
                 </TableHeader>
                 <TableBody>
                   {leaveRequests.map((request) => (
-                    <motion.tr key={request.id} variants={itemVariants}>
-                      <TableCell className="text-slate-300">{request.startDate}</TableCell>
-                      <TableCell className="text-slate-300">{request.endDate}</TableCell>
-                      <TableCell className="text-slate-300">{request.reason}</TableCell>
+                    <motion.tr key={request.leave_id} variants={itemVariants}>
+                      <TableCell className="text-gray-300">{request.leave_id}</TableCell>
+                      <TableCell className="text-gray-300">{request.start_date}</TableCell>
+                      <TableCell className="text-gray-300">{request.end_date}</TableCell>
+                      <TableCell className="text-gray-300">{request.leave_type}</TableCell>
                       <TableCell>
                         <span className={`px-2 py-1 rounded text-xs font-medium ${
                           request.status === 'Approved' ? 'bg-green-500/20 text-green-400' :
@@ -165,11 +218,11 @@ const AdminLeaveRequestsPage: React.FC = () => {
                   <Input
                     type="date"
                     id="startDate"
-                    value={newLeaveRequest.startDate}
+                    value={newLeaveRequest.start_date}
                     onChange={(e) =>
                       setNewLeaveRequest({
                         ...newLeaveRequest,
-                        startDate: e.target.value,
+                        start_date: e.target.value,
                       })
                     }
                     className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
@@ -183,11 +236,11 @@ const AdminLeaveRequestsPage: React.FC = () => {
                   <Input
                     type="date"
                     id="endDate"
-                    value={newLeaveRequest.endDate}
+                    value={newLeaveRequest.end_date}
                     onChange={(e) =>
                       setNewLeaveRequest({
                         ...newLeaveRequest,
-                        endDate: e.target.value,
+                        end_date: e.target.value,
                       })
                     }
                     className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
@@ -200,11 +253,11 @@ const AdminLeaveRequestsPage: React.FC = () => {
                   </label>
                   <Textarea
                     id="reason"
-                    value={newLeaveRequest.reason}
+                    value={newLeaveRequest.leave_type}
                     onChange={(e) =>
                       setNewLeaveRequest({
                         ...newLeaveRequest,
-                        reason: e.target.value,
+                        leave_type: e.target.value,
                       })
                     }
                     className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
