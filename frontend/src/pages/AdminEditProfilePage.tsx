@@ -26,12 +26,12 @@ const AdminEditProfilePage: React.FC = () => {
       profilePicture: user?.profilePicture || "https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg",
     });
 
-    // Protect the route
-      useEffect(() => {
-        if (!user || user.role !== "admin") {
-          navigate("/");
-        }
-      }, [user, navigate]);
+    // // Protect the route
+    //   useEffect(() => {
+    //     if (!user || user.role !== "admin") {
+    //       navigate("/");
+    //     }
+    //   }, [user, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

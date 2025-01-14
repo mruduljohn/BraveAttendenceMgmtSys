@@ -42,9 +42,9 @@ const EmployeeAttendanceRecordsPage: React.FC = () => {
     fetchAttendance();
   }, []);
 
-  if (user?.role !== "employee") {
-    navigate("/"); // Redirect if user is not an employee
-  }
+  // if (user?.role !== "employee") {
+  //   navigate("/"); // Redirect if user is not an employee
+  // }
 
   const containerVariants = {
     hidden: { opacity: 0 },

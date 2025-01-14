@@ -24,9 +24,9 @@ const ManagerReportGeneration: React.FC = () => {
   const [report, setReport] = useState<EmployeeReport[]>([]);
   const { user } = useAuth();
 
-  if (!["Manager"].includes(user?.role)) {
-    navigate("/"); // Redirect if user is not allowed
-  }
+  // if (!["Manager"].includes(user?.role)) {
+  //   navigate("/"); // Redirect if user is not allowed
+  // }
 
   // Function to get the access token from local storage
   const getAccessToken = () => {

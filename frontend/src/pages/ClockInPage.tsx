@@ -12,9 +12,9 @@ const ClockInPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  if (!["Manager", "Admin", "Employee"].includes(user?.role)) {
-    navigate("/"); // Redirect if user is not allowed
-  }
+  // if (!["Manager", "Admin", "Employee"].includes(user?.role)) {
+  //   navigate("/"); // Redirect if user is not allowed
+  // }
   
 
   useEffect(() => {

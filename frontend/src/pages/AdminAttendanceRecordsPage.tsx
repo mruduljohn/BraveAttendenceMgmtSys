@@ -42,9 +42,9 @@ const AdminAttendanceRecordsPage: React.FC = () => {
     fetchAttendance();
   }, []);
 
-  if (user?.role !== "admin") {
-    navigate("/"); // Redirect if user is not an admin
-  }
+  // if (user?.role !== "admin") {
+  //   navigate("/"); // Redirect if user is not an admin
+  // }
 
   const containerVariants = {
     hidden: { opacity: 0 },
