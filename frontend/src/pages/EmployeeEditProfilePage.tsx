@@ -116,9 +116,9 @@ const EditProfilePage: React.FC = () => {
   };
 
   // Return null if user is not authorized
-  if (!user || user.role !== "employee") {
-    return null;
-  }
+  // if (!user || user.role !== "employee") {
+  //   return null;
+  // }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-900">
