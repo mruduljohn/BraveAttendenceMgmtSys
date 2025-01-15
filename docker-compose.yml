@@ -5,6 +5,8 @@ services:
     build:
       context: ./frontend
       dockerfile: ${DOCKERFILE:-Dockerfile.dev}  # Use dev Dockerfile by default, can be overridden
+      args:
+        - REACT_APP_API_URL="http://15.206.69.241:8000"
     container_name: react-frontend  # Optional: Name the container for easier reference
     ports:
       - "5173:5173"  # Expose frontend on port 5173
