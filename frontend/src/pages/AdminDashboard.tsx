@@ -164,7 +164,8 @@ const AdminDashboard: React.FC = () => {
               <div>
                 <h3 className="text-lg font-medium text-white">{user?.username}</h3>
                 <p className="text-slate-400">Email: {user?.email}</p>
-                <p className="text-slate-400">Role: {user?.role}</p>
+                <p className="text-slate-400">Position: {user?.position}</p>
+                <p className="text-slate-400">Department: {user?.department}</p>
               </div>
             </div>
             {/* Edit Profile Button */}

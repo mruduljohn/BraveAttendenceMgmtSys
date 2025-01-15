@@ -163,7 +163,7 @@ const ManagerDashboard: React.FC = () => {
               <div>
                 <h3 className="text-lg font-medium text-white">{user?.username}</h3>
                 <p className="text-blue-300">Email: {user?.email}</p>
-                <p className="text-blue-300">Role: {user?.role}</p>
+                <p className="text-blue-300">Position: {user?.position}</p>
                 <p className="text-blue-300">Department: {user?.department}</p>
               </div>
             </div>

@@ -16,7 +16,7 @@ import {
 import LiveTime from "@/components/LiveTime";
 
 interface Employee {
-  id: number;
+  employee_id: number;
   username: string;
   email: string;
   role: string;
@@ -150,7 +150,7 @@ const ManagerEmployeeManagement: React.FC = () => {
                   </TableHeader>
                   <TableBody>
                     {employees.map(emp => (
-                      <TableRow key={emp.id}>
+                      <TableRow key={emp.employee_id}>
                         <TableCell className="font-medium text-white">
                           {emp.employee_id}
                         </TableCell>

@@ -50,7 +50,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
             throw new Error("Failed to fetch leave requests");
           }
           const data = await response.json();
-          const mappedRequests = data["Leave Requests"].map((req: any) => ({
+          const mappedRequests = data.map((req: any) => ({
             leave_id: req.leave_id, // Generate a temporary unique ID for each request
             leave_type: req.leave_type,
             start_date: req.start_date,
@@ -97,7 +97,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
     }
 
     const data = await fetchResponse.json();
-    const mappedRequests = data["Leave Requests"].map((req: any) => ({
+    const mappedRequests = data.map((req: any) => ({
       leave_id: req.leave_id,
       leave_type: req.leave_type,
       start_date: req.start_date,
