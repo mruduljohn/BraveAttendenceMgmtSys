@@ -32,7 +32,7 @@ services:
       - DEBUG=1  # Enable debug mode (set to 0 for production)
       - DATABASE_URL=postgres://user:password@db:5432/mydb  # Connect to the db service within Docker
       - SECRET_KEY=django-insecure-zc(faan$y8doxw+w@5v3f1=%c-vzop+caqa9fv2h03hf$kwbp(
-      - ALLOWED_HOSTS=15.206.69.241
+      - BACKEND_HOST=15.206.69.241
 
     depends_on:
       - db  # Ensure backend starts after db service is available

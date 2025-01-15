@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Mail, Lock, LogIn } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { baseUrl } from "@/assets/constant";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -64,7 +65,6 @@ const LoginPage: React.FC = () => {
   };
 
   const apiLogin = async (email: string, password: string) => {
-    const baseUrl = process.env.REACT_APP_API_URL;
     const url = `${baseUrl}/api/login/`;
 
     try {
