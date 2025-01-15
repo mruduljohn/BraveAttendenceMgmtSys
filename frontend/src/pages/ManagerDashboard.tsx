@@ -156,7 +156,7 @@ const ManagerDashboard: React.FC = () => {
             <h2 className="text-xl font-semibold text-white mb-4">Manager Profile</h2>
             <div className="flex items-center gap-6">
               <img
-                src={"https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg"}
+                src={"https://mighty.tools/mockmind-api/content/cartoon/9.jpg"}
                 alt="Profile"
                 className="w-20 h-20 rounded-full border-2 border-green-400"
               />

@@ -33,7 +33,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
   const [newLeaveRequest, setNewLeaveRequest] = useState({
       start_date: "",
       end_date: "",
-      leave_type: "",
+      leave_type: "No Reason provided",
       status: "Pending",
     });
 
@@ -74,6 +74,12 @@ const AdminLeaveRequestsPage: React.FC = () => {
   const handleLeaveRequestSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
   
+      // Set default leave_type if empty
+      const leaveRequestToSubmit = {
+      ...newLeaveRequest,
+      leave_type: newLeaveRequest.leave_type || "No reason provided",
+    };
+
       try {
         const response = await fetch("http://127.0.0.1:8000/api/create_leave_requests/", {
           method: "POST",
@@ -81,7 +87,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${accessToken}`,
           },
-          body: JSON.stringify(newLeaveRequest),
+          body: JSON.stringify(leaveRequestToSubmit),
         });
   
         if (!response.ok) {
@@ -267,7 +273,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
                       })
                     }
                     className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
-                    required
+                 
                   />
                 </div>
                 <Button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900">
