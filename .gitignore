@@ -8,3 +8,5 @@ migrations/__pycache__/
 db.txt
 backend/backend/settings.py
 frontend/node_modules
+node_modules/
+node_modules
