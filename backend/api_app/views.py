@@ -589,7 +589,7 @@ def generate_report(request, month):
         report.append({
             'employee_id': employee.employee_id,
             'employee_name': employee.username,
-            'position:':employee.position,
+            'position':employee.position,
             'total_days': total_working_days,
             'days_present': len(unique_days),
             'days_absent': total_working_days - len(unique_days),

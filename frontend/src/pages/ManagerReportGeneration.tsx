@@ -215,6 +215,7 @@ const ManagerReportGeneration: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
+                      
                       {report.map((employee, index) => (
                         <TableRow key={index}>
                           <TableCell className="font-medium text-white">{employee.name}</TableCell>
