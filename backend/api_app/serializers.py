@@ -87,10 +87,11 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
         read_only_fields = ['employee']  # Ensure the employee field is read-only in the response
 
 class FetchLeaveRequestSerializer(serializers.ModelSerializer):
+    employee_name = serializers.CharField(source='employee.username', read_only=True)
 
     class Meta:
         model = leave_requests
-        fields = ['leave_id','leave_type', 'start_date', 'end_date', 'status']
+        fields = ['leave_id', 'employee', 'employee_name', 'leave_type', 'start_date', 'end_date', 'status']
 
 
 
@@ -127,30 +128,38 @@ class FetchAllAttendanceSerializer(serializers.ModelSerializer):
 
 class AcceptRejectLeaveRequestSerializer(serializers.Serializer):
     employee_id = serializers.IntegerField(required=True)
+    leave_id = serializers.IntegerField(required=True)
     action = serializers.ChoiceField(choices=["approve", "reject"], required=True)
 
-    def validate_employee_id(self, value):
-        # Check if the employee has a leave request
-        if not leave_requests.objects.filter(employee_id=value).exists():
-            raise serializers.ValidationError("No leave request found for the given employee ID.")
-        return value
+    def validate(self, data):
+        """
+        Validates that the combination of employee_id and leave_id exists.
+        """
+        employee_id = data.get('employee_id')
+        leave_id = data.get('leave_id')
+
+        if not leave_requests.objects.filter(employee_id=employee_id, leave_id=leave_id).exists():
+            raise serializers.ValidationError("No matching leave request found for the given employee ID and leave ID.")
+        return data
 
     def update_status(self):
         """
-        Updates the status of the leave request based on the provided employee_id and action.
+        Updates the status of a specific leave request based on employee_id, leave_id, and action.
         """
         validated_data = self.validated_data
         employee_id = validated_data['employee_id']
+        leave_id = validated_data['leave_id']
         action = validated_data['action']
 
-        # Fetch the most recent leave request for the employee
-        leave_request = leave_requests.objects.filter(employee_id=employee_id).last()
-
-        if leave_request:
+        # Fetch the specific leave request
+        try:
+            leave_request = leave_requests.objects.get(employee_id=employee_id, leave_id=leave_id)
             leave_request.status = "Approved" if action == "approve" else "Rejected"
             leave_request.save()
             return leave_request
-        raise serializers.ValidationError("Leave request not found.")
+        except leave_requests.DoesNotExist:
+            raise serializers.ValidationError("Leave request not found.")
+
     
 class GenerateAttendanceRecordsSerializer(serializers.ModelSerializer):
     # Fetch username and role from the related user model

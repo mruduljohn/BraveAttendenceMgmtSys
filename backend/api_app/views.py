@@ -378,7 +378,7 @@ class DeleteUserView(APIView):
 
 
 class FetchAllLeaveRequestsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsManager]
 
     def get(self, request, *args, **kwargs):
         # Fetch leave requests for all employees (no employee_id filter)
@@ -393,7 +393,7 @@ class FetchAllLeaveRequestsView(APIView):
         # Serialize the data
         serializer = FetchLeaveRequestSerializer(requests, many=True)
         return Response(
-            {"Leave Requests": serializer.data},
+            {"data": serializer.data},
             status=status.HTTP_200_OK
         )
 
@@ -427,7 +427,7 @@ class FetchAllAttendanceRecordsView(APIView):
 
 
 class AcceptRejectLeaveRequestView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsManager]
 
     def patch(self, request, *args, **kwargs):
         serializer = AcceptRejectLeaveRequestSerializer(data=request.data)
@@ -436,7 +436,7 @@ class AcceptRejectLeaveRequestView(APIView):
             try:
                 leave_request = serializer.update_status()
                 return Response(
-                    {"message": f"Leave request has been {leave_request.status} successfully."},
+                    {"status": {leave_request.status} },
                     status=status.HTTP_200_OK
                 )
             except serializers.ValidationError as e:
