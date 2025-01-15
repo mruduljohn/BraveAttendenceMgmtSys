@@ -78,7 +78,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
         },
         body: JSON.stringify(newLeaveRequest),
       });
-
+      
       if (!response.ok) {
         throw new Error("Failed to submit leave request");
       }
@@ -86,17 +86,18 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
     // Re-fetch leave requests after successfully creating a new one
     const fetchResponse = await fetch("http://127.0.0.1:8000/api/fetch_leave_requests/", {
       headers: {
-        "content-type": "application/json",
+        "Content-Type": "application/json",
         "Authorization": `Bearer ${accessToken}`,
       },
     });
-
+    
     if (!fetchResponse.ok) {
       throw new Error("Failed to fetch leave requests");
     }
 
     const data = await fetchResponse.json();
-    const mappedRequests = data["Leave Requests"].map((req: any) => ({
+    console.log("data",data)
+    const mappedRequests = data.map((req: any) => ({
       leave_id: req.leave_id,
       leave_type: req.leave_type,
       start_date: req.start_date,
@@ -182,6 +183,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
                 </TableHeader>
                 <TableBody>
                   {leaveRequests.map((request) => (
+                    
                     <motion.tr key={request.leave_id} variants={itemVariants}>
                       <TableCell className="text-gray-300">{request.leave_id}</TableCell>
                       <TableCell className="text-gray-300">{request.start_date}</TableCell>
@@ -195,9 +197,10 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
                               : request.status === "Pending"
                               ? "bg-yellow-600 text-yellow-100"
                               : "bg-red-600 text-red-100"
-                          }`}
+                          }` }
                         >
                           {request.status}
+                          
                         </span>
                       </TableCell>
                     </motion.tr>
@@ -219,6 +222,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
                     onChange={(e) =>
                       setNewLeaveRequest({ ...newLeaveRequest, start_date: e.target.value })
                     }
+                    className="text-white"
                   />
                   <Input
                     type="date"
@@ -227,6 +231,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
                     onChange={(e) =>
                       setNewLeaveRequest({ ...newLeaveRequest, end_date: e.target.value })
                     }
+                     className="text-white"
                   />
                 </div>
                 <Textarea
@@ -234,8 +239,9 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
                   value={newLeaveRequest.leave_type}
                   onChange={(e) =>
                     setNewLeaveRequest({ ...newLeaveRequest, leave_type: e.target.value })
+                    
                   }
-                  className="mt-4"
+                  className="mt-4 text-white"
                 />
                 <Button type="submit" className="mt-4">
                   Submit Leave Request
