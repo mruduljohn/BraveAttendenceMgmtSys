@@ -23,7 +23,7 @@ const AdminEditProfilePage: React.FC = () => {
       position: user?.position || "",
       department: user?.department || "",
       joined_date: user?.joined_date || "",
-      profilePicture: user?.profilePicture || "https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg",
+      profilePicture: "https://mighty.tools/mockmind-api/content/cartoon/5.jpg",
     });
 
     // // Protect the route
@@ -79,19 +79,19 @@ const AdminEditProfilePage: React.FC = () => {
       }
     };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileData(prev => ({
-          ...prev,
-          profilePicture: reader.result as string
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       setProfileData(prev => ({
+  //         ...prev,
+  //         profilePicture: reader.result as string
+  //       }));
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -162,7 +162,7 @@ const AdminEditProfilePage: React.FC = () => {
                     alt="Profile"
                     className="w-32 h-32 rounded-full border-2 border-amber-400"
                   />
-                  <Label htmlFor="profile-picture" className="absolute bottom-0 right-0 bg-amber-500 text-slate-900 rounded-full p-2 cursor-pointer">
+                  {/* <Label htmlFor="profile-picture" className="absolute bottom-0 right-0 bg-amber-500 text-slate-900 rounded-full p-2 cursor-pointer">
                     <Camera className="w-5 h-5" />
                   </Label>
                   <Input
@@ -171,7 +171,7 @@ const AdminEditProfilePage: React.FC = () => {
                     accept="image/*"
                     className="hidden"
                     onChange={handleFileChange}
-                  />
+                  /> */}
                 </div>
               </motion.div>
 
