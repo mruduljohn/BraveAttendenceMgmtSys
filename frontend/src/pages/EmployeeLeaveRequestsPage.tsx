@@ -32,7 +32,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
   const [newLeaveRequest, setNewLeaveRequest] = useState({
     start_date: "",
     end_date: "",
-    leave_type: "",
+    leave_type: "No reason provided",
     status: "Pending",
   });
 
@@ -69,6 +69,12 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
   const handleLeaveRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Set default leave_type if empty
+    const leaveRequestToSubmit = {
+      ...newLeaveRequest,
+      leave_type: newLeaveRequest.leave_type || "No reason provided",
+    };
+
     try {
       const response = await fetch("http://127.0.0.1:8000/api/create_leave_requests/", {
         method: "POST",
@@ -76,7 +82,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${accessToken}`,
         },
-        body: JSON.stringify(newLeaveRequest),
+        body: JSON.stringify(leaveRequestToSubmit),
       });
       
       if (!response.ok) {
@@ -242,6 +248,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
                     
                   }
                   className="mt-4 text-white"
+    
                 />
                 <Button type="submit" className="mt-4">
                   Submit Leave Request
