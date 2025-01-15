@@ -7,7 +7,7 @@ services:
       dockerfile: ${DOCKERFILE:-Dockerfile.dev}  # Use dev Dockerfile by default, can be overridden
     container_name: react-frontend  # Optional: Name the container for easier reference
     ports:
-      - "80:5173"  # Expose frontend on port 5173
+      - "5173:5173"  # Expose frontend on port 5173
     volumes:
       - ./frontend:/app  # Mount frontend code to /app inside the container
       - /app/node_modules  # Persist node_modules to avoid rebuilding it each time
