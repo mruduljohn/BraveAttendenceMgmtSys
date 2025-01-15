@@ -1,0 +1,13 @@
+asgiref==3.8.1
+bcrypt==4.2.1
+dj-database-url==2.3.0
+Django==5.1.4
+django-cors-headers==4.6.0
+djangorestframework==3.15.2
+djangorestframework_simplejwt==5.4.0
+psycopg2-binary
+PyJWT==2.10.1
+pytz==2024.2
+sqlparse==0.5.3
+typing_extensions==4.12.2
+tzdata==2024.2
