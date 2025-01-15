@@ -14,6 +14,7 @@ const EditProfilePage: React.FC = () => {
   const { user, updateUser, accessToken } = useAuth();
   const navigate = useNavigate();
 
+
   // Initialize state with user data
   const [profileData, setProfileData] = useState({
     employee_id: user?.employee_id || 0,
@@ -32,6 +33,7 @@ const EditProfilePage: React.FC = () => {
   //     navigate("/");
   //   }
   // }, [user, navigate]);
+ 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -115,10 +117,10 @@ const EditProfilePage: React.FC = () => {
     },
   };
 
-  // Return null if user is not authorized
-  if (!user || user.role !== "employee") {
-    return null;
-  }
+  // // Return null if user is not authorized
+  // if (!user || user.role !== "employee") {
+  //   return null;
+  // }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-900">

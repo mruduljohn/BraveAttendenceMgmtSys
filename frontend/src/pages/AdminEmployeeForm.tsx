@@ -115,7 +115,10 @@ const AdminEmployeeForm: React.FC = () => {
           password: employee.password || undefined // Remove empty password
         }
       : employee;
-
+      console.log('API URL:', apiUrl);
+      console.log('Method:', method);
+      console.log('Payload:', submitData);
+      
     try {
       const response = await fetch(apiUrl, {
         method,
