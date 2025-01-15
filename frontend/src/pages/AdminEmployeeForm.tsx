@@ -243,13 +243,15 @@ const AdminEmployeeForm: React.FC = () => {
                   <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 z-10" />
                   <Select 
                     name="position" 
-                    value={employee.position} 
+                    value={employee.position  || undefined} 
                     onValueChange={(value) => handleSelectChange('position', value)}
+                    required
                   >
                     <SelectTrigger className="pl-10 bg-gray-700 border-gray-600 text-white">
                       <SelectValue placeholder="Select a position" />
                     </SelectTrigger>
                     <SelectContent>
+
                       {positions.map(pos => (
                         <SelectItem key={pos.value} value={pos.value}>
                           {pos.label}
@@ -281,8 +283,10 @@ const AdminEmployeeForm: React.FC = () => {
                   <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 z-10" />
                   <Select 
                     name="role" 
+                    defaultValue="Employee"
                     value={employee.role} 
                     onValueChange={(value) => handleSelectChange('role', value)}
+                    
                   >
                     <SelectTrigger className="pl-10 bg-gray-700 border-gray-600 text-white">
                       <SelectValue placeholder="Select a role" />
@@ -293,6 +297,7 @@ const AdminEmployeeForm: React.FC = () => {
                       <SelectItem value="Manager">Manager</SelectItem>
                     </SelectContent>
                   </Select>
+            
                 </div>
               </div>
 
