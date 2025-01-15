@@ -240,26 +240,22 @@ def create_leave_request(request):
 
 class FetchLeaveRequestsView(APIView):
     #admin,employee
-    permission_classes = [IsAuthenticated, IsAdminorEmployee]
+    permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         # Get the employee_id from the authenticated user's token
-        employee_id = request.user.employee_id 
-
+        user = request.user
         # Fetch leave requests for the authenticated employee
-        requests = leave_requests.objects.filter(employee_id=employee_id)
+        records = leave_requests.objects.filter(employee=user)
 
-        if not requests.exists():
+        if not records.exists():
             return Response(
-                {"message": "No leave requests found for this employee."},
-                status=status.HTTP_404_NOT_FOUND
+                {"message": "No leave requests found ."},
             )
 
         # Serialize the data
-        serializer = FetchLeaveRequestSerializer(requests, many=True)
-        return Response(
-            {"employee_id": employee_id, "Leave Requests": serializer.data},
-            status=status.HTTP_200_OK
+        serializer = FetchLeaveRequestSerializer(records, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK
         )
 
 
@@ -389,7 +385,7 @@ class DeleteUserView(APIView):
 
 
 class FetchAllLeaveRequestsView(APIView):
-    permission_classes = [IsAuthenticated, IsManager]
+    permission_classes = [IsAuthenticated,IsManager]
 
     def get(self, request, *args, **kwargs):
         # Fetch leave requests for all employees (no employee_id filter)
@@ -404,7 +400,7 @@ class FetchAllLeaveRequestsView(APIView):
         # Serialize the data
         serializer = FetchLeaveRequestSerializer(requests, many=True)
         return Response(
-            {"Leave Requests": serializer.data},
+            {"data": serializer.data},
             status=status.HTTP_200_OK
         )
 
@@ -438,7 +434,7 @@ class FetchAllAttendanceRecordsView(APIView):
 
 
 class AcceptRejectLeaveRequestView(APIView):
-    permission_classes = [IsAuthenticated, IsManager]
+    permission_classes = [IsAuthenticated,IsManager]
 
     def patch(self, request, *args, **kwargs):
         serializer = AcceptRejectLeaveRequestSerializer(data=request.data)
@@ -447,7 +443,7 @@ class AcceptRejectLeaveRequestView(APIView):
             try:
                 leave_request = serializer.update_status()
                 return Response(
-                    {"message": f"Leave request has been {leave_request.status} successfully."},
+                    {"status": {leave_request.status} },
                     status=status.HTTP_200_OK
                 )
             except serializers.ValidationError as e:
