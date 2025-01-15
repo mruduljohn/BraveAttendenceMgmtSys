@@ -81,7 +81,7 @@ const ManagerReportGeneration: React.FC = () => {
       }
 
       const data = await response.json();
-      // console.log('Data',data.report);
+       //console.log('Data',data.report);
 
       
       const formattedReport = data.report.map((emp: any) => ({

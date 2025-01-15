@@ -156,12 +156,12 @@ const EmployeeAttendanceRecordsPage: React.FC = () => {
                       </TableCell>
                     <TableCell>
                       <div className="flex items-center">
-                        {record.status === "Present" ? (
+                        {record.status === "Open" ? (
                           <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
                         ) : (
                           <XCircle className="w-4 h-4 mr-2 text-red-500" />
                         )}
-                        <span className={record.status === "Present" ? "text-green-500" : "text-red-500"}>
+                        <span className={record.status === "Open" ? "text-green-500" : "text-red-500"}>
                           {record.status}
                         </span>
                       </div>

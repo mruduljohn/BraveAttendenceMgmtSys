@@ -38,6 +38,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
 
   useEffect(() => {
       // Fetch the leave requests from the backend API
+      console.log("Component mounted")
       const fetchLeaveRequests = async () => {
         try {
           const response = await fetch("http://127.0.0.1:8000/api/fetch_leave_requests/", {
@@ -50,7 +51,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
             throw new Error("Failed to fetch leave requests");
           }
           const data = await response.json();
-          const mappedRequests = data["Leave Requests"].map((req: any) => ({
+          const mappedRequests = data.map((req: any) => ({
             leave_id: req.leave_id, // Generate a temporary unique ID for each request
             leave_type: req.leave_type,
             start_date: req.start_date,
@@ -97,7 +98,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
     }
 
     const data = await fetchResponse.json();
-    const mappedRequests = data["Leave Requests"].map((req: any) => ({
+    const mappedRequests = data.map((req: any) => ({
       leave_id: req.leave_id,
       leave_type: req.leave_type,
       start_date: req.start_date,

@@ -32,7 +32,8 @@ from datetime import timedelta, date
 from django.utils.timezone import make_aware
 from django.utils import timezone
 import pytz
-
+from django.conf import settings
+from utils import get_current_time, convert_to_local_time
 ist = pytz.timezone('Asia/Kolkata')  # IST timezone
 def assign_role(user, role):
     """
@@ -98,8 +99,8 @@ def clock_in_out(request):
                 # Create new clock-in entry
                 attendance_entry = attendance.objects.create(
                     employee_id=employee_id,
-                    date=now().date(),
-                    clock_in_time=now(),
+                    date=timezone.localtime().date(),
+                    clock_in_time=timezone.localtime(),
                     status='Open',
                 )
                 return Response({"message": "Clock-in successful","isClockedIn": True, "entry_id": attendance_entry.attendance_id}, status=status.HTTP_201_CREATED)
@@ -110,7 +111,7 @@ def clock_in_out(request):
 
                 # Update the clock-out time and calculate total hours
                 clock_in_time = open_entry.clock_in_time
-                clock_out_time = now()
+                clock_out_time = timezone.localtime()
                 total_hours = (clock_out_time - clock_in_time).total_seconds() / 3600.0  # Hours as float
                 open_entry.clock_out_time = clock_out_time
                 open_entry.status = 'Closed'
@@ -483,9 +484,9 @@ def calculate_daily_hours(records):
 
     for record in records:
         # Convert times to IST
-        clock_in = record.clock_in_time.astimezone(ist)
-        clock_out = record.clock_out_time.astimezone(ist) if record.clock_out_time else clock_in
-
+        clock_in = convert_to_local_time(record.clock_in_time)
+        clock_out = convert_to_local_time(record.clock_out_time) if record.clock_out_time else clock_in
+        # print("checking ", clock_in,clock_out)
         # If same day
         if clock_in.date() == clock_out.date():
             work_hours = (clock_out - clock_in).total_seconds() / 3600
@@ -530,7 +531,7 @@ def get_unique_days(records):
     unique_days = set()
     for record in records:
         # Only add the clock-in date as a working day
-        clock_in = record.clock_in_time.astimezone(ist)
+        clock_in =  convert_to_local_time(record.clock_in_time)
         unique_days.add(clock_in.date())
     return unique_days
 @api_view(['GET'])
@@ -581,7 +582,7 @@ def generate_report(request, month):
 
         # Calculate total overtime
         total_overtime = calculate_overtime(daily_hours)
-        print(employee.position)
+        # print(employee.position)
         report.append({
             'employee_id': employee.employee_id,
             'employee_name': employee.username,
