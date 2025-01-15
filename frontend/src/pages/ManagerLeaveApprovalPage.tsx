@@ -36,6 +36,7 @@ interface LeaveRequest {
   reason: string;
   status: "Pending" | "Approved" | "Rejected";
   employeeId: number;
+  commentData:string;
 }
 const ManagerLeaveApprovalPage: React.FC = () => {
   const { user,accessToken } = useAuth();
@@ -69,7 +70,8 @@ const ManagerLeaveApprovalPage: React.FC = () => {
           startDate: emp.start_date, // Adjust based on API response
           endDate: emp.end_date, // Adjust based on API response
           reason: emp.leave_type, // Adjust based on API response
-          status: emp.status, // Adjust based on API response
+          status: emp.status,
+          comment:emp.comment // Adjust based on API response
         }));
         setLeaveRequests(formattedReport);
        
@@ -81,11 +83,12 @@ const ManagerLeaveApprovalPage: React.FC = () => {
     fetchLeaveRequests();
   }, [accessToken]);
 
-  const handleValidation = async (leaveId: number, employeeId: number, action: "approve" | "reject") => {
+  const handleValidation = async (leaveId: number, employeeId: number, action: "approve" | "reject", commentData:string) => {
     const requestBody = {
       employee_id: employeeId,
       leave_id: leaveId,
       action: action,
+      comment: commentData,
     };
     // console.log("body",requestBody)
     
@@ -186,6 +189,7 @@ const ManagerLeaveApprovalPage: React.FC = () => {
                   <TableHead className="text-slate-300">Reason</TableHead>
                   <TableHead className="text-slate-300">Status</TableHead>
                   <TableHead className="text-slate-300">Action</TableHead>
+                  
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -252,19 +256,31 @@ const ManagerLeaveApprovalPage: React.FC = () => {
                                 </Label>
                                 <Input id="reason" value={selectedRequest?.reason} className="col-span-3" readOnly />
                               </div>
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="comment" className="text-right">
+                                  Comment
+                                </Label>
+                                <Textarea 
+                                  id="comment" 
+                                  value={comment}
+                                  onChange={(e) => setComment(e.target.value)}
+                                  className="col-span-3"
+                                  placeholder="Add a comment (optional)"
+                                />
+                              </div>
                             </div>
                             <DialogFooter>
                               <Button 
                                 variant="outline" 
                                 className="bg-green-600 text-white hover:bg-green-700"
-                                onClick={() => handleValidation(selectedRequest!.id, selectedRequest!.employeeId, "approve")}
+                                onClick={() => handleValidation(selectedRequest!.id, selectedRequest!.employeeId, "approve", selectedRequest!.commentData)}
                               >
                                 Approve
                               </Button>
                               <Button 
                                 variant="outline" 
                                 className="bg-red-600 text-white hover:bg-red-700"
-                                onClick={() => handleValidation(selectedRequest!.id, selectedRequest!.employeeId, "reject")}
+                                onClick={() => handleValidation(selectedRequest!.id, selectedRequest!.employeeId, "reject" ,comment)}
                               >
                                 Reject
                               </Button>

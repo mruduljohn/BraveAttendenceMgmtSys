@@ -23,6 +23,7 @@ interface LeaveRequest {
   end_date: string;
   leave_type: string;
   status: string;
+  comment:string;
 }
 
 const AdminLeaveRequestsPage: React.FC = () => {
@@ -51,12 +52,14 @@ const AdminLeaveRequestsPage: React.FC = () => {
             throw new Error("Failed to fetch leave requests");
           }
           const data = await response.json();
+          console.log(data)
           const mappedRequests = data.map((req: any) => ({
             leave_id: req.leave_id, // Generate a temporary unique ID for each request
             leave_type: req.leave_type,
             start_date: req.start_date,
             end_date: req.end_date,
             status: req.status,
+            comment:req.comment,
           }));
           setLeaveRequests(mappedRequests);
           //console.log("Leave Requests:", mappedRequests);
@@ -182,6 +185,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
                     <TableHead className="text-slate-300">Start Date</TableHead>
                     <TableHead className="text-slate-300">End Date</TableHead>
                     <TableHead className="text-slate-300">Reason</TableHead>
+                    <TableHead className="text-slate-300">Comments</TableHead>
                     <TableHead className="text-slate-300">Status</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -192,6 +196,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
                       <TableCell className="text-gray-300">{request.start_date}</TableCell>
                       <TableCell className="text-gray-300">{request.end_date}</TableCell>
                       <TableCell className="text-gray-300">{request.leave_type}</TableCell>
+                      <TableCell className="text-gray-300">{request.comment}</TableCell>
                       <TableCell>
                         <span className={`px-2 py-1 rounded text-xs font-medium ${
                           request.status === 'Approved' ? 'bg-green-500/20 text-green-400' :

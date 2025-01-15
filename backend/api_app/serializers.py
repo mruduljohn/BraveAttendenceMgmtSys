@@ -91,7 +91,7 @@ class FetchLeaveRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = leave_requests
-        fields = ['leave_id', 'employee', 'employee_name', 'leave_type', 'start_date', 'end_date', 'status']
+        fields = ['leave_id', 'employee', 'employee_name', 'leave_type', 'start_date', 'end_date', 'status','comment']
 
 
 
@@ -130,7 +130,7 @@ class AcceptRejectLeaveRequestSerializer(serializers.Serializer):
     employee_id = serializers.IntegerField(required=True)
     leave_id = serializers.IntegerField(required=True)
     action = serializers.ChoiceField(choices=["approve", "reject"], required=True)
-
+    comment = serializers.CharField(required=False, allow_blank=True)
     def validate(self, data):
         """
         Validates that the combination of employee_id and leave_id exists.
@@ -147,14 +147,17 @@ class AcceptRejectLeaveRequestSerializer(serializers.Serializer):
         Updates the status of a specific leave request based on employee_id, leave_id, and action.
         """
         validated_data = self.validated_data
+        print(validated_data)
         employee_id = validated_data['employee_id']
         leave_id = validated_data['leave_id']
         action = validated_data['action']
-
+        comment = validated_data.get('comment', '')
+        print("comment:", comment)
         # Fetch the specific leave request
         try:
             leave_request = leave_requests.objects.get(employee_id=employee_id, leave_id=leave_id)
             leave_request.status = "Approved" if action == "approve" else "Rejected"
+            leave_request.comment = comment
             leave_request.save()
             return leave_request
         except leave_requests.DoesNotExist:

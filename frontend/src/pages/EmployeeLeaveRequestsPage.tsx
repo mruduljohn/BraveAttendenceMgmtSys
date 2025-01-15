@@ -55,6 +55,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
           start_date: req.start_date,
           end_date: req.end_date,
           status: req.status,
+          comment: req.comment,
         }));
         setLeaveRequests(mappedRequests);
         //console.log("Leave Requests:", mappedRequests);
@@ -178,6 +179,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
                     <TableHead className="text-gray-300">Start Date</TableHead>
                     <TableHead className="text-gray-300">End Date</TableHead>
                     <TableHead className="text-gray-300">Reason</TableHead>
+                    <TableHead className="text-gray-300">Comments</TableHead>
                     <TableHead className="text-gray-300">Status</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -189,6 +191,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
                       <TableCell className="text-gray-300">{request.start_date}</TableCell>
                       <TableCell className="text-gray-300">{request.end_date}</TableCell>
                       <TableCell className="text-gray-300">{request.leave_type}</TableCell>
+                      <TableCell className="text-gray-300">{request.comment}</TableCell>
                       <TableCell>
                         <span
                           className={`px-2 py-1 rounded text-xs font-medium ${
