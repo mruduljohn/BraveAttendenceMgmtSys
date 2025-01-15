@@ -112,9 +112,9 @@ const AdminEditProfilePage: React.FC = () => {
   };
 
     // Return null if user is not authorized
-    if (!user || user.role !== "admin") {
-      return null;
-    }
+    // if (!user || user.role !== "admin") {
+    //   return null;
+    // }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-900">

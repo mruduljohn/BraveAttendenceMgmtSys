@@ -330,7 +330,7 @@ class EditUserView(APIView):
 
 
 class UserListView(APIView):
-    permission_classes = [IsAuthenticated, IsAdmin] 
+    permission_classes = [IsAuthenticated, IsAdminOrManager] 
     def get(self, request, *args, **kwargs):
         try:
             # Fetch all users from the users table

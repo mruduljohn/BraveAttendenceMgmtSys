@@ -117,7 +117,8 @@ const EditProfilePage: React.FC = () => {
     },
   };
 
-  // // Return null if user is not authorized
+
+  // Return null if user is not authorized
   // if (!user || user.role !== "employee") {
   //   return null;
   // }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Users, FileText, LogOut, BarChart, Clock, Calendar, FileCheck, UserCheck, PieChart } from 'lucide-react';
@@ -11,19 +11,66 @@ import LiveTime from "@/components/LiveTime";
 const ManagerDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isClockedIn, setIsClockedIn] = useState(false);
 
-  // if (user?.role !== "manager") {
-  //   navigate("/");
-  // }
+  useEffect(() => {
+    const fetchAttendanceStatus = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/attendance/status/', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          },
+        });
 
-  // Simulated manager profile data
-  const temp = {
-    name: "Manager User",
-    email: "manager@example.com",
-    role: "General Manager",
-    department: "Sales",
-    joinedDate: "March 15, 2019",
-    profilePicture: "https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg",
+        if (response.ok) {
+          const data = await response.json();
+          setIsClockedIn(data.isClockedIn)
+        } else {
+          const errorData = await response.json();
+          if (errorData.messages[0].message === "Token is invalid or expired")
+            console.log('Error response body:', errorData);
+        }
+      } catch (error) {
+        console.error('Error fetching attendance status:', error);
+      }
+    };
+
+    fetchAttendanceStatus();
+  }, []);
+
+  const handleClockInOut = async () => {
+    const action = isClockedIn ? "clock_out" : "clock_in";
+
+    try {
+      const response = await fetch("http://localhost:8000/api/attendance/clock_in_out/", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('access_token')}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data.message);
+        setIsClockedIn(data.isClockedIn);
+      } else {
+        const errorData = await response.json();
+        console.error("Error response:", errorData);
+
+        if (errorData.error === "No clockout sessions!" || errorData.error === "clocked in already") {
+          alert("Error: " + errorData.error);
+          setIsClockedIn((prevState) => !prevState);
+        } else {
+          alert("Failed: " + (errorData.error || "Unknown error, please contact admin"));
+        }
+      }
+    } catch (error) {
+      console.error("Error during clock in/out:", error);
+      alert("An error occurred while trying to clock in/out.");
+    }
   };
 
   const managerActions = [
@@ -45,22 +92,9 @@ const ManagerDashboard: React.FC = () => {
       icon: UserCheck,
       href: "/manager/leave-approvals",
     },
-    {
-      title: "Attendance Analytics",
-      description: "View and analyze team attendance data",
-      icon: PieChart,
-      href: "/manager/analytics",
-    },
   ];
 
   const personalActions = [
-    {
-      title: "Clock In/Out",
-      description: "Record your daily attendance",
-      icon: Clock,
-      buttonText: "Clock In / Out",
-      href: "/manager/clockin",
-    },
     {
       title: "Personal Attendance",
       description: "View your attendance history",
@@ -114,32 +148,57 @@ const ManagerDashboard: React.FC = () => {
         </div>
       </header>
     
-     {/* Manager Profile Section */}
+     {/* Manager Profile and Clock In/Out Section */}
      <section className="relative z-10 p-6">
-        <div className="max-w-7xl mx-auto bg-slate-800/50 backdrop-blur-lg border border-blue-700 rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-white mb-4">Manager Profile</h2>
-          <div className="flex items-center gap-6">
-            <img
-              src={temp.profilePicture || "/placeholder-avatar.png"}
-              alt="Profile"
-              className="w-20 h-20 rounded-full border-2 border-green-400"
-            />
-            <div>
-              <h3 className="text-lg font-medium text-white">{user?.username}</h3>
-              <p className="text-blue-300">Email: {user?.email}</p>
-              <p className="text-blue-300">Role: {user?.role}</p>
-              <p className="text-blue-300">Department: {user?.department}</p>
+        <div className="max-w-7xl mx-auto grid grid-cols-3 gap-6">
+          {/* Manager Profile */}
+          <Card className="col-span-2 bg-slate-800/50 backdrop-blur-lg border border-blue-700 rounded-lg p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">Manager Profile</h2>
+            <div className="flex items-center gap-6">
+              <img
+                src={"https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg"}
+                alt="Profile"
+                className="w-20 h-20 rounded-full border-2 border-green-400"
+              />
+              <div>
+                <h3 className="text-lg font-medium text-white">{user?.username}</h3>
+                <p className="text-blue-300">Email: {user?.email}</p>
+                <p className="text-blue-300">Role: {user?.role}</p>
+                <p className="text-blue-300">Department: {user?.department}</p>
+              </div>
             </div>
-          </div>
-          {/* Edit Profile Button */}
-          <div className="mt-4">
-            <Button
-              className="w-full bg-white hover:bg-green-300 text-blue-900 font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-              onClick={() => navigate("/manager/edit-profile")}
-            >
-              Edit Manager Profile
-            </Button>
-          </div>
+            {/* Edit Profile Button */}
+            <div className="mt-4">
+              <Button
+                className="w-full bg-white hover:bg-green-300 text-blue-900 font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                onClick={() => navigate("/manager/edit-profile")}
+              >
+                Edit Manager Profile
+              </Button>
+            </div>
+          </Card>
+
+          {/* Clock In/Out Card */}
+          <Card className="bg-slate-800/50 backdrop-blur-lg border border-blue-700 rounded-lg p-6 flex flex-col justify-between">
+            <div className="text-center">
+              <Clock className="w-16 h-16 mx-auto mb-4 text-green-400" />
+              <h2 className="text-xl font-semibold mb-4 text-white">
+                {isClockedIn ? "You are currently clocked in!" : "You are currently clocked out!"}
+              </h2>
+            </div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                className={`w-full py-3 text-lg font-semibold ${
+                  isClockedIn
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-green-500 hover:bg-green-600"
+                } text-slate-900 mb-4`}
+                onClick={handleClockInOut}
+              >
+                {isClockedIn ? "Clock Out" : "Clock In"}
+              </Button>
+            </motion.div>
+          </Card>
         </div>
       </section>
 

@@ -113,9 +113,9 @@ const ManagerEditProfilePage: React.FC = () => {
   };
 
     // Return null if user is not authorized
-    if (!user || user.role !== "Manager") {
-      return null;
-    }
+    // if (!user || user.role !== "Manager") {
+    //   return null;
+    // }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-900">
