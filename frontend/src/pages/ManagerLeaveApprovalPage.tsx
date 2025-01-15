@@ -35,8 +35,8 @@ interface LeaveRequest {
   endDate: string;
   reason: string;
   status: "Pending" | "Approved" | "Rejected";
+  employeeId: number;
 }
-
 const ManagerLeaveApprovalPage: React.FC = () => {
   const { user,accessToken } = useAuth();
   const navigate = useNavigate();
@@ -51,25 +51,28 @@ const ManagerLeaveApprovalPage: React.FC = () => {
         const response = await fetch("http://127.0.0.1:8000/api/fetch_all_leave_requests/", {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${accessToken}`, // Pass the access token
             "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
           },
         });
-
+        
         if (!response.ok) {
           throw new Error("Failed to fetch leave requests");
         }
 
         const data = await response.json();
+        
         const formattedReport = data.data.map((emp: any) => ({
-          id: emp.leave_id, // Adjust based on API response
+          id: emp.leave_id,
+          employeeId: emp.employee,
           employeeName: emp.employee_name, // Adjust based on API response
           startDate: emp.start_date, // Adjust based on API response
           endDate: emp.end_date, // Adjust based on API response
-          reason: emp.reason, // Adjust based on API response
+          reason: emp.leave_type, // Adjust based on API response
           status: emp.status, // Adjust based on API response
         }));
         setLeaveRequests(formattedReport);
+       
       } catch (error) {
         console.error(error);
       }
@@ -78,18 +81,42 @@ const ManagerLeaveApprovalPage: React.FC = () => {
     fetchLeaveRequests();
   }, [accessToken]);
 
-  const handleValidation = async (id: number, status: "Approved" | "Rejected") => {
-    // Update leave request status
-    const updatedRequests = leaveRequests.map((request: { id: number; }) =>
-      request.id === id ? { ...request, status } : request
+  const handleValidation = async (leaveId: number, employeeId: number, action: "approve" | "reject") => {
+    const requestBody = {
+      employee_id: employeeId,
+      leave_id: leaveId,
+      action: action,
+    };
+    // console.log("body",requestBody)
+    
+    // Update leave request status in the frontend state
+    const updatedRequests = leaveRequests.map((request) =>
+      request.id === leaveId ? { ...request, status: action === "approve" ? "Approved" : "Rejected" } : request
     );
     setLeaveRequests(updatedRequests);
     setSelectedRequest(null);
     setComment("");
-    // Here you would typically make an API call to update the status
-    console.log(`Leave request ${id} ${status.toLowerCase()} with comment: ${comment}`);
-  };
 
+    // Make API call to update status
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/accept_reject_leave_request/", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update leave request");
+      }
+      const data = await response.json();
+      
+    } catch (error) {
+      console.error("Error updating leave request:", error);
+    }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -194,7 +221,7 @@ const ManagerLeaveApprovalPage: React.FC = () => {
                             <Button 
                               variant="outline"
                               className="bg-blue-600 text-white hover:bg-blue-700"
-                              onClick={() => setSelectedRequest(request)}
+                              onClick={() =>{ setSelectedRequest(request) }}
                             >
                               Validate
                             </Button>
@@ -225,31 +252,19 @@ const ManagerLeaveApprovalPage: React.FC = () => {
                                 </Label>
                                 <Input id="reason" value={selectedRequest?.reason} className="col-span-3" readOnly />
                               </div>
-                              <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="comment" className="text-right">
-                                  Comment
-                                </Label>
-                                <Textarea 
-                                  id="comment" 
-                                  value={comment}
-                                  onChange={(e) => setComment(e.target.value)}
-                                  className="col-span-3"
-                                  placeholder="Add a comment (optional)"
-                                />
-                              </div>
                             </div>
                             <DialogFooter>
                               <Button 
                                 variant="outline" 
                                 className="bg-green-600 text-white hover:bg-green-700"
-                                onClick={() => handleValidation(selectedRequest!.id, "Approved")}
+                                onClick={() => handleValidation(selectedRequest!.id, selectedRequest!.employeeId, "approve")}
                               >
                                 Approve
                               </Button>
                               <Button 
                                 variant="outline" 
                                 className="bg-red-600 text-white hover:bg-red-700"
-                                onClick={() => handleValidation(selectedRequest!.id, "Rejected")}
+                                onClick={() => handleValidation(selectedRequest!.id, selectedRequest!.employeeId, "reject")}
                               >
                                 Reject
                               </Button>

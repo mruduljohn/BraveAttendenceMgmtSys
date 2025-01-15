@@ -12,7 +12,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
   
 
   
-  console.log(isAuthenticated);
+  // console.log(isAuthenticated);
   
   // const [isAuthenticated, setIsAuthenticated] = useState(checkAuthentication());
 if (!isLoading && (!isAuthenticated || !user || !allowedRoles.includes(user.role))) {
