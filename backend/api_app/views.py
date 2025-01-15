@@ -543,7 +543,7 @@ def generate_report(request, month):
     if not 1 <= month <= 12:
         return JsonResponse({'error': 'Invalid month'}, status=400)
     if month > current_month:
-        return JsonResponse({'error': 'Selected month cannot be in the future'}, status=400)
+        return JsonResponse({'error': 'No records found for selected month'}, status=400)
 
     total_working_days = get_total_working_days(year, month)
 
