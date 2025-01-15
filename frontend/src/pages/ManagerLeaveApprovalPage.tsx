@@ -90,7 +90,7 @@ const ManagerLeaveApprovalPage: React.FC = () => {
       action: action,
       comment: commentData,
     };
-    // console.log("body",requestBody)
+    console.log("body",requestBody)
     
     // Update leave request status in the frontend state
     const updatedRequests = leaveRequests.map((request) =>
@@ -115,6 +115,7 @@ const ManagerLeaveApprovalPage: React.FC = () => {
         throw new Error("Failed to update leave request");
       }
       const data = await response.json();
+      //console.log("data",data)
       
     } catch (error) {
       console.error("Error updating leave request:", error);
@@ -273,7 +274,7 @@ const ManagerLeaveApprovalPage: React.FC = () => {
                               <Button 
                                 variant="outline" 
                                 className="bg-green-600 text-white hover:bg-green-700"
-                                onClick={() => handleValidation(selectedRequest!.id, selectedRequest!.employeeId, "approve", selectedRequest!.commentData)}
+                                onClick={() => handleValidation(selectedRequest!.id, selectedRequest!.employeeId, "approve",comment)}
                               >
                                 Approve
                               </Button>

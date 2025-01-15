@@ -197,6 +197,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
                 </TableHeader>
                 <TableBody>
                   {leaveRequests.map((request) => (
+                    
                     <motion.tr key={request.leave_id} variants={itemVariants}>
                       <TableCell className="text-gray-300">{request.leave_id}</TableCell>
                       <TableCell className="text-gray-300">{request.start_date}</TableCell>
