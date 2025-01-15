@@ -40,7 +40,8 @@ const AdminLeaveRequestsPage: React.FC = () => {
       // Fetch the leave requests from the backend API
       const fetchLeaveRequests = async () => {
         try {
-          const response = await fetch("http://127.0.0.1:8000/api/fetch_leave_requests/", {
+          const baseUrl = process.env.REACT_APP_API_URL;
+          const response = await fetch(`${baseUrl}/api/fetch_leave_requests/`, {
             headers: {
               "content-type": "application/json",
               "Authorization": `Bearer ${accessToken}`,
@@ -71,7 +72,8 @@ const AdminLeaveRequestsPage: React.FC = () => {
       e.preventDefault();
   
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/create_leave_requests/", {
+        const baseUrl = process.env.REACT_APP_API_URL;
+        const response = await fetch(`${baseUrl}/api/create_leave_requests/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -85,7 +87,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
         }
   
         // Re-fetch leave requests after successfully creating a new one
-    const fetchResponse = await fetch("http://127.0.0.1:8000/api/fetch_leave_requests/", {
+    const fetchResponse = await fetch(`${baseUrl}/api/fetch_leave_requests/`, {
       headers: {
         "content-type": "application/json",
         "Authorization": `Bearer ${accessToken}`,

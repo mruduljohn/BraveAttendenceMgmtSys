@@ -46,8 +46,8 @@ const ManagerEditProfilePage: React.FC = () => {
       e.preventDefault();
       
       try {
-        const response = await fetch(
-          "http://127.0.0.1:8000/api/update_user_details/",
+        const baseUrl = process.env.REACT_APP_API_URL;
+        const response = await fetch(`${baseUrl}/api/update_user_details/`, 
           {
             method: "PATCH",
             headers: {

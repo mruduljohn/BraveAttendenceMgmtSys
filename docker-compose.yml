@@ -13,6 +13,7 @@ services:
       - /app/node_modules  # Persist node_modules to avoid rebuilding it each time
     environment:
       - CHOKIDAR_USEPOLLING=true  # Fix for file watching on some systems (useful for live reloading)
+      - REACT_APP_API_URL=http://15.206.69.241:8000
     stdin_open: true
     tty: true
 
@@ -28,6 +29,9 @@ services:
     environment:
       - DEBUG=1  # Enable debug mode (set to 0 for production)
       - DATABASE_URL=postgres://user:password@db:5432/mydb  # Connect to the db service within Docker
+      - SECRET_KEY=django-insecure-zc(faan$y8doxw+w@5v3f1=%c-vzop+caqa9fv2h03hf$kwbp(
+      - ALLOWED_HOSTS=15.206.69.241
+
     depends_on:
       - db  # Ensure backend starts after db service is available
     networks:

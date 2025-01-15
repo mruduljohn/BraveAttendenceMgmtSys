@@ -16,7 +16,7 @@ import {
 import LiveTime from "@/components/LiveTime";
 
 interface Employee {
-  id: number;
+  employee_id: number;
   username: string;
   email: string;
   role: string;
@@ -36,7 +36,8 @@ const ManagerEmployeeManagement: React.FC = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/user_list/', {
+        const baseUrl = process.env.REACT_APP_API_URL;
+        const response = await fetch(`${baseUrl}/api/user_list/`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -150,7 +151,7 @@ const ManagerEmployeeManagement: React.FC = () => {
                   </TableHeader>
                   <TableBody>
                     {employees.map(emp => (
-                      <TableRow key={emp.id}>
+                      <TableRow key={emp.employee_id}>
                         <TableCell className="font-medium text-white">
                           {emp.employee_id}
                         </TableCell>

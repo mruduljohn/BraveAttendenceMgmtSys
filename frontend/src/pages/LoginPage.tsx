@@ -64,7 +64,8 @@ const LoginPage: React.FC = () => {
   };
 
   const apiLogin = async (email: string, password: string) => {
-    const url = "http://127.0.0.1:8000/api/login/";
+    const baseUrl = process.env.REACT_APP_API_URL;
+    const url = `${baseUrl}/api/login/`;
 
     try {
       const response = await fetch(url, {

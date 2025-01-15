@@ -33,7 +33,8 @@ const EmployeeManagement: React.FC = () => {
     // Fetch employees from the API
     const fetchEmployees = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/user_list/', {
+        const baseUrl = process.env.REACT_APP_API_URL;
+        const response = await fetch(`${baseUrl}/api/user_list/`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -61,7 +62,8 @@ const EmployeeManagement: React.FC = () => {
     if (!confirmDelete) return;
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/delete_user/", {
+      const baseUrl = process.env.REACT_APP_API_URL;
+      const response = await fetch(`${baseUrl}/api/delete_user/`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

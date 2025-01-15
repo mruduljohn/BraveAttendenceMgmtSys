@@ -42,7 +42,8 @@ const AdminAttendanceRecordsPage: React.FC = () => {
       setError(null);
 
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/fetch_attendance/", {
+        const baseUrl = process.env.REACT_APP_API_URL;
+        const response = await fetch(`${baseUrl}/api/fetch_attendance/`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${accessToken}`, // Pass the access token
