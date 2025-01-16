@@ -47,11 +47,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true)
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const checkAuthentication = async (): Promise<any> => {
     try {
       setIsLoading(true)
       const accessToken = getAccessToken()
-      const response = await axios.get("http://localhost:8000/api/token/validity-check/", {
+      const baseUrl = process.env.REACT_APP_API_URL;
+      const response = await axios.get(`${baseUrl}/api/token/validity-check/`,{
         headers: {
           Authorization: `Bearer ${accessToken}`
         }

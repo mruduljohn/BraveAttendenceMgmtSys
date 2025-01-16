@@ -21,7 +21,8 @@ const ClockInPage: React.FC = () => {
     console.log("useEffect triggered");
     const fetchAttendanceStatus = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/attendance/status/', {
+        const baseUrl = process.env.REACT_APP_API_URL;
+        const response = await fetch(`${baseUrl}/api/attendance/status/`,{
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
@@ -51,7 +52,8 @@ const ClockInPage: React.FC = () => {
     const action = isClockedIn ? "clock_out" : "clock_in";
 
     try {
-        const response = await fetch("http://localhost:8000/api/attendance/clock_in_out/", {
+        const baseUrl = process.env.REACT_APP_API_URL;
+        const response = await fetch(`${baseUrl}/api/attendance/clock_in_out/`,{
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem('access_token')}`,

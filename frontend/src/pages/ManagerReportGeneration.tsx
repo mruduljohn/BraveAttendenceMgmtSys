@@ -57,7 +57,8 @@ const ManagerReportGeneration: React.FC = () => {
 
     // Make the API request to generate the report
     try {
-      const response = await fetch(`http://localhost:8000/api/generate_reports/${monthValue}/`, {
+      const baseUrl = process.env.REACT_APP_API_URL;
+      const response = await fetch(`${baseUrl}/api/generate_reports/${monthValue}/`,{
   
         headers: {
           "Content-Type": "application/json",
