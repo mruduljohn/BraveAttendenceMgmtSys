@@ -49,7 +49,8 @@ const AdminEmployeeForm: React.FC = () => {
       setError(null);
 
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/user_list/`, {
+        const baseUrl = process.env.REACT_APP_API_URL;
+        const response = await fetch(`${baseUrl}/api/user_list/`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
@@ -101,9 +102,11 @@ const AdminEmployeeForm: React.FC = () => {
     setIsLoading(true);
     setError(null);
 
+    const baseUrl = process.env.REACT_APP_API_URL;
+
     const apiUrl = isEditMode 
-      ? "http://127.0.0.1:8000/api/edit_user/"
-      : "http://127.0.0.1:8000/api/add_user/";
+      ? `${baseUrl}/api/edit_user/`
+      : `${baseUrl}/api/add_user/`;
 
     const method = isEditMode ? 'PATCH' : 'POST';
     
