@@ -1,0 +1,61 @@
+# version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ${DOCKERFILE:-Dockerfile.dev}  # Use dev Dockerfile by default, can be overridden
+    container_name: react-frontend  # Optional: Name the container for easier reference
+    ports:
+      - "5173:5173"  # Expose frontend on port 5173
+    volumes:
+      - ./frontend:/app  # Mount frontend code to /app inside the container
+      - /app/node_modules  # Persist node_modules to avoid rebuilding it each time
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # Fix for file watching on some systems (useful for live reloading)
+    stdin_open: true
+    tty: true
+
+  backend:
+    build:
+      context: ./backend  # Path to the backend folder
+      dockerfile: Dockerfile  # Dockerfile name (assumed it's in the backend folder)
+    container_name: django-backend  # Optional: Name the backend container
+    volumes:
+      - ./backend:/app  # Mount backend folder to /app inside container
+    ports:
+      - "8000:8000"  # Expose backend on port 8000
+    environment:
+      - DEBUG=1  # Enable debug mode (set to 0 for production)
+      - DATABASE_URL=postgres://user:password@db:5432/mydb  # Connect to the db service within Docker
+    depends_on:
+      - db  # Ensure backend starts after db service is available
+    networks:
+      - mynetwork  # Network shared with frontend and database
+
+  db:
+    image: postgres:latest  # Use the official PostgreSQL image
+    container_name: postgres-db  # Optional: Name the container for easier reference
+    environment:
+      POSTGRES_DB: mydb  # Database name
+      POSTGRES_USER: user  # User
+      POSTGRES_PASSWORD: password  # Password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Persist data
+      - ./backups:/backups  # Mount backups folder to /backups inside container
+    ports:
+      - "5432:5432"  # Expose PostgreSQL on port 5432
+    networks:
+      - mynetwork  # Network shared with frontend and backend
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "user", "-d", "mydb"]  # Ensure PostgreSQL is ready
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+networks:
+  mynetwork:
+    driver: bridge  # Default network driver
+
+volumes:
+  postgres_data:
