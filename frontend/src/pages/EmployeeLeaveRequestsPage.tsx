@@ -23,6 +23,7 @@ interface LeaveRequest {
   end_date: string;
   leave_type: string;
   status: string;
+  comment: string;
 }
 
 const EmployeeLeaveRequestsPage: React.FC = () => {
@@ -110,6 +111,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
       start_date: req.start_date,
       end_date: req.end_date,
       status: req.status,
+      comment: req.comment,
     }));
     setLeaveRequests(mappedRequests);
 
