@@ -3,7 +3,7 @@ import { getAccessToken, setAccessToken } from "./auth"; // Assume these are uti
 import { refreshAccessToken } from "./authService"; // Service to refresh token
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:8000/api", // Replace with your API base URL
+  baseURL: "http://15.206.69.241:8000", // Replace with your API base URL
 });
 
 // Add a request interceptor to add the token to every request
