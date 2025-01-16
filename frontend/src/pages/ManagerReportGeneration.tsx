@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
-import { FileText, Download, Calendar, ArrowLeft } from 'lucide-react';
+import { FileText, Download, ArrowLeft } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
 import { useAuth } from "../context/AuthContext";
+
 import { log } from 'console';
 import axiosInstance from '@/utils/authService';
+
 
 interface EmployeeReport {
   name: string;
@@ -24,13 +26,8 @@ const ManagerReportGeneration: React.FC = () => {
   const navigate = useNavigate();
   const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [report, setReport] = useState<EmployeeReport[]>([]);
-  const { user } = useAuth();
+  const {accessToken } = useAuth();
 
-  // if (!["Manager"].includes(user?.role)) {
-  //   navigate("/"); // Redirect if user is not allowed
-  // }
-
-  // Function to get the access token from local storage
 
   const months = [
     { name: 'January', value: 1 },
@@ -61,6 +58,7 @@ const ManagerReportGeneration: React.FC = () => {
       alert("Invalid month selected.");
       return;
     }
+
   
     // Make the API request to generate the report
     try {
@@ -69,6 +67,7 @@ const ManagerReportGeneration: React.FC = () => {
       const data = response.data;
   
       // Format the report
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const formattedReport = data.report.map((emp: any) => ({
         name: emp.employee_name,
         position: emp.position,
@@ -142,7 +141,7 @@ const ManagerReportGeneration: React.FC = () => {
               >
                 <Button
                   variant="ghost"
-                  className="flex items-center gap-2 text-slate-300 hover:text-white"
+                  className="flex items-center gap-2 text-slate-300 hover:text-black"
                   onClick={() => navigate("/manager/dashboard")}
                 >
                   <ArrowLeft className="w-4 h-4" />

@@ -23,7 +23,9 @@ const ClockInPage: React.FC = () => {
 
     const fetchAttendanceStatus = async () => {
       try {
+
         const response = await axiosInstance.get('/attendance/status/');
+
 
         if (response.status === 200) {
           setIsClockedIn(response.data.isClockedIn);
@@ -48,10 +50,12 @@ const ClockInPage: React.FC = () => {
     const action = isClockedIn ? "clock_out" : "clock_in";
 
     try {
+
         const response = await axiosInstance.post('/attendance/clock_in_out/', { action });
 
-        if (response.status === 200) {
+        if (response.status === 200||201) {
             const data = response.data;
+
             console.log(data.message);
             setIsClockedIn(data.isClockedIn);
         } else {
@@ -104,7 +108,7 @@ const ClockInPage: React.FC = () => {
             >
               <Button
                 variant="ghost"
-                className="flex items-center gap-2 text-slate-300 hover:text-white"
+                className="flex items-center gap-2 text-slate-300 hover:text-black"
                 onClick={() => navigate(`/${user?.role?.toLowerCase()}/dashboard`)}
               >
                 <ArrowLeft className="w-4 h-4" />

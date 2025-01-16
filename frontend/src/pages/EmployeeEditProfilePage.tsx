@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Mail, Briefcase, Building, Calendar, Camera } from 'lucide-react';
+import { ArrowLeft, User, Mail, Briefcase, Building, Calendar } from 'lucide-react';
 import { useAuth } from "../context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import LiveTime from "@/components/LiveTime";
 
 const EditProfilePage: React.FC = () => {
@@ -27,14 +26,6 @@ const EditProfilePage: React.FC = () => {
     profilePicture: "https://mighty.tools/mockmind-api/content/cartoon/10.jpg",
   });
 
-  // // Protect the route
-  // useEffect(() => {
-  //   if (!user || user.role !== "employee") {
-  //     navigate("/");
-  //   }
-  // }, [user, navigate]);
- 
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setProfileData(prev => ({
@@ -47,8 +38,8 @@ const EditProfilePage: React.FC = () => {
     e.preventDefault();
     
     try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/api/update_user_details/",
+      const baseUrl = process.env.REACT_APP_API_URL;
+      const response = await fetch(`${baseUrl}/api/update_user_details/`,
         {
           method: "PATCH",
           headers: {
@@ -80,10 +71,6 @@ const EditProfilePage: React.FC = () => {
       alert("There was an issue updating your profile. Please try again.");
     }
   };
-
-  // useEffect(() => {
-  //   updateUser(profileData);
-  // }, [profileData, updateUser]);
 
   // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   const file = e.target.files?.[0];
@@ -117,12 +104,6 @@ const EditProfilePage: React.FC = () => {
     },
   };
 
-
-  // Return null if user is not authorized
-  // if (!user || user.role !== "employee") {
-  //   return null;
-  // }
-
   return (
     <div className="min-h-screen flex flex-col bg-gray-900">
       {/* Rest of the JSX remains the same */}
@@ -136,7 +117,7 @@ const EditProfilePage: React.FC = () => {
             >
               <Button
                 variant="ghost"
-                className="flex items-center gap-2 text-gray-300 hover:text-white"
+                className="flex items-center gap-2 text-gray-300 hover:text-black"
                 onClick={() => navigate("/employee/dashboard")}
               >
                 <ArrowLeft className="w-4 h-4" />

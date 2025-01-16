@@ -1,7 +1,7 @@
 import React, { useState,useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
-import { ArrowLeft, Edit, Trash2, UserPlus, Users } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, UserPlus} from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -34,17 +34,10 @@ const EmployeeManagement: React.FC = () => {
     // Fetch employees from the API
     const fetchEmployees = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/user_list/', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
+        const response = await axiosInstance.get("/user_list/");
 
-          },
-        });
-
-        if (response.ok) {
-          const result = await response.json();
+        if (response.status === 200) {
+          const result =  response.data;
           setEmployees(result.data); // Update state with API data
         } else {
           console.error('Failed to fetch employees:', response.statusText);
@@ -62,8 +55,10 @@ const EmployeeManagement: React.FC = () => {
     if (!confirmDelete) return;
   
     try {
+
       const response = await axiosInstance.delete("/delete_user/", {
         data: { employee_id: id }, // Use 'data' for the body of DELETE requests in axios
+
       });
   
       if (response.status === 200) {
@@ -89,14 +84,6 @@ const EmployeeManagement: React.FC = () => {
     },
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-    },
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-slate-900">
       <div 
@@ -116,7 +103,7 @@ const EmployeeManagement: React.FC = () => {
               >
                 <Button
                   variant="ghost"
-                  className="flex items-center gap-2 text-slate-300 hover:text-white"
+                  className="flex items-center gap-2 text-slate-300 hover:text-black"
                   onClick={() => navigate("/admin/dashboard")}
                 >
                   <ArrowLeft className="w-4 h-4" />

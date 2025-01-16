@@ -1,13 +1,12 @@
-import React, { useEffect,useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Mail, Briefcase, Building, Calendar, Camera, Users } from 'lucide-react';
+import { ArrowLeft, User, Mail, Briefcase, Building, Calendar,} from 'lucide-react';
 import { useAuth } from "../context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import LiveTime from "@/components/LiveTime";
 import axiosInstance  from '../utils/authService';
 
@@ -27,13 +26,6 @@ const ManagerEditProfilePage: React.FC = () => {
      profilePicture: "https://mighty.tools/mockmind-api/content/cartoon/9.jpg",
    });
  
-    // Protect the route
-    //  useEffect(() => {
-    //    if (!user || user.role !== "manager") {
-    //      navigate("/");
-    //    }
-    //  }, [user, navigate]);
-
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { name, value } = e.target;
@@ -47,8 +39,8 @@ const ManagerEditProfilePage: React.FC = () => {
       e.preventDefault();
       
       try {
-        const response = await fetch(
-          "http://127.0.0.1:8000/api/update_user_details/",
+        const baseUrl = process.env.REACT_APP_API_URL;
+        const response = await fetch(`${baseUrl}/api/update_user_details/`, 
           {
             method: "PATCH",
             headers: {
@@ -113,11 +105,6 @@ const ManagerEditProfilePage: React.FC = () => {
     },
   };
 
-    // Return null if user is not authorized
-    // if (!user || user.role !== "Manager") {
-    //   return null;
-    // }
-
   return (
     <div className="min-h-screen flex flex-col bg-slate-900">
       <div 
@@ -137,7 +124,7 @@ const ManagerEditProfilePage: React.FC = () => {
             >
               <Button
                 variant="ghost"
-                className="flex items-center gap-2 text-slate-300 hover:text-white"
+                className="flex items-center gap-2 text-slate-300 hover:text-black"
                 onClick={() => navigate("/manager/dashboard")}
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -247,20 +234,6 @@ const ManagerEditProfilePage: React.FC = () => {
                   />
                 </div>
               </motion.div>
-
-              {/* <motion.div variants={itemVariants}>
-                <Label htmlFor="teamSize" className="text-white">Team Size</Label>
-                <div className="relative">
-                  <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-                  <Input
-                    id="teamSize"
-                    name="teamSize"
-                    value={manager.teamSize}
-                    onChange={handleInputChange}
-                    className="pl-10 bg-slate-700 border-slate-600 text-white"
-                  />
-                </div>
-              </motion.div> */}
 
               <motion.div variants={itemVariants}>
                 <Button

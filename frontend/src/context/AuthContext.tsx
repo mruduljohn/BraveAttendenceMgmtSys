@@ -12,7 +12,7 @@ interface AuthContextType {
   login: (userDetails: UserDetails) => void;
   logout: () => void;
   updateUser: (userUpdates: Partial<User>) => void; // Added updateUser to the context value
-  isLoading: Boolean | null
+  isLoading: boolean | null
 }
 
 interface User {
@@ -47,11 +47,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true)
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const checkAuthentication = async (): Promise<any> => {
     try {
       setIsLoading(true)
       const accessToken = getAccessToken()
-      const response = await axios.get("http://localhost:8000/api/token/validity-check/", {
+      const baseUrl = process.env.REACT_APP_API_URL;
+      const response = await axios.get(`${baseUrl}/api/token/validity-check/`,{
         headers: {
           Authorization: `Bearer ${accessToken}`
         }
@@ -59,6 +61,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       );
       console.log("authenticated", response.data.isAuthenticated)
       setIsAuthenticated(response.data.isAuthenticated);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setIsAuthenticated(false)
     } finally {

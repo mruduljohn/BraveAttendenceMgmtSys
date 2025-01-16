@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Clock, Calendar, FileText, LogOut, Users, ArrowLeft } from 'lucide-react';
+import { Clock, Calendar, FileText} from 'lucide-react';
 import LogoutButton from "../components/LogoutButton";
 import { useAuth } from "../context/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -18,7 +18,8 @@ const EmployeeDashboard: React.FC = () => {
   useEffect(() => {
     const fetchAttendanceStatus = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/attendance/status/', {
+        const baseUrl = process.env.REACT_APP_API_URL;
+        const response = await fetch(`${baseUrl}/api/attendance/status/`,{
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
@@ -45,7 +46,8 @@ const EmployeeDashboard: React.FC = () => {
     const action = isClockedIn ? "clock_out" : "clock_in";
 
     try {
-      const response = await fetch("http://localhost:8000/api/attendance/clock_in_out/", {
+      const baseUrl = process.env.REACT_APP_API_URL;
+      const response = await fetch(`${baseUrl}/api/attendance/clock_in_out/`,{
         method: "POST",
         headers: {
           "Authorization": `Bearer ${localStorage.getItem('access_token')}`,
@@ -131,10 +133,7 @@ const EmployeeDashboard: React.FC = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <LogoutButton className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-700/50 hover:bg-gray-600/50 text-white transition-colors duration-200">
-                <LogOut className="w-4 h-4" />
-                <span>Logout</span>
-              </LogoutButton>
+              <LogoutButton className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-700/50 hover:bg-gray-600/50 text-white transition-colors duration-200"/>
             </motion.div>
           </div>
         </div>

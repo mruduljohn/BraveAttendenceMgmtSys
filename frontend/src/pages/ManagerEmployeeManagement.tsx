@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
-import { ArrowLeft, Edit, Trash2, UserPlus, Users } from 'lucide-react';
+import { ArrowLeft, Users } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
@@ -37,6 +37,7 @@ const ManagerEmployeeManagement: React.FC = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
+
         const response = await axiosInstance.get("/user_list/");
   
         // Assuming the API response includes `data` containing employee details
@@ -59,6 +60,8 @@ const ManagerEmployeeManagement: React.FC = () => {
         // Optionally handle error messages for better user feedback
         const errorMessage = error.response?.data?.message || "Failed to fetch employees. Please try again.";
         alert(errorMessage);
+
+
       }
     };
   
@@ -102,7 +105,7 @@ const ManagerEmployeeManagement: React.FC = () => {
               >
                 <Button
                   variant="ghost"
-                  className="flex items-center gap-2 text-slate-300 hover:text-white"
+                  className="flex items-center gap-2 text-slate-300 hover:text-black"
                   onClick={() => navigate("/manager/dashboard")}
                 >
                   <ArrowLeft className="w-4 h-4" />

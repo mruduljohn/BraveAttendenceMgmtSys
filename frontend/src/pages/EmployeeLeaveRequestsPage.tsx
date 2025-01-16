@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, FileText } from "lucide-react";
+import { ArrowLeft} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { access } from "fs";
 
 interface LeaveRequest {
   leave_id: number;
@@ -23,10 +22,13 @@ interface LeaveRequest {
   end_date: string;
   leave_type: string;
   status: string;
+  comment: string;
 }
 
 const EmployeeLeaveRequestsPage: React.FC = () => {
+
   const { user, accessToken } = useAuth();
+
   const navigate = useNavigate();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [newLeaveRequest, setNewLeaveRequest] = useState({
@@ -39,16 +41,13 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
   useEffect(() => {
     const fetchLeaveRequests = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/fetch_leave_requests/", {
-          headers: {
-            "content-type": "application/json",
-            "Authorization": `Bearer ${accessToken}`,
-          },
-        });
-        if (!response.ok) {
+        const response = await axiosInstance.get("/fetch_leave_requests/");
+        
+        if (!response.status === 200) {
           throw new Error("Failed to fetch leave requests");
         }
-        const data = await response.json();
+        const data =  response.data;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const mappedRequests = data.map((req: any) => ({
           leave_id: req.leave_id, // Generate a temporary unique ID for each request (if backend doesn't provide one)
           leave_type: req.leave_type,
@@ -86,30 +85,35 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
     };
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/create_leave_requests/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(leaveRequestToSubmit),
-      });
+        const response = await axiosInstance.post("/create_leave_requests/");
+        
 
-      if (!response.ok) {
+      if (!response.status === 200) {
         throw new Error("Failed to submit leave request");
       }
 
-      // Re-fetch leave requests after successfully creating a new one
-      const fetchResponse = await fetch("http://127.0.0.1:8000/api/fetch_leave_requests/", {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`,
-        },
-      });
 
-      if (!fetchResponse.ok) {
-        throw new Error("Failed to fetch leave requests");
-      }
+    // Re-fetch leave requests after successfully creating a new one
+    const fetchResponse = await axiosInstance.get("/fetch_leave_requests/");
+    
+    
+    if (!fetchResponse.status === 200 ) {
+      throw new Error("Failed to fetch leave requests");
+    }
+
+    const data =  fetchResponse.data;
+    console.log("data",data)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mappedRequests = data.map((req: any) => ({
+      leave_id: req.leave_id,
+      leave_type: req.leave_type,
+      start_date: req.start_date,
+      end_date: req.end_date,
+      status: req.status,
+      comment: req.comment,
+    }));
+    setLeaveRequests(mappedRequests);
+
 
       const data = await fetchResponse.json();
       console.log("data", data);
@@ -167,7 +171,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 variant="ghost"
-                className="flex items-center gap-2 text-gray-300 hover:text-white"
+                className="flex items-center gap-2 text-gray-300 hover:text-black"
                 onClick={() => navigate("/employee/dashboard")}
               >
                 <ArrowLeft className="w-4 h-4" />

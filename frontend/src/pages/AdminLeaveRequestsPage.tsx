@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, FileText } from 'lucide-react';
+import { ArrowLeft, FileText } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,9 @@ interface LeaveRequest {
 }
 
 const AdminLeaveRequestsPage: React.FC = () => {
+
   const { user, accessToken } = useAuth();
+
   const navigate = useNavigate();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [newLeaveRequest, setNewLeaveRequest] = useState({
@@ -42,11 +44,14 @@ const AdminLeaveRequestsPage: React.FC = () => {
     
       const fetchLeaveRequests = async () => {
         try {
+
           const response = await axiosInstance.get("/fetch_leave_requests/");
           
           const data = response.data;  // Axios response contains the data directly
           console.log(data);
-    
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
           const mappedRequests = data.map((req: any) => ({
             leave_id: req.leave_id,
             leave_type: req.leave_type,
@@ -85,14 +90,17 @@ const AdminLeaveRequestsPage: React.FC = () => {
       };
     
       try {
+
         // Submit the leave request
         const response = await axiosInstance.post("/create_leave_requests/", leaveRequestToSubmit);
     
         if (!response.status === 200) {
+
           throw new Error("Failed to submit leave request");
         }
     
         // Re-fetch leave requests after successfully creating a new one
+
         const fetchResponse = await axiosInstance.get("/fetch_leave_requests/");
     
         if (!fetchResponse.status === 200) {
@@ -118,6 +126,9 @@ const AdminLeaveRequestsPage: React.FC = () => {
         alert("Failed to submit leave request. Please try again.");
       }
     };
+
+    
+
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -156,7 +167,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
             >
               <Button
                 variant="ghost"
-                className="flex items-center gap-2 text-slate-300 hover:text-white"
+                className="flex items-center gap-2 text-slate-300 hover:text-black"
                 onClick={() => navigate("/admin/dashboard")}
               >
                 <ArrowLeft className="w-4 h-4" />

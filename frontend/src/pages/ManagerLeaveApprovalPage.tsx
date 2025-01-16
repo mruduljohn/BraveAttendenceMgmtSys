@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import LogoutButton from "../components/LogoutButton";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Calendar } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -35,12 +35,13 @@ interface LeaveRequest {
   startDate: string;
   endDate: string;
   reason: string;
-  status: "Pending" | "Approved" | "Rejected";
+  status: string;
   employeeId: number;
-  commentData:string;
+  comment: string;
 }
+
 const ManagerLeaveApprovalPage: React.FC = () => {
-  const { user,accessToken } = useAuth();
+  const {accessToken } = useAuth();
   const navigate = useNavigate();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null);
@@ -50,11 +51,14 @@ const ManagerLeaveApprovalPage: React.FC = () => {
     // Fetch leave requests from the API
     const fetchLeaveRequests = async () => {
       try {
+
         const response = await axiosInstance.get("/fetch_all_leave_requests/");
         
         // Assuming the API response includes `data` containing leave requests
         const data = response.data;
-  
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         const formattedReport = data.data.map((emp: any) => ({
           id: emp.leave_id,
           employeeId: emp.employee,
@@ -72,24 +76,25 @@ const ManagerLeaveApprovalPage: React.FC = () => {
         // Optionally handle error messages for better user feedback
         const errorMessage = error.response?.data?.message || "Failed to fetch leave requests. Please try again.";
         alert(errorMessage);
+
       }
     };
   
     fetchLeaveRequests();
   }, [accessToken]);
-  
+
   const handleValidation = async (leaveId: number, employeeId: number, action: "approve" | "reject", commentData: string) => {
     const requestBody = {
       employee_id: employeeId,
       leave_id: leaveId,
       action: action,
-      comment: commentData,
+      comment: commentData || "-------------",
     };
     console.log("body", requestBody);
-  
+
     // Update leave request status in the frontend state
     const updatedRequests = leaveRequests.map((request) =>
-      request.id === leaveId ? { ...request, status: action === "approve" ? "Approved" : "Rejected" } : request
+      request.id === leaveId ? { ...request, status: action === "approve" ? "Approved" : "Rejected", comment: commentData } : request
     );
     setLeaveRequests(updatedRequests);
     setSelectedRequest(null);
@@ -97,11 +102,13 @@ const ManagerLeaveApprovalPage: React.FC = () => {
   
     // Make API call to update status
     try {
+
       const response = await axiosInstance.patch("/accept_reject_leave_request/", requestBody);
   
       // Assuming the API response includes relevant success details
       console.log("Leave request update response:", response.data);
     } catch (error: any) {
+
       console.error("Error updating leave request:", error);
   
       // Optionally handle error messages for better user feedback
@@ -130,13 +137,13 @@ const ManagerLeaveApprovalPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-900">
-      <div 
+      <div
         className="absolute inset-0 bg-gradient-to-r from-slate-900 via-blue-800 to-slate-900"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }}
       ></div>
-      
+
       <header className="relative z-10 bg-slate-800/50 backdrop-blur-lg border-b border-blue-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
@@ -148,7 +155,7 @@ const ManagerLeaveApprovalPage: React.FC = () => {
               >
                 <Button
                   variant="ghost"
-                  className="flex items-center gap-2 text-slate-300 hover:text-white"
+                  className="flex items-center gap-2 text-slate-300 hover:text-black"
                   onClick={() => navigate("/manager/dashboard")}
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -178,7 +185,6 @@ const ManagerLeaveApprovalPage: React.FC = () => {
                   <TableHead className="text-slate-300">Reason</TableHead>
                   <TableHead className="text-slate-300">Status</TableHead>
                   <TableHead className="text-slate-300">Action</TableHead>
-                  
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -201,20 +207,20 @@ const ManagerLeaveApprovalPage: React.FC = () => {
                     <TableCell className="text-slate-300">
                       <span className={
                         request.status === "Approved" ? "text-green-500" :
-                        request.status === "Rejected" ? "text-red-500" :
-                        "text-yellow-500"
+                          request.status === "Rejected" ? "text-red-500" :
+                            "text-yellow-500"
                       }>
                         {request.status}
                       </span>
                     </TableCell>
                     <TableCell>
-                      {request.status === "Pending" && (
+                      {request.status === "Pending" ? (
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button 
+                            <Button
                               variant="outline"
                               className="bg-blue-600 text-white hover:bg-blue-700"
-                              onClick={() =>{ setSelectedRequest(request) }}
+                              onClick={() => { setSelectedRequest(request) }}
                             >
                               Validate
                             </Button>
@@ -249,8 +255,8 @@ const ManagerLeaveApprovalPage: React.FC = () => {
                                 <Label htmlFor="comment" className="text-right">
                                   Comment
                                 </Label>
-                                <Textarea 
-                                  id="comment" 
+                                <Textarea
+                                  id="comment"
                                   value={comment}
                                   onChange={(e) => setComment(e.target.value)}
                                   className="col-span-3"
@@ -259,23 +265,25 @@ const ManagerLeaveApprovalPage: React.FC = () => {
                               </div>
                             </div>
                             <DialogFooter>
-                              <Button 
-                                variant="outline" 
+                              <Button
+                                variant="outline"
                                 className="bg-green-600 text-white hover:bg-green-700"
-                                onClick={() => handleValidation(selectedRequest!.id, selectedRequest!.employeeId, "approve",comment)}
+                                onClick={() => handleValidation(selectedRequest!.id, selectedRequest!.employeeId, "approve", comment)}
                               >
                                 Approve
                               </Button>
-                              <Button 
-                                variant="outline" 
+                              <Button
+                                variant="outline"
                                 className="bg-red-600 text-white hover:bg-red-700"
-                                onClick={() => handleValidation(selectedRequest!.id, selectedRequest!.employeeId, "reject" ,comment)}
+                                onClick={() => handleValidation(selectedRequest!.id, selectedRequest!.employeeId, "reject", comment)}
                               >
                                 Reject
                               </Button>
                             </DialogFooter>
                           </DialogContent>
                         </Dialog>
+                      ) : (
+                        <div className="text-slate-300">{request.comment}</div>
                       )}
                     </TableCell>
                   </motion.tr>
@@ -288,7 +296,7 @@ const ManagerLeaveApprovalPage: React.FC = () => {
 
       <footer className="relative z-10 bg-slate-800/50 backdrop-blur-lg border-t border-blue-700">
         <div className="max-w-7xl mx-auto px-4 py-4 text-center text-slate-400">
-          <LiveTime/>
+          <LiveTime />
         </div>
       </footer>
     </div>

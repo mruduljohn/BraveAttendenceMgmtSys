@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, FileText, LogOut, BarChart, Clock, Calendar, FileCheck } from 'lucide-react';
+import { Users, Clock, Calendar, FileCheck } from 'lucide-react';
 import LogoutButton from "../components/LogoutButton";
 import { useAuth } from "../context/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -19,6 +19,7 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     const fetchAttendanceStatus = async () => {
       try {
+
         const response = await axiosInstance.get("/attendance/status/");
         setIsClockedIn(response.data.isClockedIn); 
         } 
@@ -29,6 +30,7 @@ const AdminDashboard: React.FC = () => {
           } else {
             console.error("Error fetching attendance status:", error);
           }
+
         }
       };
 
@@ -39,9 +41,7 @@ const AdminDashboard: React.FC = () => {
     const action = isClockedIn ? "clock_out" : "clock_in";
   
     try {
-     
-      const response = await axiosInstance.post("/attendance/clock_in_out/", { 
-        action 
+      const response = await axiosInstance.post("/attendance/clock_in_out/", {
       });
   
     
@@ -133,10 +133,7 @@ const AdminDashboard: React.FC = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <LogoutButton className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-white transition-colors duration-200">
-                <LogOut className="w-4 h-4" />
-                <span>Logout</span>
-              </LogoutButton>
+              <LogoutButton className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-white transition-colors duration-200"/>
             </motion.div>
           </div>
         </div>

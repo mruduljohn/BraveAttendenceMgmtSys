@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from "framer-motion";
 import { User, Mail, Briefcase, Save, ArrowLeft, Building, Calendar } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,7 +32,7 @@ const INITIAL_EMPLOYEE: Employee = {
 };
 
 const AdminEmployeeForm: React.FC = () => {
-  const { user, accessToken } = useAuth();
+  const { accessToken } = useAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditMode = Boolean(id);
@@ -50,17 +49,14 @@ const AdminEmployeeForm: React.FC = () => {
       setError(null);
   
       try {
-        
         const response = await axiosInstance.get("/user_list/");
   
-       
         const employeeData = response.data.data.find((emp: Employee) => emp.employee_id === Number(id));
   
         if (!employeeData) {
           throw new Error('Employee not found');
         }
-  
-       
+
         const { password, ...employeeWithoutPassword } = employeeData;
         setEmployee(employeeWithoutPassword);
       } catch (error: any) {
@@ -98,7 +94,7 @@ const AdminEmployeeForm: React.FC = () => {
     const apiUrl = isEditMode
       ? "/edit_user/"
       : "/add_user/";
-  
+
     const method = isEditMode ? 'PATCH' : 'POST';
   
     // For edit mode, ensure employee_id is included in the payload

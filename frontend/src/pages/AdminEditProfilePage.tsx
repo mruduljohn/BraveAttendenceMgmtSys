@@ -1,13 +1,12 @@
-import React, { useEffect,useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Mail, Briefcase, Building, Calendar, Camera, Shield } from 'lucide-react';
+import { ArrowLeft, User, Mail, Briefcase, Building, Calendar, Shield } from 'lucide-react';
 import { useAuth } from "../context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import LiveTime from "@/components/LiveTime";
 import axiosInstance  from '../utils/authService'
 const AdminEditProfilePage: React.FC = () => {
@@ -26,13 +25,6 @@ const AdminEditProfilePage: React.FC = () => {
       profilePicture: "https://mighty.tools/mockmind-api/content/cartoon/5.jpg",
     });
 
-    // // Protect the route
-    //   useEffect(() => {
-    //     if (!user || user.role !== "admin") {
-    //       navigate("/");
-    //     }
-    //   }, [user, navigate]);
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setProfileData(prev => ({
@@ -42,6 +34,7 @@ const AdminEditProfilePage: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+
     e.preventDefault();
     
     try {
@@ -53,6 +46,7 @@ const AdminEditProfilePage: React.FC = () => {
       updateUser(updatedData);
       // Navigate after successful update
       navigate("/admin/dashboard");
+
   
     } catch (error: any) {
       console.error("Error updating profile:", error);
@@ -117,7 +111,7 @@ const AdminEditProfilePage: React.FC = () => {
             >
               <Button
                 variant="ghost"
-                className="flex items-center gap-2 text-slate-300 hover:text-white"
+                className="flex items-center gap-2 text-slate-300 hover:text-black"
                 onClick={() => navigate("/admin/dashboard")}
               >
                 <ArrowLeft className="w-4 h-4" />
