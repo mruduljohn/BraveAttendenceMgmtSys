@@ -39,7 +39,7 @@ const ManagerEditProfilePage: React.FC = () => {
       e.preventDefault();
       
       try {
-        const response = await axiosInstance.patch("/update_user_details/");
+        const response = await axiosInstance.patch("/update_user_details/", profileData);
   
         if (response.status !== 200) {
           throw new Error(`Failed to update profile: ${response.statusText}`);
