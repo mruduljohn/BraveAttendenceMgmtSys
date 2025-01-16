@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import LogoutButton from "../components/LogoutButton";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, CheckCircle, XCircle, Clock, TrendingUp, Users } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface AttendanceRecord {
   date: string;
@@ -24,15 +25,14 @@ interface AttendanceRecord {
   status: "Open" | "Closed";
 }
 
-const ManagerAttendanceRecordsPage: React.FC = () => {
-  const { user,accessToken } = useAuth();
+const PersonalAttendanceRecordsPage: React.FC = () => {
+  const { user, accessToken } = useAuth();
   const navigate = useNavigate();
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch the manager's personal attendance records from the API
     const fetchAttendance = async () => {
       setLoading(true);
       setError(null);
@@ -41,7 +41,7 @@ const ManagerAttendanceRecordsPage: React.FC = () => {
         const response = await fetch("http://127.0.0.1:8000/api/fetch_attendance/", {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${accessToken}`, // Pass the access token
+            "Authorization": `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
         });
@@ -51,7 +51,7 @@ const ManagerAttendanceRecordsPage: React.FC = () => {
         }
 
         const data = await response.json();
-        setAttendanceRecords(data || []); // Assuming the API returns `attendance`
+        setAttendanceRecords(data || []);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         setError(error.message || "An error occurred");
@@ -61,12 +61,7 @@ const ManagerAttendanceRecordsPage: React.FC = () => {
     };
 
     fetchAttendance();
-  }, [user, navigate,accessToken]);
-
-  // if (user?.role !== "manager") {
-  //   navigate("/"); // Redirect if user is not a manager
-  // }
-
+  }, [user, navigate, accessToken]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -86,6 +81,28 @@ const ManagerAttendanceRecordsPage: React.FC = () => {
     },
   };
 
+  // Calculate total hours worked in the current month
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+  const totalHoursThisMonth = attendanceRecords
+    .filter(record => {
+      const recordDate = new Date(record.date);
+      return recordDate.getMonth() === currentMonth && recordDate.getFullYear() === currentYear;
+    })
+    .reduce((total, record) => total + record.total_hours, 0);
+
+  // Calculate average hours per day
+  const averageHoursPerDay = attendanceRecords.length > 0
+    ? attendanceRecords.reduce((total, record) => total + record.total_hours, 0) / attendanceRecords.length
+    : 0;
+
+  // Prepare data for the line chart
+  const chartData = attendanceRecords.map(record => ({
+    date: record.date,
+    hours: record.total_hours,
+  })).slice(-30); // Show only the last 30 days
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-900">
       <div 
@@ -98,7 +115,7 @@ const ManagerAttendanceRecordsPage: React.FC = () => {
       <header className="relative z-10 bg-slate-800/50 backdrop-blur-lg border-b border-blue-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">Manager Personal Attendance Records</h1>
+            <h1 className="text-2xl font-bold text-white">Personal Attendance Records</h1>
             <div className="flex items-center space-x-4">
               <motion.div
                 whileHover={{ scale: 1.05 }}
@@ -107,10 +124,10 @@ const ManagerAttendanceRecordsPage: React.FC = () => {
                 <Button
                   variant="ghost"
                   className="flex items-center gap-2 text-slate-300 hover:text-white"
-                  onClick={() => navigate("/manager/dashboard")}
+                  onClick={() => navigate(-1)}
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Back to Dashboard</span>
+                  <span>Back</span>
                 </Button>
               </motion.div>
               <LogoutButton className="bg-blue-700/50 hover:bg-blue-600/50 text-white transition-colors duration-200" />
@@ -124,66 +141,120 @@ const ManagerAttendanceRecordsPage: React.FC = () => {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="max-w-7xl mx-auto"
+          className="max-w-7xl mx-auto space-y-6"
         >
-           {loading ? (
+          {loading ? (
             <p className="text-white">Loading...</p>
           ) : error ? (
             <p className="text-red-500">{error}</p>
           ) : (
-          <Card className="bg-slate-800/50 backdrop-blur-lg border-blue-700 overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-slate-300">Date</TableHead>
-                  <TableHead className="text-slate-300">Total Hours</TableHead>
-                  <TableHead className="text-slate-300">Extra Hours</TableHead>
-                  <TableHead className="text-slate-300">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {attendanceRecords.map((record, index) => (
-                  <motion.tr key={index} variants={itemVariants}>
-                    <TableCell className="text-slate-300">
-                      <div className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-2 text-green-400" />
-                        {record.date}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-slate-300">{record.total_hours}</TableCell>
-                    <TableCell className="text-slate-300">
-                    {Math.round(record.total_hours - 7 > 0 ? record.total_hours - 7 : 0)}
-                      </TableCell>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="bg-slate-800/50 backdrop-blur-lg border-blue-700">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-slate-300">Total Hours This Month</CardTitle>
+                    <Clock className="h-4 w-4 text-blue-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-white">{totalHoursThisMonth.toFixed(2)}</div>
+                    <p className="text-xs text-slate-400">hours</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-slate-800/50 backdrop-blur-lg border-blue-700">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-slate-300">Average Hours Per Day</CardTitle>
+                    <TrendingUp className="h-4 w-4 text-green-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-white">{averageHoursPerDay.toFixed(2)}</div>
+                    <p className="text-xs text-slate-400">hours</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-slate-800/50 backdrop-blur-lg border-blue-700">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-slate-300">Total Records</CardTitle>
+                    <Users className="h-4 w-4 text-amber-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-white">{attendanceRecords.length}</div>
+                    <p className="text-xs text-slate-400">entries</p>
+                  </CardContent>
+                </Card>
+              </div>
 
-                    <TableCell>
-                      <div className="flex items-center">
-                        {record.status === "Open" ? (
-                          <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                        ) : (
-                          <XCircle className="w-4 h-4 mr-2 text-red-500" />
-                        )}
-                        <span className={record.status === "Open" ? "text-green-500" : "text-red-500"}>
-                          {record.status}
-                        </span>
-                      </div>
-                    </TableCell>
-                  </motion.tr>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
+              <Card className="bg-slate-800/50 backdrop-blur-lg border-blue-700 p-6">
+                <CardTitle className="text-xl font-bold text-white mb-4">Attendance Trend (Last 30 Days)</CardTitle>
+                <div className="w-full h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                      <XAxis dataKey="date" stroke="#9CA3AF" />
+                      <YAxis stroke="#9CA3AF" />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#1F2937', border: 'none' }}
+                        labelStyle={{ color: '#D1D5DB' }}
+                        itemStyle={{ color: '#60A5FA' }}
+                      />
+                      <Line type="monotone" dataKey="hours" stroke="#60A5FA" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+
+              <Card className="bg-slate-800/50 backdrop-blur-lg border-blue-700 overflow-hidden">
+                <CardTitle className="text-xl font-bold text-white p-6">Detailed Records</CardTitle>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-slate-300">Date</TableHead>
+                      <TableHead className="text-slate-300">Total Hours</TableHead>
+                      <TableHead className="text-slate-300">Extra Hours</TableHead>
+                      <TableHead className="text-slate-300">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  
+                  <TableBody>
+                    {attendanceRecords.map((record, index) => (
+                      <motion.tr key={index} variants={itemVariants}>
+                        <TableCell className="text-slate-300">
+                          <div className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-2 text-green-400" />
+                            {record.date}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-slate-300">{record.total_hours}</TableCell>
+                        <TableCell className="text-slate-300">
+                          {Math.round(record.total_hours - 7 > 0 ? record.total_hours - 7 : 0)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            {record.status === "Open" ? (
+                              <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+                            ) : (
+                              <XCircle className="w-4 h-4 mr-2 text-red-500" />
+                            )}
+                            <span className={record.status === "Open" ? "text-green-500" : "text-red-500"}>
+                              {record.status}
+                            </span>
+                          </div>
+                        </TableCell>
+                      </motion.tr>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Card>
+            </>
           )}
         </motion.div>
       </main>
 
       <footer className="relative z-10 bg-slate-800/50 backdrop-blur-lg border-t border-blue-700">
         <div className="max-w-7xl mx-auto px-4 py-4 text-center text-slate-400">
-          <LiveTime/>
+          <LiveTime />
         </div>
       </footer>
     </div>
   );
 };
 
-export default ManagerAttendanceRecordsPage;
-
+export default PersonalAttendanceRecordsPage;
