@@ -26,7 +26,7 @@ interface LeaveRequest {
 }
 
 const EmployeeLeaveRequestsPage: React.FC = () => {
-  const { user,accessToken } = useAuth();
+  const { user, accessToken } = useAuth();
   const navigate = useNavigate();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [newLeaveRequest, setNewLeaveRequest] = useState({
@@ -50,7 +50,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
         }
         const data = await response.json();
         const mappedRequests = data.map((req: any) => ({
-          leave_id: req.leave_id, // Generate a temporary unique ID for each request
+          leave_id: req.leave_id, // Generate a temporary unique ID for each request (if backend doesn't provide one)
           leave_type: req.leave_type,
           start_date: req.start_date,
           end_date: req.end_date,
@@ -67,8 +67,17 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
     fetchLeaveRequests();
   }, [accessToken]);
 
-  const handleLeaveRequestSubmit = async (e: React.FormEvent) => {
+  const handleLeaveRequestSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    // Validate dates
+    const startDate = new Date(newLeaveRequest.start_date);
+    const endDate = new Date(newLeaveRequest.end_date);
+
+    if (endDate < startDate) {
+      alert("End date cannot come before start date.");
+      return;
+    }
 
     // Set default leave_type if empty
     const leaveRequestToSubmit = {
@@ -85,43 +94,44 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
         },
         body: JSON.stringify(leaveRequestToSubmit),
       });
-      
+
       if (!response.ok) {
         throw new Error("Failed to submit leave request");
       }
 
-    // Re-fetch leave requests after successfully creating a new one
-    const fetchResponse = await fetch("http://127.0.0.1:8000/api/fetch_leave_requests/", {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${accessToken}`,
-      },
-    });
-    
-    if (!fetchResponse.ok) {
-      throw new Error("Failed to fetch leave requests");
+      // Re-fetch leave requests after successfully creating a new one
+      const fetchResponse = await fetch("http://127.0.0.1:8000/api/fetch_leave_requests/", {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!fetchResponse.ok) {
+        throw new Error("Failed to fetch leave requests");
+      }
+
+      const data = await fetchResponse.json();
+      console.log("data", data);
+      const mappedRequests = data.map((req: any) => ({
+        leave_id: req.leave_id,
+        leave_type: req.leave_type,
+        start_date: req.start_date,
+        end_date: req.end_date,
+        status: req.status,
+      }));
+      setLeaveRequests(mappedRequests);
+
+      // Clear the form fields
+      setNewLeaveRequest({ start_date: "", end_date: "", leave_type: "", status: "Pending" });
+
+      alert("Leave request submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting leave request:", error);
+      alert("Failed to submit leave request. Please try again.");
     }
+  };
 
-    const data = await fetchResponse.json();
-    console.log("data",data)
-    const mappedRequests = data.map((req: any) => ({
-      leave_id: req.leave_id,
-      leave_type: req.leave_type,
-      start_date: req.start_date,
-      end_date: req.end_date,
-      status: req.status,
-    }));
-    setLeaveRequests(mappedRequests);
-
-    // Clear the form fields
-    setNewLeaveRequest({ start_date: "", end_date: "", leave_type: "", status: "Pending" });
-
-    alert("Leave request submitted successfully!");
-  } catch (error) {
-    console.error("Error submitting leave request:", error);
-    alert("Failed to submit leave request. Please try again.");
-  }
-};
 
   const containerVariants = {
     hidden: { opacity: 0 },

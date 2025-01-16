@@ -27,7 +27,7 @@ interface LeaveRequest {
 }
 
 const AdminLeaveRequestsPage: React.FC = () => {
-  const { user,accessToken } = useAuth();
+  const { user, accessToken } = useAuth();
   const navigate = useNavigate();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [newLeaveRequest, setNewLeaveRequest] = useState({
@@ -53,7 +53,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
             start_date: req.start_date,
             end_date: req.end_date,
             status: req.status,
-            comment: req.comment,
+            comment: req.comment, // Assuming 'comment' field exists in the response data
           }));
     
           setLeaveRequests(mappedRequests);
@@ -68,7 +68,16 @@ const AdminLeaveRequestsPage: React.FC = () => {
 
     const handleLeaveRequestSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
-    
+
+      // Validate dates
+      const startDate = new Date(newLeaveRequest.start_date);
+      const endDate = new Date(newLeaveRequest.end_date);
+
+      if (endDate < startDate) {
+        alert("End date cannot come before start date.");
+        return; 
+      }
+
       // Set default leave_type if empty
       const leaveRequestToSubmit = {
         ...newLeaveRequest,
@@ -109,6 +118,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
         alert("Failed to submit leave request. Please try again.");
       }
     };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

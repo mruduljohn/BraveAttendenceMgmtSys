@@ -47,7 +47,7 @@ const EmployeeAttendanceRecordsPage: React.FC = () => {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to fetch attendance records");
+          throw new Error("Attendance records not found");
         }
 
         const data = await response.json();
