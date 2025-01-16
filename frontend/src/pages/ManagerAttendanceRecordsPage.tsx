@@ -15,7 +15,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
+
+import axiosInstance  from '../utils/authService';
+
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
 
 interface AttendanceRecord {
   date: string;
@@ -46,22 +50,18 @@ const PersonalAttendanceRecordsPage: React.FC = () => {
     const fetchAttendance = async () => {
       setLoading(true);
       setError(null);
-
+  
       try {
-        const baseUrl = process.env.REACT_APP_API_URL;
-        const response = await fetch(`${baseUrl}/api/fetch_attendance/`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        });
 
-        if (!response.ok) {
+        // Use axiosInstance for the API call
+        const response = await axiosInstance.get("/fetch_attendance/");
+
+
+        if (response.status !== 200) {
           throw new Error("Failed to fetch attendance records");
         }
 
-        const data: AttendanceRecord[] = await response.json();
+        const data: AttendanceRecord[] = response.data;
         
         // Group and sum the records by date
         const groupedData = data.reduce((acc: { [key: string]: GroupedAttendanceRecord }, record) => {
@@ -91,14 +91,15 @@ const PersonalAttendanceRecordsPage: React.FC = () => {
         setAttendanceRecords(sortedGroupedData);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
-        setError(error.message || "An error occurred");
+        setError(error.response?.data?.message || "An error occurred"); // Handle API-specific error message if available
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchAttendance();
   }, [user, navigate, accessToken]);
+
 
   const containerVariants = {
     hidden: { opacity: 0 },

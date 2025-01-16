@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import LiveTime from "@/components/LiveTime";
+import axiosInstance  from '../utils/authService';
 
 const ManagerEditProfilePage: React.FC = () => {
-  const { user, updateUser, accessToken } = useAuth();
+  const { user, updateUser} = useAuth();
   const navigate = useNavigate();
 
  // Initialize state with user data
@@ -38,23 +39,13 @@ const ManagerEditProfilePage: React.FC = () => {
       e.preventDefault();
       
       try {
-        const baseUrl = process.env.REACT_APP_API_URL;
-        const response = await fetch(`${baseUrl}/api/update_user_details/`, 
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify(profileData),
-          }
-        );
+        const response = await axiosInstance.patch("/update_user_details/");
   
-        if (!response.ok) {
+        if (response.status !== 200) {
           throw new Error(`Failed to update profile: ${response.statusText}`);
         }
   
-        const result = await response.json();
+        const result = await response.data;
         console.log("Full API response:", result);
   
         const updatedData = result.data;

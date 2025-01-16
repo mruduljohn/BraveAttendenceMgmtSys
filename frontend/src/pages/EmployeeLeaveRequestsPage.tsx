@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/context/AuthContext";
+import axiosInstance from "@/utils/authService";
 import {
   Table,
   TableBody,
@@ -26,7 +27,9 @@ interface LeaveRequest {
 }
 
 const EmployeeLeaveRequestsPage: React.FC = () => {
+
   const { accessToken } = useAuth();
+
   const navigate = useNavigate();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [newLeaveRequest, setNewLeaveRequest] = useState({
@@ -39,20 +42,15 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
   useEffect(() => {
     const fetchLeaveRequests = async () => {
       try {
-        const baseUrl = process.env.REACT_APP_API_URL;
-        const response = await fetch(`${baseUrl}/api/fetch_leave_requests/`, {
-          headers: {
-            "content-type": "application/json",
-            "Authorization": `Bearer ${accessToken}`,
-          },
-        });
-        if (!response.ok) {
+        const response = await axiosInstance.get("/fetch_leave_requests/");
+        
+        if (response.status !== 200) {
           throw new Error("Failed to fetch leave requests");
         }
-        const data = await response.json();
+        const data =  response.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const mappedRequests = data.map((req: any) => ({
-          leave_id: req.leave_id, // Generate a temporary unique ID for each request
+          leave_id: req.leave_id, // Generate a temporary unique ID for each request (if backend doesn't provide one)
           leave_type: req.leave_type,
           start_date: req.start_date,
           end_date: req.end_date,
@@ -72,6 +70,15 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
   const handleLeaveRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate dates
+    const startDate = new Date(newLeaveRequest.start_date);
+    const endDate = new Date(newLeaveRequest.end_date);
+
+    if (endDate < startDate) {
+      alert("End date cannot come before start date.");
+      return;
+    }
+
     // Set default leave_type if empty
     const leaveRequestToSubmit = {
       ...newLeaveRequest,
@@ -79,34 +86,21 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
     };
 
     try {
-        const baseUrl = process.env.REACT_APP_API_URL;
-        const response = await fetch(`${baseUrl}/api/create_leave_requests/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(leaveRequestToSubmit),
-      });
-      
-      if (!response.ok) {
+      const response = await axiosInstance.post("/create_leave_requests/",leaveRequestToSubmit);
+        
+      if (response.status !== 200) {
         throw new Error("Failed to submit leave request");
       }
 
+
     // Re-fetch leave requests after successfully creating a new one
-    const fetchResponse = await fetch(`${baseUrl}/api/fetch_leave_requests/`, {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${accessToken}`,
-      },
-    });
+    const fetchResponse = await axiosInstance.get("/fetch_leave_requests/");
     
-    if (!fetchResponse.ok) {
+    if (fetchResponse.status !== 200 ) {
       throw new Error("Failed to fetch leave requests");
     }
-
-    const data = await fetchResponse.json();
-    console.log("data",data)
+    const data = fetchResponse.data;
+    console.log("data", data);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mappedRequests = data.map((req: any) => ({
       leave_id: req.leave_id,
@@ -116,17 +110,18 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
       status: req.status,
       comment: req.comment,
     }));
-    setLeaveRequests(mappedRequests);
+      setLeaveRequests(mappedRequests);
 
-    // Clear the form fields
-    setNewLeaveRequest({ start_date: "", end_date: "", leave_type: "", status: "Pending" });
+      // Clear the form fields
+      setNewLeaveRequest({ start_date: "", end_date: "", leave_type: "", status: "Pending" });
 
-    alert("Leave request submitted successfully!");
-  } catch (error) {
-    console.error("Error submitting leave request:", error);
-    alert("Failed to submit leave request. Please try again.");
-  }
-};
+      alert("Leave request submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting leave request:", error);
+      alert("Failed to submit leave request. Please try again.");
+    }
+  };
+
 
   const containerVariants = {
     hidden: { opacity: 0 },

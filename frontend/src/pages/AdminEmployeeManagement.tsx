@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
+import axiosInstance  from '../utils/authService';
 
 interface Employee {
   employee_id: number;
@@ -33,18 +34,10 @@ const EmployeeManagement: React.FC = () => {
     // Fetch employees from the API
     const fetchEmployees = async () => {
       try {
-        const baseUrl = process.env.REACT_APP_API_URL;
-        const response = await fetch(`${baseUrl}/api/user_list/`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
+        const response = await axiosInstance.get("/user_list/");
 
-          },
-        });
-
-        if (response.ok) {
-          const result = await response.json();
+        if (response.status === 200) {
+          const result =  response.data;
           setEmployees(result.data); // Update state with API data
         } else {
           console.error('Failed to fetch employees:', response.statusText);
@@ -60,28 +53,27 @@ const EmployeeManagement: React.FC = () => {
   const deleteEmployee = async (id: number) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this employee?");
     if (!confirmDelete) return;
-
+  
     try {
-      const baseUrl = process.env.REACT_APP_API_URL;
-      const response = await fetch(`${baseUrl}/api/delete_user/`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ employee_id: id }),
-      });
 
-      if (response.ok) {
+      const response = await axiosInstance.delete("/delete_user/", {
+        data: { employee_id: id }, // Use 'data' for the body of DELETE requests in axios
+
+      });
+  
+      if (response.status === 200) {
         setEmployees(employees.filter((emp) => emp.employee_id !== id));
         alert("Employee deleted successfully!");
       } else {
         console.error("Failed to delete employee:", response.statusText);
       }
-    } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error("Error deleting employee:", error);
+      alert(error.response?.data?.message || "Error deleting employee");
     }
   };
+  
 
   const containerVariants = {
     hidden: { opacity: 0 },

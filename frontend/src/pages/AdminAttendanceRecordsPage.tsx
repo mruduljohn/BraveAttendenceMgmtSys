@@ -15,7 +15,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
+
+import axiosInstance  from '../utils/authService'
+
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
 
 interface AttendanceRecord {
   date: string;
@@ -48,20 +52,11 @@ const AdminAttendanceRecordsPage: React.FC = () => {
       setError(null);
 
       try {
-        const baseUrl = process.env.REACT_APP_API_URL;
-        const response = await fetch(`${baseUrl}/api/fetch_attendance/`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        });
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch attendance records");
-        }
+        const response = await axiosInstance.get("/fetch_attendance/");
+        console.log("response", response)
 
-        const data: AttendanceRecord[] = await response.json();
+        const data: AttendanceRecord[] = response.data;
         
         // Group and sum the records by date
         const groupedData = data.reduce((acc: { [key: string]: GroupedAttendanceRecord }, record) => {

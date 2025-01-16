@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Mail, Lock, LogIn } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { baseUrl } from "@/assets/constant";
+import axiosInstance from "@/utils/authService";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -22,7 +22,7 @@ const LoginPage: React.FC = () => {
       const response = await apiLogin(email, password);
       console.log(response)
       if (response.success) {
-
+        
         const { access_token, refresh_token, role, employee_id, username, email, position, department, joined_date } = response;
 
         // Store tokens
@@ -66,20 +66,14 @@ const LoginPage: React.FC = () => {
   };
 
   const apiLogin = async (email: string, password: string) => {
-    const url = `${baseUrl}/api/login/`;
 
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await axiosInstance.post("/login/",{email,password});
+      
 
-      const data = await response.json();
-
-      if (!response.ok) {
+      const data =  response.data;
+      
+      if (response.status !== 200) {
         console.log(response)
         if (data && data.non_field_errors && data.non_field_errors.length > 0) {
           throw new Error(data.non_field_errors[0]);

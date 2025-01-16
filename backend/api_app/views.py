@@ -34,6 +34,8 @@ from django.utils import timezone
 import pytz
 from django.conf import settings
 from utils import get_current_time, convert_to_local_time
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import OutstandingToken, BlacklistedToken
 ist = pytz.timezone('Asia/Kolkata')  # IST timezone
 def assign_role(user, role):
     """
@@ -52,6 +54,15 @@ def login_view(request):
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class LogoutView(APIView):
+    def post(self, request):
+        try:
+            refresh_token = request.data.get("refresh")
+            token = RefreshToken(refresh_token)
+            token.blacklist()  # Add token to blacklist
+            return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 class TokenValidityCheckView(APIView):
    
 
