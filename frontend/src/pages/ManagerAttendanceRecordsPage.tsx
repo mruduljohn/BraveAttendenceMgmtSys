@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
 
-import apiClient from "../utils/apiClient";
 import axiosInstance  from '../utils/authService';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -58,7 +57,7 @@ const PersonalAttendanceRecordsPage: React.FC = () => {
         const response = await axiosInstance.get("/fetch_attendance/");
 
 
-        if (!response.status === 200) {
+        if (response.status !== 200) {
           throw new Error("Failed to fetch attendance records");
         }
 
@@ -91,7 +90,6 @@ const PersonalAttendanceRecordsPage: React.FC = () => {
 
         setAttendanceRecords(sortedGroupedData);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
       } catch (error: any) {
         setError(error.response?.data?.message || "An error occurred"); // Handle API-specific error message if available
       } finally {

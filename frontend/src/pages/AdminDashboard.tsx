@@ -23,6 +23,7 @@ const AdminDashboard: React.FC = () => {
         const response = await axiosInstance.get("/attendance/status/");
         setIsClockedIn(response.data.isClockedIn); 
         } 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         catch (error: any) {
          
           if (error.response?.data?.messages?.[0]?.message === "Token is invalid or expired") {
@@ -49,6 +50,7 @@ const AdminDashboard: React.FC = () => {
       console.log(response.data.message);
       setIsClockedIn(response.data.isClockedIn);
       
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Error during clock in/out:", error);
   

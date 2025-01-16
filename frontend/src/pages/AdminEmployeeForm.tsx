@@ -59,6 +59,7 @@ const AdminEmployeeForm: React.FC = () => {
 
         const { password, ...employeeWithoutPassword } = employeeData;
         setEmployee(employeeWithoutPassword);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         setError(error.response?.data?.message || error.message || 'Failed to fetch employee data');
         console.error('Error:', error);
@@ -119,6 +120,7 @@ const AdminEmployeeForm: React.FC = () => {
   
       
       navigate('/admin/employees');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setError(
         error.response?.data?.message || error.message || 'An error occurred while saving employee data'

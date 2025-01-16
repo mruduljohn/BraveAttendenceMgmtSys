@@ -38,6 +38,7 @@ axiosInstance.interceptors.response.use(
 
                     axiosInstance.defaults.headers.Authorization = `Bearer ${data.access}`;
                     return axiosInstance(originalRequest);
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 } catch (refreshError) {
                     console.error("Refresh token is invalid or expired");
                     localStorage.clear();

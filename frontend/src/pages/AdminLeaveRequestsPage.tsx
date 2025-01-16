@@ -28,7 +28,7 @@ interface LeaveRequest {
 
 const AdminLeaveRequestsPage: React.FC = () => {
 
-  const { user, accessToken } = useAuth();
+  const { accessToken } = useAuth();
 
   const navigate = useNavigate();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
@@ -51,7 +51,6 @@ const AdminLeaveRequestsPage: React.FC = () => {
           console.log(data);
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
           const mappedRequests = data.map((req: any) => ({
             leave_id: req.leave_id,
             leave_type: req.leave_type,
@@ -94,7 +93,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
         // Submit the leave request
         const response = await axiosInstance.post("/create_leave_requests/", leaveRequestToSubmit);
     
-        if (!response.status === 200) {
+        if (response.status !== 200) {
 
           throw new Error("Failed to submit leave request");
         }
@@ -103,11 +102,12 @@ const AdminLeaveRequestsPage: React.FC = () => {
 
         const fetchResponse = await axiosInstance.get("/fetch_leave_requests/");
     
-        if (!fetchResponse.status === 200) {
+        if (fetchResponse.status !== 200) {
           throw new Error("Failed to fetch leave requests");
         }
     
         const data = fetchResponse.data;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const mappedRequests = data.map((req: any) => ({
           leave_id: req.leave_id,
           leave_type: req.leave_type,

@@ -28,7 +28,7 @@ interface LeaveRequest {
 
 const EmployeeLeaveRequestsPage: React.FC = () => {
 
-  const { user, accessToken } = useAuth();
+  const { accessToken } = useAuth();
 
   const navigate = useNavigate();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
@@ -88,7 +88,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
     try {
       const response = await axiosInstance.post("/create_leave_requests/",leaveRequestToSubmit);
         
-      if (!response.status === 200) {
+      if (response.status !== 200) {
         throw new Error("Failed to submit leave request");
       }
 
@@ -96,7 +96,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
     // Re-fetch leave requests after successfully creating a new one
     const fetchResponse = await axiosInstance.get("/fetch_leave_requests/");
     
-    if (!fetchResponse.status === 200 ) {
+    if (fetchResponse.status !== 200 ) {
       throw new Error("Failed to fetch leave requests");
     }
     const data = fetchResponse.data;

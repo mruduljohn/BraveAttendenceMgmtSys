@@ -69,6 +69,7 @@ const ManagerLeaveApprovalPage: React.FC = () => {
           comment: emp.comment, // Adjust based on API response
         }));
         setLeaveRequests(formattedReport);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         console.error("Error fetching leave requests:", error);
   
@@ -106,6 +107,7 @@ const ManagerLeaveApprovalPage: React.FC = () => {
   
       // Assuming the API response includes relevant success details
       console.log("Leave request update response:", response.data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
 
       console.error("Error updating leave request:", error);

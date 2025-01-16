@@ -8,8 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
 import { useAuth } from "../context/AuthContext";
-
-import { log } from 'console';
 import axiosInstance from '@/utils/authService';
 
 
@@ -26,6 +24,7 @@ const ManagerReportGeneration: React.FC = () => {
   const navigate = useNavigate();
   const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [report, setReport] = useState<EmployeeReport[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const {accessToken } = useAuth();
 
 
@@ -77,6 +76,7 @@ const ManagerReportGeneration: React.FC = () => {
         overtimeHours: emp.total_overtime_hours,
       }));
       setReport(formattedReport);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Error fetching report:", error);
   

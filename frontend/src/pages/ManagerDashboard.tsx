@@ -22,6 +22,7 @@ const ManagerDashboard: React.FC = () => {
   
         // Assuming the API returns { isClockedIn: boolean }
         setIsClockedIn(response.data.isClockedIn);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
 
     
@@ -47,6 +48,7 @@ const ManagerDashboard: React.FC = () => {
       // Assuming the API returns { message: string, isClockedIn: boolean }
       console.log(response.data.message);
       setIsClockedIn(response.data.isClockedIn);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error during clock in/out:', error);
   

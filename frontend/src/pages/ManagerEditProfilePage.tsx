@@ -11,7 +11,7 @@ import LiveTime from "@/components/LiveTime";
 import axiosInstance  from '../utils/authService';
 
 const ManagerEditProfilePage: React.FC = () => {
-  const { user, updateUser, accessToken } = useAuth();
+  const { user, updateUser} = useAuth();
   const navigate = useNavigate();
 
  // Initialize state with user data
@@ -41,7 +41,7 @@ const ManagerEditProfilePage: React.FC = () => {
       try {
         const response = await axiosInstance.patch("/update_user_details/");
   
-        if (!response.status === 200) {
+        if (response.status !== 200) {
           throw new Error(`Failed to update profile: ${response.statusText}`);
         }
   

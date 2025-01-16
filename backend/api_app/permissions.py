@@ -5,35 +5,35 @@ from rest_framework import status
 
 class IsAdmin(BasePermission):
     def has_permission(self, request, view):
-        if request.user.role != 'Admin':
+        if request.role != 'Admin':
             raise PermissionDenied("Access denied: Admin role is required.")
-        return request.user.role == 'Admin'
+        return request.role == 'Admin'
 
 class IsManager(BasePermission):
     def has_permission(self, request, view):
-        if request.user.role != 'Manager':
+        if request.role != 'Manager':
             raise PermissionDenied("Access denied: Manager role is required.")
-        return request.user.role == 'Manager'
+        return request.role == 'Manager'
 
 class IsEmployee(BasePermission):
     def has_permission(self, request, view):
-        if request.user.role != 'Employee':
+        if request.role != 'Employee':
             raise PermissionDenied("Access denied: Employee role is required.")
-        return request.user.role == 'Employee'
+        return request.role == 'Employee'
 
 class IsAdminOrManager(BasePermission):
     def has_permission(self, request, view):
-        if request.user.role not in ['Admin', 'Manager']:
+        if request.role not in ['Admin', 'Manager']:
             raise PermissionDenied("Access denied: Admin or Manager role is required.")
-        return request.user.role in ['Admin', 'Manager']
+        return request.role in ['Admin', 'Manager']
 class IsManagerorEmployee(BasePermission):
     def has_permission(self, request, view):
-        if request.user.role not in ['Employee', 'Manager']:
+        if request.role not in ['Employee', 'Manager']:
             raise PermissionDenied("Access denied: Employee or Manager role is required.")
-        return request.user.role in ['Employee', 'Manager']
+        return request.role in ['Employee', 'Manager']
 
 class IsAdminorEmployee(BasePermission):
     def has_permission(self, request, view):
-        if request.user.role not in ['Employee', 'Admin']:
+        if request.role not in ['Employee', 'Admin']:
             raise PermissionDenied("Access denied: Employee or Admin role is required.")
-        return request.user.role in ['Employee', 'Admin']
+        return request.role in ['Employee', 'Admin']

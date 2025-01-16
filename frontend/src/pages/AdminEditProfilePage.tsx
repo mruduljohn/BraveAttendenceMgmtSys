@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import LiveTime from "@/components/LiveTime";
 import axiosInstance  from '../utils/authService'
 const AdminEditProfilePage: React.FC = () => {
-  const { user,updateUser,accessToken } = useAuth();
+  const { user,updateUser } = useAuth();
   const navigate = useNavigate();
 
   // Initialize state with user data
@@ -48,6 +48,7 @@ const AdminEditProfilePage: React.FC = () => {
       navigate("/admin/dashboard");
 
   
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Error updating profile:", error);
       alert("There was an issue updating your profile. Please try again.");

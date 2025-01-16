@@ -67,6 +67,7 @@ const EmployeeManagement: React.FC = () => {
       } else {
         console.error("Failed to delete employee:", response.statusText);
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Error deleting employee:", error);
       alert(error.response?.data?.message || "Error deleting employee");

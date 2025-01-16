@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { Mail, Lock, LogIn } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { baseUrl } from "@/assets/constant";
 import axiosInstance from "@/utils/authService";
 
 const LoginPage: React.FC = () => {
@@ -74,7 +73,7 @@ const LoginPage: React.FC = () => {
 
       const data =  response.data;
       
-      if (!response.status === 200) {
+      if (response.status !== 200) {
         console.log(response)
         if (data && data.non_field_errors && data.non_field_errors.length > 0) {
           throw new Error(data.non_field_errors[0]);
