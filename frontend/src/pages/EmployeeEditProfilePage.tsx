@@ -63,7 +63,7 @@ const EditProfilePage: React.FC = () => {
       console.log("User state before update:", user);
       // Update both local and global state
       setProfileData(updatedData);
-      updateUser(updatedData);
+      updateUser(profileData);
       // Navigate after successful update
       navigate("/employee/dashboard");
     } catch (error) {
