@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import LiveTime from "@/components/LiveTime";
+import axiosInstance  from '../utils/authService';
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -18,64 +19,54 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     const fetchAttendanceStatus = async () => {
       try {
-        const baseUrl = process.env.REACT_APP_API_URL;
-        const response = await fetch(`${baseUrl}/api/attendance/status/`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        });
 
-        if (response.ok) {
-          const data = await response.json();
-          setIsClockedIn(data.isClockedIn)
-        } else {
-          const errorData = await response.json();
-          if (errorData.messages[0].message === "Token is invalid or expired")
-            console.log('Error response body:', errorData);
+        const response = await axiosInstance.get("/attendance/status/");
+        setIsClockedIn(response.data.isClockedIn); 
+        } 
+        catch (error: any) {
+         
+          if (error.response?.data?.messages?.[0]?.message === "Token is invalid or expired") {
+            console.log("Error response body:", error.response?.data);
+          } else {
+            console.error("Error fetching attendance status:", error);
+          }
+
         }
-      } catch (error) {
-        console.error('Error fetching attendance status:', error);
-      }
-    };
+      };
 
     fetchAttendanceStatus();
   }, []);
 
   const handleClockInOut = async () => {
     const action = isClockedIn ? "clock_out" : "clock_in";
-
+  
     try {
-      const baseUrl = process.env.REACT_APP_API_URL;
-      const response = await fetch(`${baseUrl}/api/attendance/clock_in_out/`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem('access_token')}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action }),
+      const response = await axiosInstance.post("/attendance/clock_in_out/", {
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log(data.message);
-        setIsClockedIn(data.isClockedIn);
-      } else {
-        const errorData = await response.json();
-        console.error("Error response:", errorData);
-
-        if (errorData.error === "No clockout sessions!" || errorData.error === "clocked in already") {
-          alert("Error: " + errorData.error);
-          setIsClockedIn((prevState) => !prevState);
-        } else {
-          alert("Failed: " + (errorData.error || "Unknown error, please contact admin"));
-        }
-      }
-    } catch (error) {
+  
+    
+      console.log(response.data.message);
+      setIsClockedIn(response.data.isClockedIn);
+      
+    } catch (error: any) {
       console.error("Error during clock in/out:", error);
-      alert("An error occurred while trying to clock in/out.");
+  
+      // Handle specific errors based on the response
+      if (error.response?.data?.error) {
+        const errorMessage = error.response?.data?.error;
+  
+        if (errorMessage === "No clockout sessions!" || errorMessage === "clocked in already") {
+          alert("Error: " + errorMessage);
+          setIsClockedIn((prevState) => !prevState); 
+        } else {
+          alert("Failed: " + errorMessage || "Unknown error, please contact admin");
+        }
+      } else {
+        alert("An error occurred while trying to clock in/out.");
+      }
     }
   };
+  
 
   const adminActions = [
     {

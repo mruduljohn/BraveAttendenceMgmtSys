@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import LiveTime from "@/components/LiveTime";
+import axiosInstance  from '../utils/authService';
 
 const ManagerEditProfilePage: React.FC = () => {
   const { user, updateUser, accessToken } = useAuth();

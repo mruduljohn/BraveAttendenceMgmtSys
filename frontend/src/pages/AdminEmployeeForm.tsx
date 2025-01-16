@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import LiveTime from "@/components/LiveTime";
 import { useAuth } from "../context/AuthContext";
-
+import axiosInstance  from '../utils/authService'
 interface Employee {
   employee_id: number;
   username: string;
@@ -44,43 +44,32 @@ const AdminEmployeeForm: React.FC = () => {
   useEffect(() => {
     const fetchEmployee = async () => {
       if (!isEditMode) return;
-
+  
       setIsLoading(true);
       setError(null);
-
+  
       try {
-        const baseUrl = process.env.REACT_APP_API_URL;
-        const response = await fetch(`${baseUrl}/api/user_list/`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        const employeeData = result.data.find((emp: Employee) => emp.employee_id === Number(id));
-
+        const response = await axiosInstance.get("/user_list/");
+  
+        const employeeData = response.data.data.find((emp: Employee) => emp.employee_id === Number(id));
+  
         if (!employeeData) {
           throw new Error('Employee not found');
         }
 
-        // Remove password from edit form
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...employeeWithoutPassword } = employeeData;
         setEmployee(employeeWithoutPassword);
-      } catch (error) {
-        setError(error instanceof Error ? error.message : 'Failed to fetch employee data');
+      } catch (error: any) {
+        setError(error.response?.data?.message || error.message || 'Failed to fetch employee data');
         console.error('Error:', error);
       } finally {
         setIsLoading(false);
       }
     };
-
+  
     fetchEmployee();
   }, [isEditMode, id, accessToken]);
+  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -101,51 +90,45 @@ const AdminEmployeeForm: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-
-    const baseUrl = process.env.REACT_APP_API_URL;
-
-    const apiUrl = isEditMode 
-      ? `${baseUrl}/api/edit_user/`
-      : `${baseUrl}/api/add_user/`;
+  
+    const apiUrl = isEditMode
+      ? "/edit_user/"
+      : "/add_user/";
 
     const method = isEditMode ? 'PATCH' : 'POST';
-    
+  
     // For edit mode, ensure employee_id is included in the payload
     const submitData = isEditMode
       ? {
           ...employee,
           employee_id: Number(id),
-          password: employee.password || undefined // Remove empty password
+          password: employee.password || undefined, // Remove empty password
         }
       : employee;
-      console.log('API URL:', apiUrl);
-      console.log('Method:', method);
-      console.log('Payload:', submitData);
-      
+  
+    console.log('API URL:', apiUrl);
+    console.log('Method:', method);
+    console.log('Payload:', submitData);
+  
     try {
-      const response = await fetch(apiUrl, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(submitData),
+      const response = await axiosInstance({
+        method: method,
+        url: apiUrl,
+        data: submitData, // Use 'data' for request payload in axios
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to save employee data');
-      }
-
+  
+      
       navigate('/admin/employees');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred while saving employee data');
+    } catch (error: any) {
+      setError(
+        error.response?.data?.message || error.message || 'An error occurred while saving employee data'
+      );
       console.error('Error:', error);
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">

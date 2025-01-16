@@ -9,6 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import LiveTime from "@/components/LiveTime";
 import { useAuth } from "../context/AuthContext";
 
+import { log } from 'console';
+import axiosInstance from '@/utils/authService';
+
+
 interface EmployeeReport {
   name: string;
   position: string;
@@ -45,70 +49,61 @@ const ManagerReportGeneration: React.FC = () => {
       alert("Please select a month first!");
       return;
     }
-
+  
     // Find the selected month's numeric value
     const selectedMonthObj = months.find(m => m.name === selectedMonth);
     const monthValue = selectedMonthObj?.value;
-
+  
     if (!monthValue) {
       alert("Invalid month selected.");
       return;
     }
 
+  
     // Make the API request to generate the report
     try {
-      const baseUrl = process.env.REACT_APP_API_URL;
-      const response = await fetch(`${baseUrl}/api/generate_reports/${monthValue}/`,{
+      const response = await axiosInstance.get(`/generate_reports/${monthValue}/`);
   
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        const errorMessage = errorData.error || "Unknown error occurred please try again or contact admin";
-        alert(errorMessage);
-        return;
-      }
-
-      const data = await response.json();
-       //console.log('Data',data.report);
-
-      
+      const data = response.data;
+  
+      // Format the report
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const formattedReport = data.report.map((emp: any) => ({
-        name: emp.employee_name, 
+        name: emp.employee_name,
         position: emp.position,
         totalWorkingDays: emp.total_days,
-        daysPresent: emp.days_present, 
-        daysAbsent: emp.days_absent, 
-        overtimeHours: emp.total_overtime_hours, 
+        daysPresent: emp.days_present,
+        daysAbsent: emp.days_absent,
+        overtimeHours: emp.total_overtime_hours,
       }));
-      setReport(formattedReport); 
-      
-    } catch (error) {
+      setReport(formattedReport);
+    } catch (error: any) {
       console.error("Error fetching report:", error);
-      alert("An error occurred while generating the report. Please try again.");
+  
+      // Handle errors more gracefully
+      const errorMessage =
+        error.response?.data?.error || "An error occurred while generating the report. Please try again.";
+      alert(errorMessage);
     }
   };
-
+  
   const downloadReport = () => {
     const headers = "Employee Name,Position,Total Working Days,Days Present,Days Absent,Overtime Hours\n";
-    const csvContent = report.map(emp => 
-      `${emp.name},${emp.position},${emp.totalWorkingDays},${emp.daysPresent},${emp.daysAbsent},${emp.overtimeHours}`
-    ).join("\n");
-
+    const csvContent = report
+      .map(emp =>
+        `${emp.name},${emp.position},${emp.totalWorkingDays},${emp.daysPresent},${emp.daysAbsent},${emp.overtimeHours}`
+      )
+      .join("\n");
+  
     const element = document.createElement("a");
-    const file = new Blob([headers + csvContent], { type: 'text/csv' });
+    const file = new Blob([headers + csvContent], { type: "text/csv" });
     element.href = URL.createObjectURL(file);
     element.download = `team_attendance_report_${selectedMonth}.csv`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
   };
-
+  
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
