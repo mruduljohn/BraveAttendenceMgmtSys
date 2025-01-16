@@ -42,6 +42,7 @@ const AdminDashboard: React.FC = () => {
   
     try {
       const response = await axiosInstance.post("/attendance/clock_in_out/", {
+        action
       });
   
     

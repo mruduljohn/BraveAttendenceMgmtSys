@@ -58,7 +58,6 @@ const ManagerLeaveApprovalPage: React.FC = () => {
         const data = response.data;
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
         const formattedReport = data.data.map((emp: any) => ({
           id: emp.leave_id,
           employeeId: emp.employee,

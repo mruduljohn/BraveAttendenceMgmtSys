@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/context/AuthContext";
+import axiosInstance from "@/utils/authService";
 import {
   Table,
   TableBody,
@@ -43,7 +44,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
       try {
         const response = await axiosInstance.get("/fetch_leave_requests/");
         
-        if (!response.status === 200) {
+        if (response.status !== 200) {
           throw new Error("Failed to fetch leave requests");
         }
         const data =  response.data;
@@ -66,7 +67,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
     fetchLeaveRequests();
   }, [accessToken]);
 
-  const handleLeaveRequestSubmit = async (e: FormEvent) => {
+  const handleLeaveRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validate dates
@@ -85,9 +86,8 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
     };
 
     try {
-        const response = await axiosInstance.post("/create_leave_requests/");
+      const response = await axiosInstance.post("/create_leave_requests/",leaveRequestToSubmit);
         
-
       if (!response.status === 200) {
         throw new Error("Failed to submit leave request");
       }
@@ -96,13 +96,11 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
     // Re-fetch leave requests after successfully creating a new one
     const fetchResponse = await axiosInstance.get("/fetch_leave_requests/");
     
-    
     if (!fetchResponse.status === 200 ) {
       throw new Error("Failed to fetch leave requests");
     }
-
-    const data =  fetchResponse.data;
-    console.log("data",data)
+    const data = fetchResponse.data;
+    console.log("data", data);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mappedRequests = data.map((req: any) => ({
       leave_id: req.leave_id,
@@ -112,18 +110,6 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
       status: req.status,
       comment: req.comment,
     }));
-    setLeaveRequests(mappedRequests);
-
-
-      const data = await fetchResponse.json();
-      console.log("data", data);
-      const mappedRequests = data.map((req: any) => ({
-        leave_id: req.leave_id,
-        leave_type: req.leave_type,
-        start_date: req.start_date,
-        end_date: req.end_date,
-        status: req.status,
-      }));
       setLeaveRequests(mappedRequests);
 
       // Clear the form fields
