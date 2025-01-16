@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import LiveTime from "@/components/LiveTime";
+import axiosInstance from "@/utils/authService";
 
 interface LeaveRequest {
   id: number;
@@ -49,20 +50,11 @@ const ManagerLeaveApprovalPage: React.FC = () => {
     // Fetch leave requests from the API
     const fetchLeaveRequests = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/fetch_all_leave_requests/", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
+        const response = await axiosInstance.get("/fetch_all_leave_requests/");
         
-        if (!response.ok) {
-          throw new Error("Failed to fetch leave requests");
-        }
-
-        const data = await response.json();
-        
+        // Assuming the API response includes `data` containing leave requests
+        const data = response.data;
+  
         const formattedReport = data.data.map((emp: any) => ({
           id: emp.leave_id,
           employeeId: emp.employee,
@@ -71,27 +63,30 @@ const ManagerLeaveApprovalPage: React.FC = () => {
           endDate: emp.end_date, // Adjust based on API response
           reason: emp.leave_type, // Adjust based on API response
           status: emp.status,
-          comment:emp.comment // Adjust based on API response
+          comment: emp.comment, // Adjust based on API response
         }));
         setLeaveRequests(formattedReport);
-       
-      } catch (error) {
-        console.error(error);
+      } catch (error: any) {
+        console.error("Error fetching leave requests:", error);
+  
+        // Optionally handle error messages for better user feedback
+        const errorMessage = error.response?.data?.message || "Failed to fetch leave requests. Please try again.";
+        alert(errorMessage);
       }
     };
-
+  
     fetchLeaveRequests();
   }, [accessToken]);
-
-  const handleValidation = async (leaveId: number, employeeId: number, action: "approve" | "reject", commentData:string) => {
+  
+  const handleValidation = async (leaveId: number, employeeId: number, action: "approve" | "reject", commentData: string) => {
     const requestBody = {
       employee_id: employeeId,
       leave_id: leaveId,
       action: action,
       comment: commentData,
     };
-    console.log("body",requestBody)
-    
+    console.log("body", requestBody);
+  
     // Update leave request status in the frontend state
     const updatedRequests = leaveRequests.map((request) =>
       request.id === leaveId ? { ...request, status: action === "approve" ? "Approved" : "Rejected" } : request
@@ -99,29 +94,22 @@ const ManagerLeaveApprovalPage: React.FC = () => {
     setLeaveRequests(updatedRequests);
     setSelectedRequest(null);
     setComment("");
-
+  
     // Make API call to update status
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/accept_reject_leave_request/", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update leave request");
-      }
-      const data = await response.json();
-      //console.log("data",data)
-      
-    } catch (error) {
+      const response = await axiosInstance.patch("/accept_reject_leave_request/", requestBody);
+  
+      // Assuming the API response includes relevant success details
+      console.log("Leave request update response:", response.data);
+    } catch (error: any) {
       console.error("Error updating leave request:", error);
+  
+      // Optionally handle error messages for better user feedback
+      const errorMessage = error.response?.data?.message || "Failed to update leave request. Please try again.";
+      alert(errorMessage);
     }
   };
-
+  
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

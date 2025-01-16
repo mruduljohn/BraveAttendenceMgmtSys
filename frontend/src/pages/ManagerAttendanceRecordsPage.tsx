@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
 import apiClient from "../utils/apiClient";
+import axiosInstance  from '../utils/authService';
 
 interface AttendanceRecord {
   date: string;
@@ -33,36 +34,24 @@ const ManagerAttendanceRecordsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch the manager's personal attendance records from the API
     const fetchAttendance = async () => {
       setLoading(true);
       setError(null);
-
+  
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/fetch_attendance/", {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${accessToken}`, // Pass the access token
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch attendance records");
-        }
-
-        const data = await response.json();
-        setAttendanceRecords(data || []); // Assuming the API returns `attendance`
+        // Use axiosInstance for the API call
+        const response = await axiosInstance.get("/fetch_attendance/");
+        setAttendanceRecords(response.data || []); // Assuming the API returns attendance records
       } catch (error: any) {
-        setError(error.message || "An error occurred");
+        setError(error.response?.data?.message || "An error occurred"); // Handle API-specific error message if available
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchAttendance();
-  }, [user, navigate,accessToken]);
-
+  }, [user, navigate, accessToken]);
+  
   // if (user?.role !== "manager") {
   //   navigate("/"); // Redirect if user is not a manager
   // }

@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
+import axiosInstance  from '../utils/authService';
 
 interface Employee {
   employee_id: number;
@@ -36,37 +37,34 @@ const ManagerEmployeeManagement: React.FC = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/user_list/', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          // Group employees by department
-          const grouped = result.data.reduce((acc: DepartmentGroups, employee: Employee) => {
-            const dept = employee.department || 'Unassigned';
-            if (!acc[dept]) {
-              acc[dept] = [];
-            }
-            acc[dept].push(employee);
-            return acc;
-          }, {});
-          setEmployeesByDepartment(grouped);
-        } else {
-          console.error('Failed to fetch employees:', response.statusText);
-        }
-      } catch (error) {
-        console.error('Error fetching employees:', error);
+        const response = await axiosInstance.get("/user_list/");
+  
+        // Assuming the API response includes `data` containing employee details
+        const result = response.data;
+  
+        // Group employees by department
+        const grouped = result.data.reduce((acc: DepartmentGroups, employee: Employee) => {
+          const dept = employee.department || "Unassigned";
+          if (!acc[dept]) {
+            acc[dept] = [];
+          }
+          acc[dept].push(employee);
+          return acc;
+        }, {});
+  
+        setEmployeesByDepartment(grouped);
+      } catch (error: any) {
+        console.error("Error fetching employees:", error);
+  
+        // Optionally handle error messages for better user feedback
+        const errorMessage = error.response?.data?.message || "Failed to fetch employees. Please try again.";
+        alert(errorMessage);
       }
     };
-
+  
     fetchEmployees();
   }, [accessToken]);
-
+  
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

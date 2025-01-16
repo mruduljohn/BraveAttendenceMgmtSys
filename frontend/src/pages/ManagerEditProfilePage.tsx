@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import LiveTime from "@/components/LiveTime";
+import axiosInstance  from '../utils/authService';
 
 const ManagerEditProfilePage: React.FC = () => {
   const { user, updateUser, accessToken } = useAuth();
