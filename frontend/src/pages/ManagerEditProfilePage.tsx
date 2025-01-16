@@ -39,7 +39,7 @@ const ManagerEditProfilePage: React.FC = () => {
       e.preventDefault();
       
       try {
-        const response = await axiosInstance.patch("/update_user_details/");
+        const response = await axiosInstance.patch("/update_user_details/", profileData);
   
         if (response.status !== 200) {
           throw new Error(`Failed to update profile: ${response.statusText}`);
@@ -54,7 +54,7 @@ const ManagerEditProfilePage: React.FC = () => {
         console.log("User state before update:", user);
         // Update both local and global state
         setProfileData(updatedData);
-        updateUser(updatedData);
+        updateUser(profileData);
         // Navigate after successful update
         navigate("/manager/dashboard");
       } catch (error) {

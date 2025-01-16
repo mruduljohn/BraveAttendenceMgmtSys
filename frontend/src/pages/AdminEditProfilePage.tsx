@@ -43,7 +43,7 @@ const AdminEditProfilePage: React.FC = () => {
       const updatedData = response.data.data;  
 
       setProfileData(updatedData);
-      updateUser(updatedData);
+      updateUser(profileData);
       // Navigate after successful update
       navigate("/admin/dashboard");
 

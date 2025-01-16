@@ -93,7 +93,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
         // Submit the leave request
         const response = await axiosInstance.post("/create_leave_requests/", leaveRequestToSubmit);
     
-        if (response.status !== 200) {
+        if (response.status !== 201) {
 
           throw new Error("Failed to submit leave request");
         }
