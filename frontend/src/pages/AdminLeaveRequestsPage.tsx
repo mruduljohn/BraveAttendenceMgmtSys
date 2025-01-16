@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
-
+import axiosInstance  from '../utils/authService'
 interface LeaveRequest {
   leave_id: number;
   start_date: string;
@@ -37,95 +37,78 @@ const AdminLeaveRequestsPage: React.FC = () => {
       status: "Pending",
     });
 
-  useEffect(() => {
-      // Fetch the leave requests from the backend API
-      console.log("Component mounted")
+    useEffect(() => {
+      console.log("Component mounted");
+    
       const fetchLeaveRequests = async () => {
         try {
-          const response = await fetch("http://127.0.0.1:8000/api/fetch_leave_requests/", {
-            headers: {
-              "content-type": "application/json",
-              "Authorization": `Bearer ${accessToken}`,
-            },
-          });
-          if (!response.ok) {
-            throw new Error("Failed to fetch leave requests");
-          }
-          const data = await response.json();
-          console.log(data)
+          const response = await axiosInstance.get("/fetch_leave_requests/");
+          
+          const data = response.data;  // Axios response contains the data directly
+          console.log(data);
+    
           const mappedRequests = data.map((req: any) => ({
-            leave_id: req.leave_id, // Generate a temporary unique ID for each request
+            leave_id: req.leave_id,
             leave_type: req.leave_type,
             start_date: req.start_date,
             end_date: req.end_date,
             status: req.status,
-            comment:req.comment,
+            comment: req.comment,
           }));
+    
           setLeaveRequests(mappedRequests);
-          //console.log("Leave Requests:", mappedRequests);
         } catch (error) {
           console.error("Error fetching leave requests:", error);
+          alert("Failed to fetch leave requests. Please try again.");
         }
       };
-  
+    
       fetchLeaveRequests();
     }, [accessToken]);
 
-  const handleLeaveRequestSubmit = async (e: React.FormEvent) => {
+    const handleLeaveRequestSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
-  
+    
       // Set default leave_type if empty
       const leaveRequestToSubmit = {
-      ...newLeaveRequest,
-      leave_type: newLeaveRequest.leave_type || "No reason provided",
-    };
-
+        ...newLeaveRequest,
+        leave_type: newLeaveRequest.leave_type || "No reason provided",
+      };
+    
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/create_leave_requests/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify(leaveRequestToSubmit),
-        });
-  
-        if (!response.ok) {
+        // Submit the leave request
+        const response = await axiosInstance.post("/create_leave_requests/", leaveRequestToSubmit);
+    
+        if (!response.status === 200) {
           throw new Error("Failed to submit leave request");
         }
-  
+    
         // Re-fetch leave requests after successfully creating a new one
-    const fetchResponse = await fetch("http://127.0.0.1:8000/api/fetch_leave_requests/", {
-      headers: {
-        "content-type": "application/json",
-        "Authorization": `Bearer ${accessToken}`,
-      },
-    });
-
-    if (!fetchResponse.ok) {
-      throw new Error("Failed to fetch leave requests");
-    }
-
-    const data = await fetchResponse.json();
-    const mappedRequests = data.map((req: any) => ({
-      leave_id: req.leave_id,
-      leave_type: req.leave_type,
-      start_date: req.start_date,
-      end_date: req.end_date,
-      status: req.status,
-    }));
-    setLeaveRequests(mappedRequests);
-
-    // Clear the form fields
-    setNewLeaveRequest({ start_date: "", end_date: "", leave_type: "", status: "Pending" });
-
-    alert("Leave request submitted successfully!");
-  } catch (error) {
-    console.error("Error submitting leave request:", error);
-    alert("Failed to submit leave request. Please try again.");
-  }
-};
-
+        const fetchResponse = await axiosInstance.get("/fetch_leave_requests/");
+    
+        if (!fetchResponse.status === 200) {
+          throw new Error("Failed to fetch leave requests");
+        }
+    
+        const data = fetchResponse.data;
+        const mappedRequests = data.map((req: any) => ({
+          leave_id: req.leave_id,
+          leave_type: req.leave_type,
+          start_date: req.start_date,
+          end_date: req.end_date,
+          status: req.status,
+        }));
+        setLeaveRequests(mappedRequests);
+    
+        // Clear the form fields
+        setNewLeaveRequest({ start_date: "", end_date: "", leave_type: "", status: "Pending" });
+    
+        alert("Leave request submitted successfully!");
+      } catch (error) {
+        console.error("Error submitting leave request:", error);
+        alert("Failed to submit leave request. Please try again.");
+      }
+    };
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

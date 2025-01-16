@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import LiveTime from "@/components/LiveTime";
-
+import axiosInstance  from '../utils/authService'
 const AdminEditProfilePage: React.FC = () => {
   const { user,updateUser,accessToken } = useAuth();
   const navigate = useNavigate();
@@ -42,42 +42,24 @@ const AdminEditProfilePage: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault();
-      
-      try {
-        const response = await fetch(
-          "http://127.0.0.1:8000/api/update_user_details/",
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify(profileData),
-          }
-        );
+    e.preventDefault();
+    
+    try {
+    
+      const response = await axiosInstance.patch("/update_user_details/", profileData);
+      const updatedData = response.data.data;  
+
+      setProfileData(updatedData);
+      updateUser(updatedData);
+      // Navigate after successful update
+      navigate("/admin/dashboard");
   
-        if (!response.ok) {
-          throw new Error(`Failed to update profile: ${response.statusText}`);
-        }
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      alert("There was an issue updating your profile. Please try again.");
+    }
+  };
   
-        const result = await response.json();
-        console.log("Full API response:", result);
-  
-        const updatedData = result.data;
-        console.log("Extracted updated data:", updatedData);
-  
-        console.log("User state before update:", user);
-        // Update both local and global state
-        setProfileData(updatedData);
-        updateUser(updatedData);
-        // Navigate after successful update
-        navigate("/admin/dashboard");
-      } catch (error) {
-        console.error("Error updating profile:", error);
-        alert("There was an issue updating your profile. Please try again.");
-      }
-    };
 
   // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   const file = e.target.files?.[0];

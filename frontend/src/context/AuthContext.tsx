@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import axios from "axios";
 import { getAccessToken } from "@/utils/auth";
-
+import axiosInstance  from '../utils/authService'
 // Define types
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -104,16 +104,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
   };
 
-  const logout = () => {
-    setIsAuthenticated(false);
-    setUser(null);
-    setAccessToken(null);
-    setRefreshToken(null);
-    // Clean-up tokens and user data from localStorage
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user");
-  };
+  const logout = async () => {
+    try {
+        const refreshToken = localStorage.getItem("refresh_token");
+        await axiosInstance.post('logout/', { refresh: refreshToken });
+        //nsole.log("blacklisted")
+        // Clear frontend state and storage
+        setIsAuthenticated(false);
+        setUser(null);
+        setAccessToken(null);
+        setRefreshToken(null);
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("user");
+    } catch (err) {
+        console.error("Error during logout:", err);
+    }
+};
+
 
   // Added updateUser to partially update user information
   const updateUser = (userUpdates: Partial<User>) => {

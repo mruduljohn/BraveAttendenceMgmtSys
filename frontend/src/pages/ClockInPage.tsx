@@ -6,6 +6,7 @@ import { Clock, ArrowLeft, Users } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import LiveTime from "@/components/LiveTime";
+import axiosInstance from '../utils/authService';
 
 const ClockInPage: React.FC = () => {
   const [isClockedIn, setIsClockedIn] = useState(false);
@@ -19,67 +20,47 @@ const ClockInPage: React.FC = () => {
 
   useEffect(() => {
     console.log("useEffect triggered");
+
     const fetchAttendanceStatus = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/attendance/status/', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        });
+        const response = await axiosInstance.get('/attendance/status/');
 
-        if (response.ok) {
-          const data = await response.json();
-          // console.log('Parsed response data:', data.isClockedIn);
-          setIsClockedIn(data.isClockedIn)
+        if (response.status === 200) {
+          setIsClockedIn(response.data.isClockedIn);
         } else {
-
-          const errorData = await response.json();
-          if( errorData.messages[0].message === "Token is invalid or expired")
-          console.log('Error response body:', errorData);
+          const errorData = response.data;
+          if (errorData.messages[0].message === "Token is invalid or expired") {
+            console.log('Token invalid or expired, attempting to refresh...');
+            // Handle token refresh here
+            // This part should be handled in your auth service
+          }
         }
       } catch (error) {
         console.error('Error fetching attendance status:', error);
+        // Optionally, handle other error scenarios (e.g., network errors)
       }
     };
 
     fetchAttendanceStatus();
-  }, []); // Dependency array ensures it runs only once on mount
-
+  }, []); 
 
   const handleClockInOut = async () => {
     const action = isClockedIn ? "clock_out" : "clock_in";
 
     try {
-        const response = await fetch("http://localhost:8000/api/attendance/clock_in_out/", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${localStorage.getItem('access_token')}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ action }),
-        });
+        const response = await axiosInstance.post('/attendance/clock_in_out/', { action });
 
-        if (response.ok) {
-            const data = await response.json();
+        if (response.status === 200) {
+            const data = response.data;
             console.log(data.message);
             setIsClockedIn(data.isClockedIn);
         } else {
-            const errorData = await response.json();
-            console.error("Error response:", errorData);
-
-            // // Check if the token is invalid or expired and redirect to login
-            // if (errorData.messages && errorData.messages[0]?.message === "Token is invalid or expired") {
-            //     alert("Your session has expired. Please log in again.");
-            //     navigate("/");
-            //     return; 
-            // }
-
+            // Handle specific error messages if needed
+            const errorData = response.data;
             if (errorData.error === "No clockout sessions!" || errorData.error === "clocked in already") {
                 alert("Error: " + errorData.error);
-                setIsClockedIn((prevState) => !prevState); 
+                setIsClockedIn((prevState) => !prevState); // Revert state
             } else {
-        
                 alert("Failed: " + (errorData.error || "Unknown error, please contact admin"));
             }
         }

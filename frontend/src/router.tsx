@@ -23,7 +23,7 @@ import ManageReportGeneration from "./pages/ManagerReportGeneration";
 import AdminEmployeeForm from "./pages/AdminEmployeeForm";
 // import ManagerEmployeeForm from "./pages/ManagerEmployeeForm";
 import ManagerAnalysisPage from "./pages/ManagerAnalysisPage";
-import PageNotFound from "./pages/PagenotFound";
+import PageNotFound from "./pages/PageNotFound";
 import { useAuth } from "./context/AuthContext";
 
 const AppRouter: React.FC = () => {

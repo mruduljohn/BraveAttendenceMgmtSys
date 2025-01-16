@@ -1,28 +1,54 @@
-import { getRefreshToken, setAccessToken } from "./auth"; // Assume these are utility functions
+import axios from "axios";
 
-export const refreshAccessToken = async () => {
-  const refreshToken = getRefreshToken(); // Retrieve refresh token from storage
-  if (!refreshToken) {
-    throw new Error("No refresh token found");
-  }
+const BASE_URL = "http://127.0.0.1:8000/api";
+const axiosInstance = axios.create({
+    baseURL: BASE_URL,
+    headers: { "Content-Type": "application/json" },
+});
 
-  try {
-    const response = await fetch("http://localhost:8000/api/auth/refresh", {
-      method: "POST",
-      body: JSON.stringify({ refresh_token: refreshToken }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to refresh access token");
+axiosInstance.interceptors.request.use(
+    async (config) => {
+        const accessToken = localStorage.getItem("access_token");
+        if (accessToken) {
+            config.headers.Authorization = `Bearer ${accessToken}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
     }
+);
 
-    const data = await response.json();
-    setAccessToken(data.access_token); // Save the new access token to storage
-    return data.access_token; // Return the new token
-  } catch (error) {
-    throw new Error("Token refresh failed");
-  }
-};
+axiosInstance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            const refreshToken = localStorage.getItem("refresh_token");
+
+            if (refreshToken) {
+                try {
+                    const { data } = await axios.post(`${BASE_URL}/token/refresh/`, {
+                        refresh: refreshToken,
+                    });
+                    localStorage.setItem("access_token", data.access);
+                    localStorage.setItem("refresh_token", data.refresh);
+
+                    axiosInstance.defaults.headers.Authorization = `Bearer ${data.access}`;
+                    return axiosInstance(originalRequest);
+                } catch (refreshError) {
+                    console.error("Refresh token is invalid or expired");
+                    localStorage.clear();
+                    window.location.href = "/";
+                }
+            }
+        }
+
+        return Promise.reject(error);
+    }
+);
+
+
+export default axiosInstance;

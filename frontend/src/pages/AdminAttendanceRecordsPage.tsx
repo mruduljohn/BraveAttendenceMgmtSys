@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
+import axiosInstance  from '../utils/authService'
 
 interface AttendanceRecord {
   date: string;
@@ -42,20 +43,9 @@ const AdminAttendanceRecordsPage: React.FC = () => {
       setError(null);
 
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/fetch_attendance/", {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${accessToken}`, // Pass the access token
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch attendance records");
-        }
-
-        const data = await response.json();
-        setAttendanceRecords(data || []); // Assuming the API returns `attendance`
+        const response = await axiosInstance.get("/fetch_attendance/");
+        console.log("response", response)
+        setAttendanceRecords(response.data || []); // Assuming the API returns `attendance`
       } catch (error: any) {
         setError(error.message || "An error occurred");
       } finally {

@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
+import axiosInstance  from '../utils/authService';
 
 interface Employee {
   employee_id: number;
@@ -59,27 +60,24 @@ const EmployeeManagement: React.FC = () => {
   const deleteEmployee = async (id: number) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this employee?");
     if (!confirmDelete) return;
-
+  
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/delete_user/", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ employee_id: id }),
+      const response = await axiosInstance.delete("/delete_user/", {
+        data: { employee_id: id }, // Use 'data' for the body of DELETE requests in axios
       });
-
-      if (response.ok) {
+  
+      if (response.status === 200) {
         setEmployees(employees.filter((emp) => emp.employee_id !== id));
         alert("Employee deleted successfully!");
       } else {
         console.error("Failed to delete employee:", response.statusText);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting employee:", error);
+      alert(error.response?.data?.message || "Error deleting employee");
     }
   };
+  
 
   const containerVariants = {
     hidden: { opacity: 0 },

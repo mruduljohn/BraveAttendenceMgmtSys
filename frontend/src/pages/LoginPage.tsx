@@ -21,7 +21,7 @@ const LoginPage: React.FC = () => {
       const response = await apiLogin(email, password);
       console.log(response)
       if (response.success) {
-
+        
         const { access_token, refresh_token, role, employee_id, username, email, position, department, joined_date } = response;
 
         // Store tokens
@@ -76,7 +76,7 @@ const LoginPage: React.FC = () => {
       });
 
       const data = await response.json();
-
+      
       if (!response.ok) {
         console.log(response)
         if (data && data.non_field_errors && data.non_field_errors.length > 0) {
