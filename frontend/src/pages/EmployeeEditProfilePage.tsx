@@ -117,7 +117,7 @@ const EditProfilePage: React.FC = () => {
             >
               <Button
                 variant="ghost"
-                className="flex items-center gap-2 text-gray-300 hover:text-white"
+                className="flex items-center gap-2 text-gray-300 hover:text-black"
                 onClick={() => navigate("/employee/dashboard")}
               >
                 <ArrowLeft className="w-4 h-4" />

@@ -25,15 +25,24 @@ interface AttendanceRecord {
   status: "Open" | "Closed";
 }
 
+interface GroupedAttendanceRecord {
+  date: string;
+  total_hours: number;
+  extra_hours: number;
+  status: "Open" | "Closed";
+  entries: AttendanceRecord[];
+}
+
+const STANDARD_WORK_HOURS = 7; // Define standard work hours
+
 const AdminAttendanceRecordsPage: React.FC = () => {
   const { user, accessToken } = useAuth();
   const navigate = useNavigate();
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [attendanceRecords, setAttendanceRecords] = useState<GroupedAttendanceRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-
     const fetchAttendance = async () => {
       setLoading(true);
       setError(null);
@@ -52,8 +61,34 @@ const AdminAttendanceRecordsPage: React.FC = () => {
           throw new Error("Failed to fetch attendance records");
         }
 
-        const data = await response.json();
-        setAttendanceRecords(data || []);
+        const data: AttendanceRecord[] = await response.json();
+        
+        // Group and sum the records by date
+        const groupedData = data.reduce((acc: { [key: string]: GroupedAttendanceRecord }, record) => {
+          if (!acc[record.date]) {
+            acc[record.date] = {
+              date: record.date,
+              total_hours: 0,
+              extra_hours: 0,
+              status: record.status,
+              entries: [],
+            };
+          }
+          acc[record.date].total_hours += record.total_hours;
+          acc[record.date].entries.push(record);
+          return acc;
+        }, {});
+
+        // Calculate extra hours for each grouped record
+        Object.values(groupedData).forEach(record => {
+          record.extra_hours = Math.max(0, record.total_hours - STANDARD_WORK_HOURS);
+        });
+
+        const sortedGroupedData = Object.values(groupedData).sort((a, b) => 
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+
+        setAttendanceRecords(sortedGroupedData);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         setError(error.message || "An error occurred");
@@ -100,10 +135,13 @@ const AdminAttendanceRecordsPage: React.FC = () => {
     : 0;
 
   // Prepare data for the line chart
-  const chartData = attendanceRecords.map(record => ({
-    date: record.date,
-    hours: record.total_hours,
-  })).slice(-30); // Show only the last 30 days
+  const chartData = attendanceRecords
+    .slice(-30)
+    .map(record => ({
+      date: record.date,
+      hours: record.total_hours,
+    }))
+    .reverse();
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-900">
@@ -125,7 +163,7 @@ const AdminAttendanceRecordsPage: React.FC = () => {
               >
                 <Button
                   variant="ghost"
-                  className="flex items-center gap-2 text-slate-300 hover:text-white"
+                  className="flex items-center gap-2 text-slate-300 hover:text-black"
                   onClick={() => navigate("/admin/dashboard")}
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -223,10 +261,8 @@ const AdminAttendanceRecordsPage: React.FC = () => {
                             {record.date}
                           </div>
                         </TableCell>
-                        <TableCell className="text-slate-300">{record.total_hours}</TableCell>
-                        <TableCell className="text-slate-300">
-                          {Math.round(record.total_hours - 7 > 0 ? record.total_hours - 7 : 0)}
-                        </TableCell>
+                        <TableCell className="text-slate-300">{record.total_hours.toFixed(2)}</TableCell>
+                        <TableCell className="text-slate-300">{record.extra_hours.toFixed(2)}</TableCell>
                         <TableCell>
                           <div className="flex items-center">
                             {record.status === "Open" ? (
