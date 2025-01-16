@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Mail, Briefcase, Building, Calendar, Camera } from 'lucide-react';
+import { ArrowLeft, User, Mail, Briefcase, Building, Calendar } from 'lucide-react';
 import { useAuth } from "../context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import LiveTime from "@/components/LiveTime";
 
 const EditProfilePage: React.FC = () => {
   const { user, updateUser, accessToken } = useAuth();
   const navigate = useNavigate();
+
 
   // Initialize state with user data
   const [profileData, setProfileData] = useState({
@@ -23,15 +23,8 @@ const EditProfilePage: React.FC = () => {
     position: user?.position || "",
     department: user?.department || "",
     joined_date: user?.joined_date || "",
-    profilePicture: user?.profilePicture || "https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg",
+    profilePicture: "https://mighty.tools/mockmind-api/content/cartoon/10.jpg",
   });
-
-  // // Protect the route
-  // useEffect(() => {
-  //   if (!user || user.role !== "employee") {
-  //     navigate("/");
-  //   }
-  // }, [user, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -79,23 +72,19 @@ const EditProfilePage: React.FC = () => {
     }
   };
 
-  // useEffect(() => {
-  //   updateUser(profileData);
-  // }, [profileData, updateUser]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileData(prev => ({
-          ...prev,
-          profilePicture: reader.result as string
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       setProfileData(prev => ({
+  //         ...prev,
+  //         profilePicture: reader.result as string
+  //       }));
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -114,11 +103,6 @@ const EditProfilePage: React.FC = () => {
       y: 0,
     },
   };
-
-  // Return null if user is not authorized
-  // if (!user || user.role !== "employee") {
-  //   return null;
-  // }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-900">
@@ -160,7 +144,7 @@ const EditProfilePage: React.FC = () => {
                     alt="Profile"
                     className="w-32 h-32 rounded-full border-2 border-aqua-400"
                   />
-                  <Label htmlFor="profile-picture" className="absolute bottom-0 right-0 bg-aqua-500 text-gray-900 rounded-full p-2 cursor-pointer">
+                  {/* <Label htmlFor="profile-picture" className="absolute bottom-0 right-0 bg-aqua-500 text-gray-900 rounded-full p-2 cursor-pointer">
                     <Camera className="w-5 h-5" />
                   </Label>
                   <Input
@@ -169,7 +153,7 @@ const EditProfilePage: React.FC = () => {
                     accept="image/*"
                     className="hidden"
                     onChange={handleFileChange}
-                  />
+                  /> */}
                 </div>
               </motion.div>
 

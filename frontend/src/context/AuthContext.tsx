@@ -12,7 +12,7 @@ interface AuthContextType {
   login: (userDetails: UserDetails) => void;
   logout: () => void;
   updateUser: (userUpdates: Partial<User>) => void; // Added updateUser to the context value
-  isLoading: Boolean | null
+  isLoading: boolean | null
 }
 
 interface User {
@@ -59,6 +59,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       );
       console.log("authenticated", response.data.isAuthenticated)
       setIsAuthenticated(response.data.isAuthenticated);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setIsAuthenticated(false)
     } finally {

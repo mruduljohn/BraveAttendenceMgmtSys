@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, FileText } from 'lucide-react';
+import { ArrowLeft, FileText } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,21 +23,23 @@ interface LeaveRequest {
   end_date: string;
   leave_type: string;
   status: string;
+  comment:string;
 }
 
 const AdminLeaveRequestsPage: React.FC = () => {
-  const { user,accessToken } = useAuth();
+  const { accessToken } = useAuth();
   const navigate = useNavigate();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [newLeaveRequest, setNewLeaveRequest] = useState({
       start_date: "",
       end_date: "",
-      leave_type: "",
+      leave_type: "No Reason provided",
       status: "Pending",
     });
 
   useEffect(() => {
       // Fetch the leave requests from the backend API
+      console.log("Component mounted")
       const fetchLeaveRequests = async () => {
         try {
           const baseUrl = process.env.REACT_APP_API_URL;
@@ -51,12 +53,15 @@ const AdminLeaveRequestsPage: React.FC = () => {
             throw new Error("Failed to fetch leave requests");
           }
           const data = await response.json();
-          const mappedRequests = data["Leave Requests"].map((req: any) => ({
+          console.log(data)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const mappedRequests = data.map((req: any) => ({
             leave_id: req.leave_id, // Generate a temporary unique ID for each request
             leave_type: req.leave_type,
             start_date: req.start_date,
             end_date: req.end_date,
             status: req.status,
+            comment:req.comment,
           }));
           setLeaveRequests(mappedRequests);
           //console.log("Leave Requests:", mappedRequests);
@@ -71,6 +76,12 @@ const AdminLeaveRequestsPage: React.FC = () => {
   const handleLeaveRequestSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
   
+      // Set default leave_type if empty
+      const leaveRequestToSubmit = {
+      ...newLeaveRequest,
+      leave_type: newLeaveRequest.leave_type || "No reason provided",
+    };
+
       try {
         const baseUrl = process.env.REACT_APP_API_URL;
         const response = await fetch(`${baseUrl}/api/create_leave_requests/`, {
@@ -79,7 +90,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${accessToken}`,
           },
-          body: JSON.stringify(newLeaveRequest),
+          body: JSON.stringify(leaveRequestToSubmit),
         });
   
         if (!response.ok) {
@@ -99,7 +110,8 @@ const AdminLeaveRequestsPage: React.FC = () => {
     }
 
     const data = await fetchResponse.json();
-    const mappedRequests = data["Leave Requests"].map((req: any) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mappedRequests = data.map((req: any) => ({
       leave_id: req.leave_id,
       leave_type: req.leave_type,
       start_date: req.start_date,
@@ -183,16 +195,19 @@ const AdminLeaveRequestsPage: React.FC = () => {
                     <TableHead className="text-slate-300">Start Date</TableHead>
                     <TableHead className="text-slate-300">End Date</TableHead>
                     <TableHead className="text-slate-300">Reason</TableHead>
+                    <TableHead className="text-slate-300">Comments</TableHead>
                     <TableHead className="text-slate-300">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {leaveRequests.map((request) => (
+                    
                     <motion.tr key={request.leave_id} variants={itemVariants}>
                       <TableCell className="text-gray-300">{request.leave_id}</TableCell>
                       <TableCell className="text-gray-300">{request.start_date}</TableCell>
                       <TableCell className="text-gray-300">{request.end_date}</TableCell>
                       <TableCell className="text-gray-300">{request.leave_type}</TableCell>
+                      <TableCell className="text-gray-300">{request.comment}</TableCell>
                       <TableCell>
                         <span className={`px-2 py-1 rounded text-xs font-medium ${
                           request.status === 'Approved' ? 'bg-green-500/20 text-green-400' :
@@ -263,7 +278,7 @@ const AdminLeaveRequestsPage: React.FC = () => {
                       })
                     }
                     className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
-                    required
+                 
                   />
                 </div>
                 <Button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900">

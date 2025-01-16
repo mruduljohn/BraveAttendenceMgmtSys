@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, FileText, LogOut, BarChart, Clock, Calendar, FileCheck } from 'lucide-react';
+import { Users, Clock, Calendar, FileCheck } from 'lucide-react';
 import LogoutButton from "../components/LogoutButton";
 import { useAuth } from "../context/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -142,10 +142,7 @@ const AdminDashboard: React.FC = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <LogoutButton className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-white transition-colors duration-200">
-                <LogOut className="w-4 h-4" />
-                <span>Logout</span>
-              </LogoutButton>
+              <LogoutButton className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-white transition-colors duration-200"/>
             </motion.div>
           </div>
         </div>
@@ -159,14 +156,15 @@ const AdminDashboard: React.FC = () => {
             <h2 className="text-xl font-semibold text-white mb-4">Admin Profile</h2>
             <div className="flex items-center gap-6">
               <img
-                src={"https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg"}
+                src={"https://mighty.tools/mockmind-api/content/cartoon/5.jpg"}
                 alt="Profile"
                 className="w-20 h-20 rounded-full border-2 border-amber-400"
               />
               <div>
                 <h3 className="text-lg font-medium text-white">{user?.username}</h3>
                 <p className="text-slate-400">Email: {user?.email}</p>
-                <p className="text-slate-400">Role: {user?.role}</p>
+                <p className="text-slate-400">Position: {user?.position}</p>
+                <p className="text-slate-400">Department: {user?.department}</p>
               </div>
             </div>
             {/* Edit Profile Button */}

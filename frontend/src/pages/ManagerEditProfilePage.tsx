@@ -1,13 +1,12 @@
-import React, { useEffect,useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Mail, Briefcase, Building, Calendar, Camera, Users } from 'lucide-react';
+import { ArrowLeft, User, Mail, Briefcase, Building, Calendar,} from 'lucide-react';
 import { useAuth } from "../context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import LiveTime from "@/components/LiveTime";
 
 const ManagerEditProfilePage: React.FC = () => {
@@ -23,16 +22,9 @@ const ManagerEditProfilePage: React.FC = () => {
      position: user?.position || "",
      department: user?.department || "",
      joined_date: user?.joined_date || "",
-     profilePicture: user?.profilePicture || "https://dev.quantumcloud.com/simple-business-directory/wp-content/uploads/2018/01/brianjohnsrud.jpg",
+     profilePicture: "https://mighty.tools/mockmind-api/content/cartoon/9.jpg",
    });
  
-    // Protect the route
-    //  useEffect(() => {
-    //    if (!user || user.role !== "manager") {
-    //      navigate("/");
-    //    }
-    //  }, [user, navigate]);
-
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { name, value } = e.target;
@@ -80,19 +72,19 @@ const ManagerEditProfilePage: React.FC = () => {
       }
     };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setProfileData(prev => ({
-            ...prev,
-            profilePicture: reader.result as string
-          }));
-        };
-        reader.readAsDataURL(file);
-      }
-    };
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //     const file = e.target.files?.[0];
+  //     if (file) {
+  //       const reader = new FileReader();
+  //       reader.onloadend = () => {
+  //         setProfileData(prev => ({
+  //           ...prev,
+  //           profilePicture: reader.result as string
+  //         }));
+  //       };
+  //       reader.readAsDataURL(file);
+  //     }
+  //   };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -111,11 +103,6 @@ const ManagerEditProfilePage: React.FC = () => {
       y: 0,
     },
   };
-
-    // Return null if user is not authorized
-    // if (!user || user.role !== "Manager") {
-    //   return null;
-    // }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-900">
@@ -163,7 +150,7 @@ const ManagerEditProfilePage: React.FC = () => {
                     alt="Profile"
                     className="w-32 h-32 rounded-full border-2 border-green-400"
                   />
-                  <Label htmlFor="profile-picture" className="absolute bottom-0 right-0 bg-green-500 text-slate-900 rounded-full p-2 cursor-pointer">
+                  {/* <Label htmlFor="profile-picture" className="absolute bottom-0 right-0 bg-green-500 text-slate-900 rounded-full p-2 cursor-pointer">
                     <Camera className="w-5 h-5" />
                   </Label>
                   <Input
@@ -172,7 +159,7 @@ const ManagerEditProfilePage: React.FC = () => {
                     accept="image/*"
                     className="hidden"
                     onChange={handleFileChange}
-                  />
+                  /> */}
                 </div>
               </motion.div>
 
@@ -246,20 +233,6 @@ const ManagerEditProfilePage: React.FC = () => {
                   />
                 </div>
               </motion.div>
-
-              {/* <motion.div variants={itemVariants}>
-                <Label htmlFor="teamSize" className="text-white">Team Size</Label>
-                <div className="relative">
-                  <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-                  <Input
-                    id="teamSize"
-                    name="teamSize"
-                    value={manager.teamSize}
-                    onChange={handleInputChange}
-                    className="pl-10 bg-slate-700 border-slate-600 text-white"
-                  />
-                </div>
-              </motion.div> */}
 
               <motion.div variants={itemVariants}>
                 <Button

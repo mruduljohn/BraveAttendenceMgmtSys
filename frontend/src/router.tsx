@@ -18,12 +18,9 @@ import AdminEditProfilePage from "./pages/AdminEditProfilePage";
 import ManagerEditProfilePage from "./pages/ManagerEditProfilePage";
 import AdminEmployeeManagement from "./pages/AdminEmployeeManagement";
 import ManagerEmployeeManagement from "./pages/ManagerEmployeeManagement";
-// import AdminReportGeneration from "./pages/AdminReportGeneration";
 import ManageReportGeneration from "./pages/ManagerReportGeneration";
 import AdminEmployeeForm from "./pages/AdminEmployeeForm";
-// import ManagerEmployeeForm from "./pages/ManagerEmployeeForm";
-import ManagerAnalysisPage from "./pages/ManagerAnalysisPage";
-
+import PageNotFound from "./pages/PageNotFound";
 import { useAuth } from "./context/AuthContext";
 
 const AppRouter: React.FC = () => {
@@ -47,6 +44,7 @@ const AppRouter: React.FC = () => {
                   <Route path="attendance" element={<EmployeeAttendanceRecordsPage />} />
                   <Route path="leave-requests" element={<EmployeeLeaveRequestsPage />} />
                   <Route path="edit-profile" element={<EmployeeEditProfilePage />} />
+                  <Route path="*" element={<PageNotFound />} />
                 </Routes>
               </ProtectedRoute>
             }
@@ -60,13 +58,13 @@ const AppRouter: React.FC = () => {
                 <Routes>
                   <Route path="dashboard" element={<AdminDashboard />} />
                   <Route path="employees" element={<AdminEmployeeManagement />} />
-                  {/* <Route path="reports" element={<AdminReportGeneration />} /> */}
                   <Route path="employee/create" element={<AdminEmployeeForm />} />
                   <Route path="employee/edit/:id" element={<AdminEmployeeForm />} />
                   <Route path="clockin" element={<ClockInPage />} />
                   <Route path="attendance" element={<AdminAttendanceRecordsPage />} />
                   <Route path="leave-requests" element={<AdminLeaveRequestsPage />} />
                   <Route path="edit-profile" element={<AdminEditProfilePage />} />
+                  <Route path="*" element={<PageNotFound />} />
                 </Routes>
               </ProtectedRoute>
             }
@@ -82,17 +80,16 @@ const AppRouter: React.FC = () => {
                   <Route path="dashboard" element={<ManagerDashboard />} />
                   <Route path="employees" element={<ManagerEmployeeManagement />} />
                   <Route path="reports" element={<ManageReportGeneration />} />
-                  {/* <Route path="employee/create" element={<ManagerEmployeeForm />} />
-                  <Route path="employee/edit/:id" element={<ManagerEmployeeForm />} /> */}
                   <Route path="clockin" element={<ClockInPage />} />
                   <Route path="attendance" element={<ManagerAttendanceRecordsPage />} />
                   <Route path="leave-approvals" element={<ManagerLeaveApprovalPage />} />
                   <Route path="edit-profile" element={<ManagerEditProfilePage />} />
-                  <Route path="analytics" element={<ManagerAnalysisPage/>} />
+                  <Route path="*" element={<PageNotFound />} />
                 </Routes>
               </ProtectedRoute>
             }
           />
+          <Route path="*" element={<PageNotFound />} />
         </Routes>
       </Router>
     </AuthProvider>

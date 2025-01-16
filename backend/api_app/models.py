@@ -59,6 +59,7 @@ class leave_requests(models.Model):
     start_date = models.DateField()  # Start date of the leave
     end_date = models.DateField()  # End date of the leave
     status = models.CharField(max_length=50)  # Leave status, e.g., 'approved', 'pending'
+    comment = models.TextField(blank=True, null=True) 
     created_at = models.DateTimeField(auto_now_add=True)  # Timestamp for record creation
     updated_at = models.DateTimeField(auto_now=True)  # Timestamp for record update
 

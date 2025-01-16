@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
-import { ArrowLeft, Edit, Trash2, UserPlus, Users } from 'lucide-react';
+import { ArrowLeft, Users } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";

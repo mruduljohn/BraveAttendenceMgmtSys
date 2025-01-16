@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from "framer-motion";
 import { User, Mail, Briefcase, Save, ArrowLeft, Building, Calendar } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,7 +32,7 @@ const INITIAL_EMPLOYEE: Employee = {
 };
 
 const AdminEmployeeForm: React.FC = () => {
-  const { user, accessToken } = useAuth();
+  const { accessToken } = useAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditMode = Boolean(id);
@@ -69,6 +68,7 @@ const AdminEmployeeForm: React.FC = () => {
         }
 
         // Remove password from edit form
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...employeeWithoutPassword } = employeeData;
         setEmployee(employeeWithoutPassword);
       } catch (error) {
@@ -118,7 +118,10 @@ const AdminEmployeeForm: React.FC = () => {
           password: employee.password || undefined // Remove empty password
         }
       : employee;
-
+      console.log('API URL:', apiUrl);
+      console.log('Method:', method);
+      console.log('Payload:', submitData);
+      
     try {
       const response = await fetch(apiUrl, {
         method,
@@ -243,13 +246,15 @@ const AdminEmployeeForm: React.FC = () => {
                   <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 z-10" />
                   <Select 
                     name="position" 
-                    value={employee.position} 
+                    value={employee.position  || undefined} 
                     onValueChange={(value) => handleSelectChange('position', value)}
+                    required
                   >
                     <SelectTrigger className="pl-10 bg-gray-700 border-gray-600 text-white">
                       <SelectValue placeholder="Select a position" />
                     </SelectTrigger>
                     <SelectContent>
+
                       {positions.map(pos => (
                         <SelectItem key={pos.value} value={pos.value}>
                           {pos.label}
@@ -281,8 +286,10 @@ const AdminEmployeeForm: React.FC = () => {
                   <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 z-10" />
                   <Select 
                     name="role" 
+                    defaultValue="Employee"
                     value={employee.role} 
                     onValueChange={(value) => handleSelectChange('role', value)}
+                    
                   >
                     <SelectTrigger className="pl-10 bg-gray-700 border-gray-600 text-white">
                       <SelectValue placeholder="Select a role" />
@@ -293,6 +300,7 @@ const AdminEmployeeForm: React.FC = () => {
                       <SelectItem value="Manager">Manager</SelectItem>
                     </SelectContent>
                   </Select>
+            
                 </div>
               </div>
 

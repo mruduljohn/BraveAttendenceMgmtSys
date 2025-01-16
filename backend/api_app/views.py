@@ -19,7 +19,7 @@ from .serializers import (
 )
 from .models import attendance, users, leave_requests
 from datetime import datetime
-from django.utils import timezone
+from datetime import datetime, timedelta, timezone
 from .permissions import (IsAdmin, IsManager, 
                           IsEmployee,IsAdminOrManager,
                           IsManagerorEmployee,IsAdminorEmployee)
@@ -27,6 +27,14 @@ from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.exceptions import AuthenticationFailed
+from django.db.models import F, ExpressionWrapper, fields
+from datetime import timedelta, date
+from django.utils.timezone import make_aware
+from django.utils import timezone
+import pytz
+from django.conf import settings
+from utils import get_current_time, convert_to_local_time
+ist = pytz.timezone('Asia/Kolkata')  # IST timezone
 def assign_role(user, role):
     """
     Assign a role dynamically to a user.
@@ -91,8 +99,8 @@ def clock_in_out(request):
                 # Create new clock-in entry
                 attendance_entry = attendance.objects.create(
                     employee_id=employee_id,
-                    date=now().date(),
-                    clock_in_time=now(),
+                    date=timezone.localtime().date(),
+                    clock_in_time=timezone.localtime(),
                     status='Open',
                 )
                 return Response({"message": "Clock-in successful","isClockedIn": True, "entry_id": attendance_entry.attendance_id}, status=status.HTTP_201_CREATED)
@@ -103,7 +111,7 @@ def clock_in_out(request):
 
                 # Update the clock-out time and calculate total hours
                 clock_in_time = open_entry.clock_in_time
-                clock_out_time = now()
+                clock_out_time = timezone.localtime()
                 total_hours = (clock_out_time - clock_in_time).total_seconds() / 3600.0  # Hours as float
                 open_entry.clock_out_time = clock_out_time
                 open_entry.status = 'Closed'
@@ -233,26 +241,22 @@ def create_leave_request(request):
 
 class FetchLeaveRequestsView(APIView):
     #admin,employee
-    permission_classes = [IsAuthenticated, IsAdminorEmployee]
+    permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         # Get the employee_id from the authenticated user's token
-        employee_id = request.user.employee_id 
-
+        user = request.user
         # Fetch leave requests for the authenticated employee
-        requests = leave_requests.objects.filter(employee_id=employee_id)
+        records = leave_requests.objects.filter(employee=user)
 
-        if not requests.exists():
+        if not records.exists():
             return Response(
-                {"message": "No leave requests found for this employee."},
-                status=status.HTTP_404_NOT_FOUND
+                {"message": "No leave requests found ."},
             )
 
         # Serialize the data
-        serializer = FetchLeaveRequestSerializer(requests, many=True)
-        return Response(
-            {"employee_id": employee_id, "Leave Requests": serializer.data},
-            status=status.HTTP_200_OK
+        serializer = FetchLeaveRequestSerializer(records, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK
         )
 
 
@@ -382,7 +386,7 @@ class DeleteUserView(APIView):
 
 
 class FetchAllLeaveRequestsView(APIView):
-    permission_classes = [IsAuthenticated, IsManager]
+    permission_classes = [IsAuthenticated,IsManager]
 
     def get(self, request, *args, **kwargs):
         # Fetch leave requests for all employees (no employee_id filter)
@@ -397,7 +401,7 @@ class FetchAllLeaveRequestsView(APIView):
         # Serialize the data
         serializer = FetchLeaveRequestSerializer(requests, many=True)
         return Response(
-            {"Leave Requests": serializer.data},
+            {"data": serializer.data},
             status=status.HTTP_200_OK
         )
 
@@ -431,7 +435,7 @@ class FetchAllAttendanceRecordsView(APIView):
 
 
 class AcceptRejectLeaveRequestView(APIView):
-    permission_classes = [IsAuthenticated, IsManager]
+    permission_classes = [IsAuthenticated,IsManager]
 
     def patch(self, request, *args, **kwargs):
         serializer = AcceptRejectLeaveRequestSerializer(data=request.data)
@@ -440,73 +444,153 @@ class AcceptRejectLeaveRequestView(APIView):
             try:
                 leave_request = serializer.update_status()
                 return Response(
-                    {"message": f"Leave request has been {leave_request.status} successfully."},
+                    {"status": {leave_request.status} },
                     status=status.HTTP_200_OK
                 )
-            except serializers.ValidationError as e:
+            except serializer.ValidationError as e:
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 
-from django.db.models import Count, Sum, Q, F, Func
 
-class Cast(Func):
-    function = 'CAST'
-    template = '%(expressions)s AS NUMERIC'
+STANDARD_WORKING_HOURS = 8  # Define your standard working hours per day
 
-class GenerateAttendanceRecordsView(APIView):
-    permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
+def get_total_working_days(year, month):
+    today = date.today()
+    start_date = date(year, month, 1)
+    try:
+        # Handle the transition to the next month
+        end_date = min(today, date(year, month + 1, 1) - timedelta(days=1))
+    except ValueError:
+        # Handle December transitioning to January of the next year
+        end_date = min(today, date(year + 1, 1, 1) - timedelta(days=1))
+
+    total_days = (end_date - start_date).days + 1
+    weekdays = sum(
+        1 for day in range(total_days)
+        if (start_date + timedelta(days=day)).weekday() < 5
+    )
+    return weekdays
+
+
+def calculate_days_present(records):
+    return len(set(record.date for record in records))
+
+
+def calculate_daily_hours(records):
+    daily_hours = {}
+
+    for record in records:
+        # Convert times to IST
+        clock_in = convert_to_local_time(record.clock_in_time)
+        clock_out = convert_to_local_time(record.clock_out_time) if record.clock_out_time else clock_in
+        # print("checking ", clock_in,clock_out)
+        # If same day
+        if clock_in.date() == clock_out.date():
+            work_hours = (clock_out - clock_in).total_seconds() / 3600
+            date = clock_in.date()
+            daily_hours[date] = daily_hours.get(date, 0) + work_hours
+        else:
+            # Handle multi-day shifts
+            current_time = clock_in
+            while current_time.date() <= clock_out.date():
+                if current_time.date() == clock_in.date():
+                    # First day: from clock in to midnight
+                    end_of_day = current_time.replace(hour=23, minute=59, second=59)
+                    hours = (end_of_day - current_time).total_seconds() / 3600
+                elif current_time.date() == clock_out.date():
+                    # Last day: from midnight to clock out
+                    start_of_day = current_time.replace(hour=0, minute=0, second=0)
+                    hours = (clock_out - start_of_day).total_seconds() / 3600
+                else:
+                    # Full day in between
+                    hours = 24.0
+
+                date = current_time.date()
+                daily_hours[date] = daily_hours.get(date, 0) + hours
+                
+                # Move to next day
+                current_time = (current_time + timedelta(days=1)).replace(hour=0, minute=0, second=0)
+
+    return daily_hours
+
+def calculate_overtime(daily_hours):
+    total_overtime = 0
+    for day, hours in daily_hours.items():
+        # Round hours to 2 decimal places for more accurate comparison
+        hours = round(hours, 2)
+        if hours > STANDARD_WORKING_HOURS:
+            overtime = hours - STANDARD_WORKING_HOURS
+            total_overtime += overtime
+    
+    return round(total_overtime, 2)
+
+def get_unique_days(records):
+    unique_days = set()
+    for record in records:
+        # Only add the clock-in date as a working day
+        clock_in =  convert_to_local_time(record.clock_in_time)
+        unique_days.add(clock_in.date())
+    return unique_days
+@api_view(['GET'])
+@permission_classes([IsAuthenticated ,IsManager])
+def generate_report(request, month):
+
+    year = date.today().year
+    current_month = date.today().month
+
+    if not 1 <= month <= 12:
+        return JsonResponse({'error': 'Invalid month'}, status=400)
+    if month > current_month:
+        return JsonResponse({'error': 'No records found for selected month'}, status=400)
+
+    total_working_days = get_total_working_days(year, month)
+
+    # Get distinct employee IDs from attendance records
+    employee_ids = attendance.objects.values_list('employee', flat=True).distinct()
+    # print(employee_ids)
+
+    report = []
+    for employee_id in employee_ids:
+        # Fetch the employee object
         try:
-            # Fetch the month from the URL parameters
-            month = kwargs.get('month', None)
+            employee = users.objects.get(employee_id=employee_id)
+            # print(employee)
+        except users.DoesNotExist:
+            continue
+        start_of_month = datetime(year, month, 1, tzinfo=ist)
+        end_of_month = (start_of_month + timedelta(days=31)).replace(day=1) - timedelta(seconds=1)
+        
 
-            if month:
-                try:
-                    month = int(month)
-                except ValueError:
-                    return Response(
-                        {"message": "Invalid month parameter."},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
 
-            # Filter attendance records based on the month
-            if month:
-                attendance_records = attendance.objects.filter(date__month=month)
-            else:
-                attendance_records = attendance.objects.all()
+        # Fetch attendance records for the employee
+        records = attendance.objects.filter(
+        employee_id=employee_id,
+        clock_in_time__gte=start_of_month,
+        clock_in_time__lte=end_of_month
+        )
 
-            if not attendance_records.exists():
-                return Response(
-                    {"message": "No attendance records found for the given month."},
-                    status=status.HTTP_404_NOT_FOUND
-                )
+     
+      
+    # Calculate unique days
+        unique_days = get_unique_days(records)
 
-            # Summarize attendance for each employee
-            summary = (
-                attendance_records.values('employee_id')
-                .annotate(
-                    employee_name=F('employee_id__username'),  # Fetching the username from the related user model
-                    position=F('employee_id__position'),  # Fetching the role from the related user model
-                    total_days=Count('attendance_id'),
-                    days_present=Count('attendance_id', filter=Q(status='present')),
-                    days_absent=Count('attendance_id', filter=Q(status='absent')),
-                    total_hours=Func(
-                        Func(F('total_hours'), function='CAST', template='(%(expressions)s)::NUMERIC'),
-                        function='ROUND',
-                        template="ROUND(%(expressions)s, 0)"
-                    ),
-                )
-            )
+        # Calculate daily hours
+        daily_hours = calculate_daily_hours(records)
 
-            return Response(
-                {"message": "Attendance summary fetched successfully!", "data": list(summary)},
-                status=status.HTTP_200_OK
-            )
-        except Exception as e:
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        # Calculate total overtime
+        total_overtime = calculate_overtime(daily_hours)
+        # print(employee.position)
+        report.append({
+            'employee_id': employee.employee_id,
+            'employee_name': employee.username,
+            'position':employee.position,
+            'total_days': total_working_days,
+            'days_present': len(unique_days),
+            'days_absent': total_working_days - len(unique_days),
+            'total_overtime_hours': total_overtime,
+        })
+
+    return JsonResponse({'report': report}, status=200)

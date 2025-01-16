@@ -58,6 +58,7 @@ const LoginPage: React.FC = () => {
       else {
         setError("Invalid credentials");
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.log(err)
       setError(err.message || "An error occurred. Please try again.");
@@ -172,12 +173,15 @@ const LoginPage: React.FC = () => {
             </form>
             <div className="mt-8 text-center space-y-2">
               <a
-                href="#"
-                className="block text-sm text-gray-400 hover:text-aqua-400 transition duration-200"
+              href="#"
+              className="block text-sm text-gray-400 hover:text-aqua-400 transition duration-200"
+              onClick={(e) => {
+                e.preventDefault();
+                setError("Please Contact the Administrator");
+              }}
               >
-                Forgot password?
+              Forgot password?
               </a>
-              <p className="text-gray-400 text-sm">Please Contact the Administrator</p>
             </div>
           </div>
         </motion.div>

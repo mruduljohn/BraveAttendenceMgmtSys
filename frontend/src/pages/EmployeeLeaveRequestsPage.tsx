@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, FileText } from "lucide-react";
+import { ArrowLeft} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { access } from "fs";
 
 interface LeaveRequest {
   leave_id: number;
@@ -23,16 +22,17 @@ interface LeaveRequest {
   end_date: string;
   leave_type: string;
   status: string;
+  comment: string;
 }
 
 const EmployeeLeaveRequestsPage: React.FC = () => {
-  const { user,accessToken } = useAuth();
+  const { accessToken } = useAuth();
   const navigate = useNavigate();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [newLeaveRequest, setNewLeaveRequest] = useState({
     start_date: "",
     end_date: "",
-    leave_type: "",
+    leave_type: "No reason provided",
     status: "Pending",
   });
 
@@ -50,12 +50,14 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
           throw new Error("Failed to fetch leave requests");
         }
         const data = await response.json();
-        const mappedRequests = data["Leave Requests"].map((req: any) => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mappedRequests = data.map((req: any) => ({
           leave_id: req.leave_id, // Generate a temporary unique ID for each request
           leave_type: req.leave_type,
           start_date: req.start_date,
           end_date: req.end_date,
           status: req.status,
+          comment: req.comment,
         }));
         setLeaveRequests(mappedRequests);
         //console.log("Leave Requests:", mappedRequests);
@@ -70,6 +72,12 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
   const handleLeaveRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Set default leave_type if empty
+    const leaveRequestToSubmit = {
+      ...newLeaveRequest,
+      leave_type: newLeaveRequest.leave_type || "No reason provided",
+    };
+
     try {
         const baseUrl = process.env.REACT_APP_API_URL;
         const response = await fetch(`${baseUrl}/api/create_leave_requests/`, {
@@ -78,9 +86,9 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${accessToken}`,
         },
-        body: JSON.stringify(newLeaveRequest),
+        body: JSON.stringify(leaveRequestToSubmit),
       });
-
+      
       if (!response.ok) {
         throw new Error("Failed to submit leave request");
       }
@@ -88,22 +96,25 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
     // Re-fetch leave requests after successfully creating a new one
     const fetchResponse = await fetch(`${baseUrl}/api/fetch_leave_requests/`, {
       headers: {
-        "content-type": "application/json",
+        "Content-Type": "application/json",
         "Authorization": `Bearer ${accessToken}`,
       },
     });
-
+    
     if (!fetchResponse.ok) {
       throw new Error("Failed to fetch leave requests");
     }
 
     const data = await fetchResponse.json();
-    const mappedRequests = data["Leave Requests"].map((req: any) => ({
+    console.log("data",data)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mappedRequests = data.map((req: any) => ({
       leave_id: req.leave_id,
       leave_type: req.leave_type,
       start_date: req.start_date,
       end_date: req.end_date,
       status: req.status,
+      comment: req.comment,
     }));
     setLeaveRequests(mappedRequests);
 
@@ -179,16 +190,19 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
                     <TableHead className="text-gray-300">Start Date</TableHead>
                     <TableHead className="text-gray-300">End Date</TableHead>
                     <TableHead className="text-gray-300">Reason</TableHead>
+                    <TableHead className="text-gray-300">Comments</TableHead>
                     <TableHead className="text-gray-300">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {leaveRequests.map((request) => (
+                    
                     <motion.tr key={request.leave_id} variants={itemVariants}>
                       <TableCell className="text-gray-300">{request.leave_id}</TableCell>
                       <TableCell className="text-gray-300">{request.start_date}</TableCell>
                       <TableCell className="text-gray-300">{request.end_date}</TableCell>
                       <TableCell className="text-gray-300">{request.leave_type}</TableCell>
+                      <TableCell className="text-gray-300">{request.comment}</TableCell>
                       <TableCell>
                         <span
                           className={`px-2 py-1 rounded text-xs font-medium ${
@@ -197,9 +211,10 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
                               : request.status === "Pending"
                               ? "bg-yellow-600 text-yellow-100"
                               : "bg-red-600 text-red-100"
-                          }`}
+                          }` }
                         >
                           {request.status}
+                          
                         </span>
                       </TableCell>
                     </motion.tr>
@@ -221,6 +236,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
                     onChange={(e) =>
                       setNewLeaveRequest({ ...newLeaveRequest, start_date: e.target.value })
                     }
+                    className="text-white"
                   />
                   <Input
                     type="date"
@@ -229,6 +245,7 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
                     onChange={(e) =>
                       setNewLeaveRequest({ ...newLeaveRequest, end_date: e.target.value })
                     }
+                     className="text-white"
                   />
                 </div>
                 <Textarea
@@ -236,8 +253,10 @@ const EmployeeLeaveRequestsPage: React.FC = () => {
                   value={newLeaveRequest.leave_type}
                   onChange={(e) =>
                     setNewLeaveRequest({ ...newLeaveRequest, leave_type: e.target.value })
+                    
                   }
-                  className="mt-4"
+                  className="mt-4 text-white"
+    
                 />
                 <Button type="submit" className="mt-4">
                   Submit Leave Request

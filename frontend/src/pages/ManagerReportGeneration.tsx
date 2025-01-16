@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
-import { FileText, Download, Calendar, ArrowLeft } from 'lucide-react';
+import { FileText, Download, ArrowLeft } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -22,45 +22,8 @@ const ManagerReportGeneration: React.FC = () => {
   const navigate = useNavigate();
   const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [report, setReport] = useState<EmployeeReport[]>([]);
-  const { user } = useAuth();
+  const {accessToken } = useAuth();
 
-  // if (!["Manager"].includes(user?.role)) {
-  //   navigate("/"); // Redirect if user is not allowed
-  // }
-
-  // Function to get the access token from local storage
-  const getAccessToken = () => {
-    return localStorage.getItem('access_token');
-  };
-
-  // Function to refresh the access token
-  const refreshAccessToken = async () => {
-    const refreshToken = localStorage.getItem('refresh_token');
-    if (!refreshToken) {
-      console.error("No refresh token available.");
-      return null;
-    }
-
-    try {
-      const response = await fetch("http://localhost:8000/api/token/refresh/", {
-        method: "POST",
-        body: JSON.stringify({ refresh: refreshToken }),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('access_token', data.access_token);
-        return data.access_token;
-      } else {
-        console.error("Failed to refresh token.");
-        return null;
-      }
-    } catch (error) {
-      console.error("Error refreshing token:", error);
-      return null;
-    }
-  };
 
   const months = [
     { name: 'January', value: 1 },
@@ -92,24 +55,10 @@ const ManagerReportGeneration: React.FC = () => {
       return;
     }
 
-    let accessToken = getAccessToken();
-
-    // If there's no access token or if it's expired, refresh it
-    if (!accessToken) {
-      console.log("Refreshing token...");
-      accessToken = await refreshAccessToken();
-    }
-
-    if (!accessToken) {
-      alert("Failed to authenticate. Please log in again.");
-      navigate("/");
-      return;
-    }
-
     // Make the API request to generate the report
     try {
       const response = await fetch(`http://localhost:8000/api/generate_reports/${monthValue}/`, {
-
+  
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
@@ -118,23 +67,26 @@ const ManagerReportGeneration: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage = errorData.message || "Unknown error occurred";
+        const errorMessage = errorData.error || "Unknown error occurred please try again or contact admin";
         alert(errorMessage);
-        alert(errorData.message || "Failed to generate report");
         return;
       }
 
       const data = await response.json();
-      const formattedReport = data.data.map((emp: any) => ({
-        name: emp.employee_name, // Adjust based on API response
+       //console.log('Data',data.report);
+
+      
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const formattedReport = data.report.map((emp: any) => ({
+        name: emp.employee_name, 
         position: emp.position,
-        totalWorkingDays: emp.total_days, // Adjust based on API response
-        daysPresent: emp.days_present, // Adjust based on API response
-        daysAbsent: emp.days_absent, // Adjust based on API response
-        overtimeHours: emp.total_hours, // Adjust based on API response
+        totalWorkingDays: emp.total_days,
+        daysPresent: emp.days_present, 
+        daysAbsent: emp.days_absent, 
+        overtimeHours: emp.total_overtime_hours, 
       }));
-      setReport(formattedReport); // Populate the report with actual data
-      alert("Report generated successfully!");
+      setReport(formattedReport); 
+      
     } catch (error) {
       console.error("Error fetching report:", error);
       alert("An error occurred while generating the report. Please try again.");
@@ -256,6 +208,7 @@ const ManagerReportGeneration: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
+                      
                       {report.map((employee, index) => (
                         <TableRow key={index}>
                           <TableCell className="font-medium text-white">{employee.name}</TableCell>
