@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from "framer-motion";
 import { User, Mail, Briefcase, Save, ArrowLeft, Building, Calendar } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,7 +32,7 @@ const INITIAL_EMPLOYEE: Employee = {
 };
 
 const AdminEmployeeForm: React.FC = () => {
-  const { user, accessToken } = useAuth();
+  const { accessToken } = useAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditMode = Boolean(id);
@@ -68,6 +67,7 @@ const AdminEmployeeForm: React.FC = () => {
         }
 
         // Remove password from edit form
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...employeeWithoutPassword } = employeeData;
         setEmployee(employeeWithoutPassword);
       } catch (error) {

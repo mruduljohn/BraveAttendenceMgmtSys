@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
-import { FileText, Download, Calendar, ArrowLeft } from 'lucide-react';
+import { FileText, Download, ArrowLeft } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
 import { useAuth } from "../context/AuthContext";
-import { log } from 'console';
 
 interface EmployeeReport {
   name: string;
@@ -23,13 +22,8 @@ const ManagerReportGeneration: React.FC = () => {
   const navigate = useNavigate();
   const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [report, setReport] = useState<EmployeeReport[]>([]);
-  const { user } = useAuth();
+  const {accessToken } = useAuth();
 
-  // if (!["Manager"].includes(user?.role)) {
-  //   navigate("/"); // Redirect if user is not allowed
-  // }
-
-  // Function to get the access token from local storage
 
   const months = [
     { name: 'January', value: 1 },
@@ -61,15 +55,13 @@ const ManagerReportGeneration: React.FC = () => {
       return;
     }
 
-   
-
     // Make the API request to generate the report
     try {
       const response = await fetch(`http://localhost:8000/api/generate_reports/${monthValue}/`, {
   
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 
@@ -84,6 +76,7 @@ const ManagerReportGeneration: React.FC = () => {
        //console.log('Data',data.report);
 
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const formattedReport = data.report.map((emp: any) => ({
         name: emp.employee_name, 
         position: emp.position,

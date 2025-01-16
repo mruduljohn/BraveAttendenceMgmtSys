@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Mail, Briefcase, Building, Calendar, Camera } from 'lucide-react';
+import { ArrowLeft, User, Mail, Briefcase, Building, Calendar } from 'lucide-react';
 import { useAuth } from "../context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import LiveTime from "@/components/LiveTime";
 
 const EditProfilePage: React.FC = () => {
@@ -26,14 +25,6 @@ const EditProfilePage: React.FC = () => {
     joined_date: user?.joined_date || "",
     profilePicture: "https://mighty.tools/mockmind-api/content/cartoon/10.jpg",
   });
-
-  // // Protect the route
-  // useEffect(() => {
-  //   if (!user || user.role !== "employee") {
-  //     navigate("/");
-  //   }
-  // }, [user, navigate]);
- 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -81,10 +72,6 @@ const EditProfilePage: React.FC = () => {
     }
   };
 
-  // useEffect(() => {
-  //   updateUser(profileData);
-  // }, [profileData, updateUser]);
-
   // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   const file = e.target.files?.[0];
   //   if (file) {
@@ -116,12 +103,6 @@ const EditProfilePage: React.FC = () => {
       y: 0,
     },
   };
-
-
-  // Return null if user is not authorized
-  // if (!user || user.role !== "employee") {
-  //   return null;
-  // }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-900">

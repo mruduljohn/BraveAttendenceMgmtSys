@@ -21,7 +21,7 @@ interface AttendanceRecord {
   attendance_id: string;
   total_hours: number;
   extra_hours: number;
-  status: "Present" | "Absent";
+  status: "Open" | "Closed";
 }
 
 const AdminAttendanceRecordsPage: React.FC = () => {
@@ -56,6 +56,7 @@ const AdminAttendanceRecordsPage: React.FC = () => {
 
         const data = await response.json();
         setAttendanceRecords(data || []); // Assuming the API returns `attendance`
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         setError(error.message || "An error occurred");
       } finally {

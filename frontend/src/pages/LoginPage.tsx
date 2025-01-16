@@ -57,6 +57,7 @@ const LoginPage: React.FC = () => {
       else {
         setError("Invalid credentials");
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.log(err)
       setError(err.message || "An error occurred. Please try again.");

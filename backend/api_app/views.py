@@ -447,7 +447,7 @@ class AcceptRejectLeaveRequestView(APIView):
                     {"status": {leave_request.status} },
                     status=status.HTTP_200_OK
                 )
-            except serializers.ValidationError as e:
+            except serializer.ValidationError as e:
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     

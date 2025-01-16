@@ -1,7 +1,7 @@
 import React, { useState,useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
-import { ArrowLeft, Edit, Trash2, UserPlus, Users } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, UserPlus} from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -88,14 +88,6 @@ const EmployeeManagement: React.FC = () => {
       transition: {
         staggerChildren: 0.1,
       },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
     },
   };
 

@@ -15,14 +15,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
-import apiClient from "../utils/apiClient";
 
 interface AttendanceRecord {
   date: string;
   attendance_id: string;
   total_hours: number;
   extra_hours: number;
-  status: "Present" | "Absent";
+  status: "Open" | "Closed";
 }
 
 const ManagerAttendanceRecordsPage: React.FC = () => {
@@ -53,6 +52,7 @@ const ManagerAttendanceRecordsPage: React.FC = () => {
 
         const data = await response.json();
         setAttendanceRecords(data || []); // Assuming the API returns `attendance`
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         setError(error.message || "An error occurred");
       } finally {

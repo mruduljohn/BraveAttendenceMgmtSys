@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import LogoutButton from "../components/LogoutButton";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Calendar } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -34,13 +34,13 @@ interface LeaveRequest {
   startDate: string;
   endDate: string;
   reason: string;
-  status: "Pending" | "Approved" | "Rejected";
+  status: string;
   employeeId: number;
   comment: string;
 }
 
 const ManagerLeaveApprovalPage: React.FC = () => {
-  const { user, accessToken } = useAuth();
+  const {accessToken } = useAuth();
   const navigate = useNavigate();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null);
@@ -64,6 +64,7 @@ const ManagerLeaveApprovalPage: React.FC = () => {
 
         const data = await response.json();
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const formattedReport = data.data.map((emp: any) => ({
           id: emp.leave_id,
           employeeId: emp.employee,
@@ -115,8 +116,6 @@ const ManagerLeaveApprovalPage: React.FC = () => {
       if (!response.ok) {
         throw new Error("Failed to update leave request");
       }
-      const data = await response.json();
-      //console.log("data",data)
 
     } catch (error) {
       console.error("Error updating leave request:", error);

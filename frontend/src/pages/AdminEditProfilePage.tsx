@@ -1,13 +1,12 @@
-import React, { useEffect,useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Mail, Briefcase, Building, Calendar, Camera, Shield } from 'lucide-react';
+import { ArrowLeft, User, Mail, Briefcase, Building, Calendar, Shield } from 'lucide-react';
 import { useAuth } from "../context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import LiveTime from "@/components/LiveTime";
 
 const AdminEditProfilePage: React.FC = () => {
@@ -25,13 +24,6 @@ const AdminEditProfilePage: React.FC = () => {
       joined_date: user?.joined_date || "",
       profilePicture: "https://mighty.tools/mockmind-api/content/cartoon/5.jpg",
     });
-
-    // // Protect the route
-    //   useEffect(() => {
-    //     if (!user || user.role !== "admin") {
-    //       navigate("/");
-    //     }
-    //   }, [user, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
