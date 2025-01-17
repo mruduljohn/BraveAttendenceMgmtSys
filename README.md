@@ -1,6 +1,6 @@
-# Employee Attendance Management System
+# AttendEase -Employee Attendance Management System
 
-Welcome to the **Employee Attendance Management System**! This project aims to streamline and enhance attendance tracking, leave management, and employee record handling for organizations. Developed with modern tools and best practices, it offers an intuitive interface and robust backend, ensuring scalability, security, and efficiency.
+Welcome to the **AttendEase**! This project aims to streamline and enhance attendance tracking, leave management, and employee record handling for organizations. Developed with modern tools and best practices, it offers an intuitive interface and robust backend, ensuring scalability, security, and efficiency.
 
 ## 🛠️ Tech Stack
 
@@ -23,9 +23,8 @@ Welcome to the **Employee Attendance Management System**! This project aims to s
 
 ### Admin
 - Manage employees (Add, Update, Delete).
-- Track attendance records of all employees.
 - Handle leave requests and approvals.
-- Generate detailed reports.
+- Personal attendance management.
 
 ### Manager
 - Personal attendance management.
