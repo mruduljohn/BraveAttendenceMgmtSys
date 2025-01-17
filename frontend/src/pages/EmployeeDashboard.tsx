@@ -116,56 +116,57 @@ const EmployeeDashboard: React.FC = () => {
     
       {/* Employee Profile and Clock In/Out Section */}
       <section className="relative z-10 p-6">
-  <div className="max-w-7xl mx-auto grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
-    {/* Employee Profile */}
-    <Card className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-lg p-6">
-      <h2 className="text-xl font-semibold text-white mb-4">Your Profile</h2>
-      <div className="flex flex-col sm:flex-row items-center gap-6">
-        <img
-          src="https://mighty.tools/mockmind-api/content/cartoon/10.jpg"
-          alt="Profile"
-          className="w-20 h-20 rounded-full border-2 border-aqua-400"
-        />
-        <div>
-          <h3 className="text-lg font-medium text-white">{user.username}</h3>
-          <p className="text-gray-400">Email: {user.email}</p>
-          <p className="text-gray-400">Position: {user.position}</p>
-          <p className="text-gray-400">Department: {user.department}</p>
-        </div>
-      </div>
-      <div className="mt-4">
-        <Button
-          className="w-full bg-aqua-500 hover:bg-aqua-600 text-gray-900 font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-          onClick={() => navigate("/employee/edit-profile")}
-        >
-          Edit Profile
-        </Button>
-      </div>
-    </Card>
+        <div className="max-w-7xl mx-auto grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
+          {/* Employee Profile */}
+          <Card className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-lg p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">Your Profile</h2>
+            <div className="flex items-center gap-6">
+              <img
+                src={"https://mighty.tools/mockmind-api/content/cartoon/10.jpg"}
+                alt="Profile"
+                className="w-20 h-20 rounded-full border-2 border-aqua-400"
+              />
+              <div>
+                <h3 className="text-lg font-medium text-white">{user.username}</h3>
+                <p className="text-gray-400">Email: {user.email}</p>
+                <p className="text-gray-400">Position: {user.position}</p>
+                <p className="text-gray-400">Department: {user.department}</p>
+              </div>
+            </div>
+            {/* Edit Profile Button */}
+            <div className="mt-4">
+              <Button
+                className="w-full bg-aqua-500 hover:bg-aqua-600 text-gray-900 font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                onClick={() => navigate("/employee/edit-profile")}
+              >
+                Edit Profile
+              </Button>
+            </div>
+          </Card>
 
-    {/* Clock In/Out Card */}
-    <Card className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-lg p-6 flex flex-col justify-between">
-      <div className="text-center">
-        <Clock className="w-16 h-16 mx-auto mb-4 text-aqua-400" />
-        <h2 className="text-xl font-semibold mb-4 text-white">
-          {isClockedIn ? "You are currently clocked in!" : "You are currently clocked out!"}
-        </h2>
-      </div>
-      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-        <Button
-          className={`w-full py-3 text-lg font-semibold ${
-            isClockedIn
-              ? "bg-red-500 hover:bg-red-600"
-              : "bg-green-500 hover:bg-green-600"
-          } text-gray-900`}
-          onClick={handleClockInOut}
-        >
-          {isClockedIn ? "Clock Out" : "Clock In"}
-        </Button>
-      </motion.div>
-    </Card>
-  </div>
-</section>
+          {/* Clock In/Out Card */}
+          <Card className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-lg p-6 flex flex-col justify-between">
+            <div className="text-center">
+              <Clock className="w-16 h-16 mx-auto mb-4 text-aqua-400" />
+              <h2 className="text-xl font-semibold mb-4 text-white">
+                {isClockedIn ? "You are currently clocked in!" : "You are currently clocked out!"}
+              </h2>
+            </div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                className={`w-full py-3 text-lg font-semibold ${
+                  isClockedIn
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-green-500 hover:bg-green-600"
+                } text-gray-900 mb-4`}
+                onClick={handleClockInOut}
+              >
+                {isClockedIn ? "Clock Out" : "Clock In"}
+              </Button>
+            </motion.div>
+          </Card>
+        </div>
+      </section>
 
       <main className="relative z-10 flex-grow p-6">
         <div className="max-w-7xl mx-auto">
