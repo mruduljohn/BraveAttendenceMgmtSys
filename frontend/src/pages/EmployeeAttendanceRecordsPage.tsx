@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table";
 import LiveTime from "@/components/LiveTime";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import axiosInstance from "@/utils/authService";
 
 interface AttendanceRecord {
   date: string;
@@ -46,23 +47,15 @@ const EmployeeAttendanceRecordsPage: React.FC = () => {
     const fetchAttendance = async () => {
       setLoading(true);
       setError(null);
-
+  
       try {
         const baseUrl = process.env.REACT_APP_API_URL;
-        const response = await fetch(`${baseUrl}/api/fetch_attendance/`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Attendance records not found");
-        }
-
-        const data: AttendanceRecord[] = await response.json();
-        
+        const response = await axiosInstance.get(`/fetch_attendance/`);
+  
+        // Handling the response data from axios
+        const data: AttendanceRecord[] = response.data;
+        console.log("Fetched attendance records:", data);
+  
         // Group and sum the records by date
         const groupedData = data.reduce((acc: { [key: string]: GroupedAttendanceRecord }, record) => {
           if (!acc[record.date]) {
@@ -76,29 +69,34 @@ const EmployeeAttendanceRecordsPage: React.FC = () => {
           }
           acc[record.date].total_hours += record.total_hours;
           acc[record.date].entries.push(record);
+          acc[record.date].status = acc[record.date].status === "Closed" && record.status === "Open"
+            ? "Open"
+            : acc[record.date].status;
+  
           return acc;
         }, {});
-
+  
         // Calculate extra hours for each grouped record
         Object.values(groupedData).forEach(record => {
           record.extra_hours = Math.max(0, record.total_hours - STANDARD_WORK_HOURS);
         });
-
+  
         const sortedGroupedData = Object.values(groupedData).sort((a, b) => 
           new Date(b.date).getTime() - new Date(a.date).getTime()
         );
-
+  
         setAttendanceRecords(sortedGroupedData);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        console.log("Grouped attendance records:", sortedGroupedData);
       } catch (error: any) {
         setError(error.message || "An error occurred");
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchAttendance();
   }, [user, navigate, accessToken]);
+  
 
   const containerVariants = {
     hidden: { opacity: 0 },

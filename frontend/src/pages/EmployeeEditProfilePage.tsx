@@ -39,11 +39,7 @@ const EditProfilePage: React.FC = () => {
     e.preventDefault();
     
     try {
-      const response = await axiosInstance.get("/update_user_details/",profileData);
-
-      if (response.status !== 200) {
-        throw new Error(`Failed to update profile: ${response.statusText}`);
-      }
+      const response = await axiosInstance.patch("/update_user_details/",profileData);
 
       const result = await response.data;
       console.log("Full API response:", result);
