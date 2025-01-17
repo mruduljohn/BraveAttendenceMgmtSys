@@ -20,6 +20,7 @@ import AdminEmployeeManagement from "./pages/AdminEmployeeManagement";
 import ManagerEmployeeManagement from "./pages/ManagerEmployeeManagement";
 import ManageReportGeneration from "./pages/ManagerReportGeneration";
 import AdminEmployeeForm from "./pages/AdminEmployeeForm";
+import LandingPage from "./pages/Home";
 
 import PageNotFound from "./pages/PageNotFound";
 import { useAuth } from "./context/AuthContext";
@@ -32,7 +33,8 @@ const AppRouter: React.FC = () => {
       <Router>
         <Routes>
           {/* Public Route */}
-          <Route path="/" element={<LoginPage />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
 
           {/* Employee-specific routes */}
           <Route
