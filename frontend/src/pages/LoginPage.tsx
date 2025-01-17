@@ -60,8 +60,9 @@ const LoginPage: React.FC = () => {
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      console.log(err)
-      setError(err.message || "An error occurred. Please try again.");
+      const errorMessage = err.response.data.non_field_errors[0]
+      console.log(errorMessage)
+      setError(errorMessage || "An error occurred. Please try again.");
     }
   };
 

@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import LiveTime from "@/components/LiveTime";
-
+import axiosInstance from "@/utils/authService";
 const EmployeeDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -19,63 +19,40 @@ const EmployeeDashboard: React.FC = () => {
     const fetchAttendanceStatus = async () => {
       try {
         const baseUrl = process.env.REACT_APP_API_URL;
-        const response = await fetch(`${baseUrl}/api/attendance/status/`,{
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          },
+        const response = await axiosInstance.get(`/attendance/status/`, {
         });
-
-        if (response.ok) {
-          const data = await response.json();
-          setIsClockedIn(data.isClockedIn)
-        } else {
-          const errorData = await response.json();
-          if (errorData.messages[0].message === "Token is invalid or expired")
-            console.log('Error response body:', errorData);
-        }
+        setIsClockedIn(response.data.isClockedIn);
       } catch (error) {
         console.error('Error fetching attendance status:', error);
       }
     };
-
+  
     fetchAttendanceStatus();
   }, []);
-
+  
   const handleClockInOut = async () => {
     const action = isClockedIn ? "clock_out" : "clock_in";
-
+  
     try {
       const baseUrl = process.env.REACT_APP_API_URL;
-      const response = await fetch(`${baseUrl}/api/attendance/clock_in_out/`,{
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem('access_token')}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log(data.message);
+      const response = await axiosInstance.post(`/attendance/clock_in_out/`,{ action },);
+  
+        const data = response.data;
         setIsClockedIn(data.isClockedIn);
-      } else {
-        const errorData = await response.json();
-        console.error("Error response:", errorData);
-
-        if (errorData.error === "No clockout sessions!" || errorData.error === "clocked in already") {
-          alert("Error: " + errorData.error);
-          setIsClockedIn((prevState) => !prevState);
-        } else {
-          alert("Failed: " + (errorData.error || "Unknown error, please contact admin"));
-        }
       }
-    } catch (error) {
-      console.error("Error during clock in/out:", error);
-      alert("An error occurred while trying to clock in/out.");
+      catch (error) {
+      console.log(error)
+      if (error.status===404) {
+          alert("Error: " + "No Clocked in / Clocked out sessions");
+          setIsClockedIn((prevState) => !prevState); // Revert state
+      } else {
+          // Handle any other errors
+          console.error("Error during clock in/out:", error);
+          alert("An error occurred while trying to clock in/out.");
+      }
     }
   };
+  
 
   const cards = [
     {
@@ -89,7 +66,7 @@ const EmployeeDashboard: React.FC = () => {
       title: "Leave Requests",
       description: "Submit and manage leave requests",
       icon: FileText,
-      buttonText: "Submit Leave Request",
+      buttonText: "Leave Requests",
       href: "/employee/leave-requests",
     },
   ];
