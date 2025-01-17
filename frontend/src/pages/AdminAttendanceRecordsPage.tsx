@@ -71,6 +71,10 @@ const AdminAttendanceRecordsPage: React.FC = () => {
           }
           acc[record.date].total_hours += record.total_hours;
           acc[record.date].entries.push(record);
+          acc[record.date].status = acc[record.date].status === "Closed" && record.status === "Open"
+            ? "Open"
+            : acc[record.date].status;
+  
           return acc;
         }, {});
 

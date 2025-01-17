@@ -14,7 +14,7 @@ const LandingPage = () => {
   const developers = [
     { name: 'Mrudul', github: 'https://github.com/mruduljohn', linkedin: 'https://linkedin.com/in/mruduljohnmathews' },
     { name: 'Joel', github: 'https://github.com/joelgeorge-web', linkedin: 'https://www.linkedin.com/in/joelgeorge98765/' },
-    { name: 'Arsha', github: 'https://github.com/aarsha01', linkedin: 'https://www.linkedin.com/in/aarsha-leena-a79778201/' },
+    { name: 'Aarsha', github: 'https://github.com/aarsha01', linkedin: 'https://www.linkedin.com/in/aarsha-leena-a79778201/' },
   ];
 
   const features = [
