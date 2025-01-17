@@ -139,9 +139,9 @@ const ManagerDashboard: React.FC = () => {
     
      {/* Manager Profile and Clock In/Out Section */}
      <section className="relative z-10 p-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-3 gap-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
           {/* Manager Profile */}
-          <Card className="col-span-2 bg-slate-800/50 backdrop-blur-lg border border-blue-700 rounded-lg p-6">
+          <Card className="bg-slate-800/50 backdrop-blur-lg border border-blue-700 rounded-lg p-6">
             <h2 className="text-xl font-semibold text-white mb-4">Manager Profile</h2>
             <div className="flex items-center gap-6">
               <img
