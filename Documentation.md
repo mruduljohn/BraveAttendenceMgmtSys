@@ -64,17 +64,17 @@ Employees have the following permissions:
 ---
 
 ## Data Structures & Database Design
-![ER Diagram](images/Database%20Tables%20-%20ER%20Diagram.jpg)
+![ER Diagram](images/Database%20Tables%20-%20ER%20Diagram1.jpg)
 ## Flowchart
 
 Here’s a simple flowchart representing the **Clock In/Out Process**:
 1. Login Functionality:  
-![Attendance Flowchart](images/Flowchart_Brave%20-%20Login.jpg)
+![Attendance Flowchart](images/Flowchart_Brave%20-%20Login1.jpg)
 2. Administrator  Functionality Flow:
-![Attendance Flowchart](images/Flowchart_Brave%20-%20ADMINISTRATOR.jpg)
+![Attendance Flowchart](images/Flowchart_Brave%20-%20ADMINISTRATOR1.jpg)
 3. Manager Functionality Flow:
-![Attendance Flowchart](images/Flowchart_Brave%20-%20Manager.jpg)
+![Attendance Flowchart](images/Flowchart_Brave%20-%20Manager1.jpg)
 4. Employee  Functionality Flow:
-![Attendance Flowchart](images/Flowchart_Brave%20-%20Employee.jpg)
+![Attendance Flowchart](images/Flowchart_Brave%20-%20Employee1.jpg)
 
 

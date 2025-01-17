@@ -105,7 +105,7 @@ const EmployeeDashboard: React.FC = () => {
       <header className="relative z-10 bg-gray-800/50 backdrop-blur-lg border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">Welcome to Your Dashboard</h1>
+            <h1 className="text-2xl font-bold text-white">Welcome to Your AttendEase</h1>
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
